@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<title>Assessments · Merkle Analytic Platform Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<script src="config.js"></script>
+</head>
+<body data-page="dashboard">
+<header class="brandbar"><div class="brandbar-inner">
+  <a href="/dashboard" class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></a>
+  <span class="mk-sep"></span><span class="mk-title">Analytic Platform Assessment</span>
+</div></header>
+<div class="dash-wrap">
+  <div id="dashMsg" class="dash-msg" hidden></div>
+  <div class="dash-head">
+    <h1>Assessments</h1>
+    <span class="spacer"></span>
+    <a class="btn" href="/admin">Manage rubric</a>
+    <button class="btn btn-primary" id="btnNew">+ New assessment</button>
+  </div>
+  <div id="assessGrid" class="assess-grid"></div>
+  <div id="dashEmpty" class="dash-empty" hidden>No assessments yet — create your first one to begin matching client needs to platforms.</div>
+</div>
+<script type="module" src="js/db.js"></script>
+</body>
+</html>

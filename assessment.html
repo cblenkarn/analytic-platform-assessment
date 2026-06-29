@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<title>Assessment · Merkle Analytic Platform Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<script src="config.js"></script>
+</head>
+<body data-page="assessment">
+<header class="brandbar"><div class="brandbar-inner">
+  <a href="/dashboard" class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></a>
+  <span class="mk-sep"></span><span class="mk-title">Analytic Platform Assessment</span>
+</div></header>
+<div class="subnav">
+  <a class="backlink" href="/dashboard">← Dashboard</a>
+  <span class="sn-title" id="snTitle">Assessment</span>
+  <span class="autosave" id="autosave"><span class="dot"></span><span id="autosaveText">—</span></span>
+</div>
+<div class="wrap">
+  <nav class="tabs">
+    <button class="tab active" data-tab="discovery">1 · Workshop</button>
+    <button class="tab" data-tab="results">2 · Results</button>
+  </nav>
+  <section class="panel active" data-panel="discovery">
+    <div class="readme">
+      <h4>Setting your priorities</h4>
+      <p>Apply a <strong>MoSCoW priority</strong> to each capability — <em>Must</em>, <em>Should</em>, <em>Could</em>, or <em>Won't</em> (out of scope). Priorities alone produce an immediate ranking. Open a capability to fine-tune which sub-capabilities are in play; everything is on by default, so you only adjust where scope is narrower than the standard.</p>
+    </div>
+    <div id="framework"></div>
+  </section>
+  <section class="panel" data-panel="results">
+    <div class="readme">
+      <h4>Reading your results</h4>
+      <p>Weighted fit is the MoSCoW-weighted average of capability coverage. A <strong>Must</strong> capability with zero coverage is a knockout — it flags the platform rather than merely costing points. Profiles below are written against <em>your</em> priorities: strengths are the priorities a platform fully meets, and gaps call out partial or disqualifying coverage.</p>
+    </div>
+    <div class="results-actions"><button class="btn" id="btnPrint">Print / PDF</button></div>
+    <h3 class="sec-h">Weighted fit &amp; recommended stack</h3>
+    <div class="scoreboard">
+      <div id="rankList" class="rank-list"></div>
+      <div id="stackCard" class="stack-card"></div>
+    </div>
+    <h3 class="sec-h">Coverage by pillar</h3>
+    <div class="pill-grid"><table class="agg" id="aggTable"></table></div>
+    <h3 class="sec-h">Platform profiles</h3>
+    <div id="profiles" class="profiles"></div>
+    <p class="footnote">Methodology: coverage = supported ÷ in-scope sub-capabilities per capability; weighted fit averages those by MoSCoW weight (Must 3 · Should 2 · Could 1). Ratings reflect documented platform capability and Merkle SME judgement, not vendor marketing.</p>
+  </section>
+</div>
+<footer class="site-foot">
+  <div class="foot-inner">
+    <div class="foot-brand"><span class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></span><div class="foot-tag">Analytic Platform Assessment</div></div>
+    <div class="foot-method">
+      <h3>About this assessment &amp; methodology</h3>
+      <p>This assessment reflects Merkle's analytics consulting practice &mdash; a structured, vendor-neutral way to match analytics needs to the platforms in market, refined across enterprise platform selections. It is not a feature checklist: every judgement in the underlying rubric encodes our consultants' hands-on experience of where each platform genuinely performs or falls short in production.</p>
+      <p>The method is deliberately simple and defensible. Capabilities are grouped into pillars. You assign a MoSCoW priority to each capability &mdash; <b>Must</b>, <b>Should</b>, <b>Could</b> or <b>Won't</b> &mdash; to express how important it is. Each platform's coverage of a capability is measured from a yes/no assessment of its sub-capabilities, maintained in our master rubric, and rolls up to a priority-weighted fit score (Must&nbsp;3, Should&nbsp;2, Could&nbsp;1). A Must a platform cannot meet at all is treated as a disqualifier rather than a deduction, so a strong all-rounder never outranks a platform that clears every non-negotiable. The output is a best-of-breed recommendation: a lead platform, plus any specialist platforms that close priority gaps.</p>
+      <p class="foot-fine">Assessments represent Merkle's point of view and are validated against current vendor releases at the time of engagement.</p>
+    </div>
+  </div>
+</footer>
+<script src="js/core.js"></script>
+<script type="module" src="js/db.js"></script>
+</body>
+</html>

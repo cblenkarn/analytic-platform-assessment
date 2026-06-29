@@ -1,105 +1,68 @@
-# Merkle — Analytic Platform Assessment
+# Merkle Analytic Platform Assessment
 
-A consultant tool for matching analytics needs to platforms (GA4, Adobe Analytics, CJA,
-Amplitude, Contentsquare, Piano, plus any vendors you add). Static front-end, with
-**Supabase** storing the master rubric and saved assessments, deployed on **Vercel**.
+A consultant tool that matches a client's analytics needs (MoSCoW priorities) to
+platforms — GA4, Adobe Analytics, CJA, Amplitude, Contentsquare, Piano — and
+produces a weighted-fit ranking plus a best-of-breed stack recommendation.
 
-- **Needs Discovery** — set MoSCoW priorities (workshop-facing).
-- **Results** — weighted-fit ranking, coverage by pillar, assessment-aware platform profiles.
-- **Rubric Admin** — the master rubric: support toggles, SME rationale, pillars/capabilities/sub-capabilities, vendor management.
+Static multi-page site on **Vercel** with a **Supabase** (Postgres) backend.
 
-The app runs **fully offline** with no backend (using the built-in Export/Import JSON).
-Add Supabase keys to turn on cloud save of the rubric and named assessments.
+## Pages
 
----
+| Path           | File             | Purpose |
+|----------------|------------------|---------|
+| `/dashboard`   | `dashboard.html` | Lists every assessment; create / open / delete from here. Landing page (`/` redirects here). |
+| `/assessment?id=…` | `assessment.html` | The workspace: **Needs discovery** (MoSCoW + sub-capabilities) and **Results** (ranking, stack, pillar coverage, profiles). Selections autosave. Links back to the dashboard. |
+| `/admin`       | `admin.html`     | The **single master rubric** editor. Every edit autosaves to the database and applies to all assessments, including new ones. |
 
-## 1. Create the Supabase backend
+Shared assets: `css/app.css`, `js/core.js` (rubric model, scoring, rendering),
+`js/db.js` (Supabase + page routing + autosave + realtime).
 
-1. Create a project at https://supabase.com.
-2. Open **SQL Editor → New query**, paste the contents of [`supabase/schema.sql`](supabase/schema.sql), and **Run**.
-   This creates two tables — `rubrics` (the master rubric) and `assessments` (saved snapshots) — with Row Level Security.
-3. Open **Project Settings → API** and copy:
-   - **Project URL**
-   - **anon public** key
+## Single rubric
 
-> The anon key is a *publishable* key and is safe to ship in client code. Access is governed
-> by the RLS policies in the schema. For real production, enable Supabase Auth and tighten the
-> policies (see the comments at the bottom of `schema.sql`).
+There is **one** rubric, stored in the `rubrics` table as the row `id='master'`.
+Assessments store **only** the client's selections (`{moscow, needs}`), not a
+copy of the rubric. Opening an assessment loads the current master rubric and
+overlays that assessment's selections — so a rubric change in `/admin` reaches
+every assessment immediately. Import and "reset to defaults" have been removed:
+the master rubric in the database is the single source of truth.
 
-## 2. Add your keys
+## Autosave
 
-Edit [`config.js`](config.js):
+- **Rubric** (`/admin`): any edit autosaves ~0.8s after you stop. No save button.
+- **Selections** (`/assessment`): MoSCoW and sub-capability changes autosave ~0.7s after you stop.
 
-```js
-window.APP_CONFIG = {
-  SUPABASE_URL: "https://YOUR-PROJECT.supabase.co",
-  SUPABASE_ANON_KEY: "eyJ...your-anon-key..."
-};
-```
+The dot next to the page title shows status (saving / saved / error).
 
-(Leave them blank to keep the tool offline-only.)
+## Multiple editors
 
-## 3. Put it on GitHub
+Saves are **last-write-wins**, and the rubric is **live-synced** over Supabase
+Realtime:
 
-**Option A — upload in the browser (no git needed):**
-1. Create a new repository on GitHub (empty, no README).
-2. **Add file → Upload files**, drag in *everything in this folder* (keep the `js/` and `supabase/`
-   subfolders), and commit.
+- When another editor saves, your `/admin` page is notified in real time.
+- If you have **no unsaved edits**, the change is applied silently.
+- If you are **mid-edit**, a banner appears ("updated by another editor — Reload")
+  rather than clobbering your work. Reloading pulls their version; ignoring it and
+  continuing means your next save overwrites theirs.
+- Two people editing the **same field** at the same instant resolve last-write-wins
+  (no field-level merge).
 
-**Option B — command line:**
-```bash
-cd merkle-platform-assessment
-git init
-git add .
-git commit -m "Merkle Analytic Platform Assessment"
-git branch -M main
-git remote add origin https://github.com/<you>/<repo>.git
-git push -u origin main
-```
+This is appropriate for a small consulting team coordinating edits. For stricter
+control, enable Supabase Auth and tighten the RLS policies (see `supabase/schema.sql`).
 
-## 4. Deploy on Vercel
+## Deploy
 
-1. Go to https://vercel.com → **Add New → Project → Import** your GitHub repo.
-2. **Framework Preset: Other.** No build command, no install command — it's a static site.
-   (Leave Output Directory blank / root.)
-3. **Deploy.** Vercel serves `index.html` and the assets directly.
+1. **Supabase** → create a project → SQL Editor → paste & run `supabase/schema.sql`.
+   Then Settings → API Keys → copy the **Project URL** and the **publishable key**
+   (`sb_publishable_…`).
+2. **config.js** → paste the URL and publishable key. `config.js` **must be committed**
+   — the publishable key is public-safe. Never put a secret/service-role key in client code.
+3. **GitHub** → commit and push the repo.
+4. **Vercel** → Import the repo → Framework preset **Other** → no build command → Deploy.
 
-Pushing to the `main` branch re-deploys automatically.
+The site is `noindex` (meta tag + `X-Robots-Tag` header + `robots.txt`).
 
----
-
-## Using it
-
-- **Rubric Admin** is the single source of truth. Edit support, capture SME rationale (the ✎),
-  manage vendors (drag to reorder, retire, + Add vendor). Click **Save rubric to cloud** to
-  publish your changes to Supabase. On load, the app pulls the master rubric from the cloud.
-- **Assessments** (the bar under the tabs): name an assessment and **Save** to store the current
-  priorities and rubric snapshot. Reload any saved assessment from the dropdown. Each assessment
-  is a self-contained snapshot, so it stays reproducible even after the rubric evolves.
-- **Export / Import (.json)** still works as a manual backup / transfer, with or without Supabase.
-
-## Project structure
-
-```
-index.html            the app (single-file UI + logic)
-config.js             your Supabase URL + anon key (edit this)
-config.example.js     reference copy
-js/db.js              Supabase data layer (rubric + assessments) — ES module
-supabase/schema.sql   tables + RLS policies; run once in Supabase
-vercel.json           static hosting config
-package.json          metadata; `npm run dev` serves locally
-```
-
-## Run locally
+## Local dev
 
 ```bash
-npm run dev      # serves at http://localhost:3000
+npm run dev   # npx serve .
 ```
-(or open `index.html` directly — cloud features need the keys in `config.js`).
-
-## Security notes
-
-- The anon key is public by design; never put the **service_role** key in client code.
-- The default RLS policies allow anyone with the anon key to read/write. Acceptable for an
-  internal tool, but for production enable Supabase Auth and scope the policies to authenticated
-  users / your team. The schema file shows exactly what to change.
