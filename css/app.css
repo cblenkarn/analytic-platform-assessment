@@ -326,3 +326,30 @@
   .pencil{color:var(--leader);font-style:normal;font-weight:600;}
   .rat-dot{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;margin-right:2px;}
   .rat-dot.pro{background:var(--accent);} .rat-dot.con{background:var(--gap);} .rat-dot.note{background:var(--ink-soft);}
+
+  /* ===== admin: tone-coloured rationale glyph (override .has gold) ===== */
+  .noteglyph.tone-pro{color:var(--accent);} .noteglyph.tone-pro:hover{color:var(--accent-deep);}
+  .noteglyph.tone-con{color:var(--gap);}
+  .noteglyph.tone-note{color:var(--ink-soft);}
+
+  /* ===== admin: collapsible, structured readme + spacing ===== */
+  .readme.collapsible{padding:0;}
+  .readme .rm-head{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:13px 16px;}
+  .readme .rm-head .seccaret{margin-left:auto;}
+  .readme.collapsible .sec-body{padding:0 16px 15px;}
+  .readme.collapsible.collapsed .rm-head{padding-bottom:13px;}
+  .readme .rm-list{margin:10px 0 0;padding-left:18px;}
+  .readme .rm-list li{margin:5px 0;}
+  .readme .rm-list em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--accent-deep);}
+  .readme .pencil,.readme .drag-handle{margin:0 1px;}
+  /* breathing room down the admin column */
+  body[data-page="admin"] .wrap{padding-top:6px;}
+  body[data-page="admin"] .readme{margin-bottom:20px;}
+  body[data-page="admin"] .matrix-key{margin:2px 0 14px;padding-top:2px;}
+
+  /* ===== admin: each pillar is its own card; vendor header pins on scroll ===== */
+  .mtx-wrap{display:block;}
+  .pillar-card{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);margin-bottom:22px;overflow:visible;}
+  .pillar-card:last-child{margin-bottom:0;}
+  .pillar-card table.mtx{table-layout:fixed;width:100%;}
+  .pillar-card table.mtx thead th{z-index:6;box-shadow:0 1px 0 var(--line);}

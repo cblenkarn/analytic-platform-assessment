@@ -27,9 +27,21 @@
   <button class="btn" id="btnSyncReload" style="margin-left:auto;">Reload</button>
 </div>
 <div class="wrap">
-  <div class="readme">
-    <h4>Master rubric</h4>
-    <p>This is the single rubric used by <strong>every assessment, including new ones</strong>. Toggle platform support per sub-capability, capture SME rationale with the <span class="pencil">✎</span> control, rename or restructure pillars, capabilities and sub-capabilities, and add or retire vendors. <strong>Every change autosaves to the database</strong> and is shared with all editors — there is no separate save step, import, or reset.</p>
+  <div class="readme collapsible" id="rubricReadme">
+    <div class="rm-head" data-seccollapse>
+      <span class="rm-title">Master rubric — how this works</span>
+      <span class="seccaret">▼</span>
+    </div>
+    <div class="sec-body">
+      <p>One rubric powers <strong>every assessment, new and existing</strong>. Edits here apply everywhere; there is no separate save, import, or reset.</p>
+      <ul class="rm-list">
+        <li><strong>Set support</strong> — click any platform cell to toggle whether that vendor supports the sub-capability (✓ / –).</li>
+        <li><strong>Rename &amp; restructure</strong> — click a pillar name, capability title, or sub-capability text to edit it; use <em>+ Pillar</em>, <em>+ Capability</em>, and <em>+ Add</em> to extend, and <em>×</em> to remove.</li>
+        <li><strong>SME rationale</strong> — click the <span class="pencil">✎</span> on a cell to capture a note, its tone (pro / caveat / note), and your confidence. The ✎ takes on the tone colour once a note is saved.</li>
+        <li><strong>Vendors</strong> — <em>+ Add vendor</em> to add a column, drag <span class="drag-handle">⠿</span> to reorder, <em>Retire</em> to archive one (its data is preserved and can be restored).</li>
+        <li><strong>Saving</strong> — every change autosaves to the database and syncs live to anyone else editing.</li>
+      </ul>
+    </div>
   </div>
   <div class="panel-actions">
     <button class="btn" id="btnExport">Export backup (.json)</button>
@@ -40,11 +52,11 @@
   <div class="matrix-key">
     <span class="k"><span class="ck point" style="width:16px;height:16px;font-size:9px">✓</span> Supported</span>
     <span class="k"><span class="ck off" style="width:16px;height:16px;font-size:9px">–</span> Not supported</span>
-    <span class="k"><span class="pencil">✎</span> Edit SME rationale</span>
+    <span class="k"><span class="pencil">✎</span> SME rationale — coloured by tone:</span>
     <span class="k"><span class="rat-dot pro"></span> pro · <span class="rat-dot con"></span> caveat · <span class="rat-dot note"></span> note</span>
     <span class="k"><span class="drag-handle">⠿</span> Drag to reorder vendors</span>
   </div>
-  <div class="heat-scroll"><table class="mtx" id="mtxTable"></table></div>
+  <div id="mtxTable" class="mtx-wrap"></div>
   <div id="retiredBar" class="retired-bar"></div>
 </div>
 <footer class="site-foot">

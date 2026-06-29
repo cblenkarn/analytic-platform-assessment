@@ -1,4 +1,3 @@
-
 // ============ PLATFORMS (display order is reorderable; vendors can be added on the Rubric Admin tab) ============
 const _DEFAULT_PLATFORMS = [
   {id:'ga4',name:'Google Analytics 4',code:'GA4'},
@@ -249,8 +248,7 @@ function renderFramework(){const f=document.getElementById('framework'); if(!f)r
         cap.appendChild(el(`<button class="refine-toggle" data-refine="${c.id}">Refine sub-capabilities (${c.subs.length}) <span class="rc">▾</span></button>`));
         const subWrap=el(`<div class="sub-table"><div class="sub-caption">Sub-capabilities are on by default — uncheck any you don't need</div></div>`);
         c.subs.forEach(s=>{subWrap.appendChild(el(`<div class="sub-row" data-subrow="${s.id}">
-          <label class="sub-q"><input type="checkbox" data-need="${s.id}"> <span>${esc(s.q)}</span></label>
-          <span class="sub-sup" data-suplbl="${s.id}">${supportCount(s.id)}/${active().length} support</span></div>`));});
+          <label class="sub-q"><input type="checkbox" data-need="${s.id}"> <span>${esc(s.q)}</span></label></div>`));});
         cap.appendChild(subWrap);
       } else { cap.appendChild(el(`<div class="cap-empty">No sub-capabilities yet — add them on the Rubric Admin tab.</div>`)); }
       body.appendChild(cap);
@@ -276,21 +274,23 @@ function hasNote(s,pl){return !!(s.rat&&s.rat[pl]&&s.rat[pl].note&&s.rat[pl].not
 function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)return;
   const effNeededOnly=viewNeededOnly&&!editMode;
   const nCols=1+active().length+(editMode?1:0);
-  let head='<thead><tr><th class="subhead">Sub-capability</th>';
+  // shared vendor header row, repeated (and pinned) per pillar section
+  let headRow='<tr><th class="subhead">Platform Evaluation</th>';
   active().forEach((p)=>{ if(editMode){
-      head+=`<th class="plhead" data-plid="${p.id}"><div class="plh">`+
+      headRow+=`<th class="plhead" data-plid="${p.id}"><div class="plh">`+
         `<span class="drag-handle" draggable="true" data-drag="${p.id}" title="Drag to reorder">⠿</span>`+
         `<span contenteditable="true" data-plcode="${p.id}">${esc(p.code)}</span>`+
         `<button class="plretire" data-plretire="${p.id}" title="Retire — keeps all data, removes from scoring">retire</button></div></th>`;
-    } else head+=`<th>${esc(p.code)}</th>`; });
-  if(editMode)head+='<th class="actcol"></th>'; head+='</tr></thead>';
-  let body='<tbody>';
+    } else headRow+=`<th>${esc(p.code)}</th>`; });
+  if(editMode)headRow+='<th class="actcol"></th>'; headRow+='</tr>';
+
+  let html='';
   RUBRIC.forEach(p=>{
     const pillarHasRows=p.caps.some(c=>c.subs.some(s=>!effNeededOnly||S.needs[s.id]));
     if(!pillarHasRows&&!editMode)return;
     const pedit=editMode?`<span class="pname" contenteditable="true" data-pname="${p.key}">${esc(p.name)}</span>
       <button class="ed-btn" data-addcap="${p.key}">+ Capability</button><button class="ed-btn danger" data-delpillar="${p.key}">× Pillar</button>`:esc(p.name);
-    body+=`<tr class="pillar-band"><td colspan="${nCols}">Pillar ${pLetter(p.key)} — ${pedit}</td></tr>`;
+    let body=`<tr class="pillar-band"><td colspan="${nCols}">Pillar ${pLetter(p.key)} — ${pedit}</td></tr>`;
     p.caps.forEach(c=>{
       const subsShown=c.subs.filter(s=>!effNeededOnly||S.needs[s.id]);
       if(!subsShown.length&&!editMode)return;
@@ -303,8 +303,9 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
         body+=`<tr class="${needed?'needed':''} ${!inScope?'flat':''}">`;
         body+=`<td class="sub-lbl ${!inScope?'oos':''}"><span class="qtext" data-sublbl="${s.id}" ${editMode?'contenteditable="true"':''}>${esc(s.q)}</span></td>`;
         active().forEach(pl=>{const yes=sup(s.id,pl.id);const note=hasNote(s,pl.id);
+          const tone=note?((s.rat[pl.id].tone)||'note'):'';
           if(editMode){const mark=yes?`<span class="ck tog-on">✓</span>`:`<span class="ck tog-off">–</span>`;
-            body+=`<td class="mk editable" data-tog="${s.id}" data-pl="${pl.id}">${mark}<button class="noteglyph ${note?'has':''}" data-note="${s.id}" data-pl="${pl.id}" title="SME rationale">✎</button></td>`;}
+            body+=`<td class="mk editable" data-tog="${s.id}" data-pl="${pl.id}">${mark}<button class="noteglyph ${note?'has tone-'+tone:''}" data-note="${s.id}" data-pl="${pl.id}" title="SME rationale">✎</button></td>`;}
           else{let mark; if(yes)mark=needed?`<span class="ck point">✓</span>`:`<span class="ck on">✓</span>`;
             else if(needed)mark=pr==='must'?`<span class="ck gap must">✕</span>`:`<span class="ck gap">✕</span>`;
             else mark=`<span class="ck off">–</span>`;
@@ -313,15 +314,10 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
         body+='</tr>';
       });
     });
+    html+=`<section class="pillar-card"><table class="mtx"><thead>${headRow}</thead><tbody>${body}</tbody></table></section>`;
   });
-  if(body==='<tbody>')body+=`<tr><td class="sub-lbl" colspan="${nCols}" style="padding:20px 16px;text-align:center;">No rows to show — adjust the filter or add a pillar/capability/row in edit mode.</td></tr>`;
-  body+='</tbody>';
-  const rows=compute(),has=anyScope();
-  let foot='<tfoot><tr><td class="subhead">Weighted fit</td>';
-  active().forEach(pl=>{const r=rows.find(x=>x.id===pl.id);
-    foot+= has?`<td><div class="foot-pts">${r.dq?'✕ ':''}${r.fit}%<small>${r.metCaps}/${r.capCount} caps</small></div></td>`:`<td><span class="cell-na">—</span></td>`;});
-  if(editMode)foot+='<td></td>'; foot+='</tr></tfoot>';
-  t.innerHTML=head+body+foot;
+  if(!html)html=`<section class="pillar-card"><table class="mtx"><thead>${headRow}</thead><tbody><tr><td class="sub-lbl" colspan="${nCols}" style="padding:20px 16px;text-align:center;">No rows yet — add a pillar, capability or row.</td></tr></tbody></table></section>`;
+  t.innerHTML=html;
   if(pendingFocus){const c=t.querySelector(pendingFocus);
     if(c){c.focus();const r=document.createRange();r.selectNodeContents(c);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}
     pendingFocus=null;}}
