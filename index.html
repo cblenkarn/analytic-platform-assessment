@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics Platform Evaluation Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F5F7; --surface:#FFFFFF; --ink:#0B0B0C; --ink-soft:#586273;
+    --line:#E2E5EA; --line-soft:#EEF0F3;
+    --accent:#1B3BE0; --accent-deep:#102597; --leader:#1B3BE0;
+    --yes:#1B3BE0; --yes-bg:#E9ECFD; --no:#B7C0C2; --gap:#C7283A; --gap-bg:#FBECEE;
+    --must:#C7283A; --should:#B5731A; --could:#0E8F7E; --wont:#8A9098;
+    --must-bg:#FBECEE; --should-bg:#FBF2E5; --could-bg:#E4F3F0; --wont-bg:#F0F2F3;
+    --display:'Inter',sans-serif; --body:'Inter',sans-serif; --mono:'IBM Plex Mono',monospace;
+    --r:10px; --shadow:0 1px 2px rgba(11,11,12,.05),0 4px 16px rgba(11,11,12,.05);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;}
+  .wrap{max-width:1260px;margin:0 auto;padding:0 24px 80px;}
+  h1,h2,h3{font-family:var(--display);margin:0;font-weight:600;letter-spacing:-.01em;}
+  .mono{font-family:var(--mono);} button{font-family:var(--body);cursor:pointer;}
+  ::selection{background:#1B3BE033;}
+
+  /* ===== Merkle brand banner ===== */
+  header.brandbar{background:#0B0B0C;padding:0;margin:0;}
+  .brandbar-inner{max-width:1260px;margin:0 auto;padding:19px 24px;display:flex;align-items:center;gap:15px;}
+  .mk-logo{display:inline-flex;align-items:center;line-height:1;}
+  .mk-logo-img{height:26px;width:auto;display:block;}
+  .foot-brand .mk-logo-img{height:24px;}
+  .mk-print-word{display:none;font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em;}
+  .mk-logo .mk-dot{color:var(--accent);} 
+  .mk-sep{width:1px;height:22px;background:#3a3a40;}
+  .mk-title{font-family:var(--display);font-weight:600;font-size:14.5px;color:#c7cbd1;letter-spacing:.01em;}
+  @media(max-width:560px){.mk-sep,.mk-title{display:none;}}
+  /* ===== About (collapsible) ===== */
+  .about{margin:22px 0 0;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);}
+  .about summary{list-style:none;cursor:pointer;padding:13px 18px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:10px;color:var(--ink);font-family:var(--display);}
+  .about summary::-webkit-details-marker{display:none;}
+  .about summary .about-caret{margin-left:auto;color:var(--ink-soft);font-family:var(--mono);font-size:12px;transition:.2s;}
+  .about[open] summary .about-caret{transform:rotate(180deg);}
+  .about-body{padding:0 18px 16px;color:var(--ink-soft);font-size:14px;line-height:1.62;max-width:880px;}
+  /* ===== Tabs ===== */
+  .tabs{display:flex;gap:2px;border-bottom:2px solid var(--line);margin:24px 0 26px;flex-wrap:wrap;}
+  .tab{border:none;background:none;padding:12px 20px;font-size:14px;font-weight:600;color:var(--ink-soft);border-bottom:2px solid transparent;margin-bottom:-2px;font-family:var(--display);transition:.12s;}
+  .tab:hover{color:var(--ink);} .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .panel{display:none;} .panel.active{display:block;animation:fade .22s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  /* ===== Read-me callouts ===== */
+  .readme{background:#EEF1FE;border:1px solid #D5DCFB;border-left:3px solid var(--accent);border-radius:9px;padding:13px 16px;margin-bottom:24px;font-size:13.5px;line-height:1.55;color:#243072;}
+  .readme b{color:var(--accent-deep);} .readme .rm-title{display:block;font-weight:700;margin-bottom:3px;color:var(--accent-deep);font-family:var(--display);}
+  /* ===== Result blocks + actions ===== */
+  .block{margin-bottom:36px;}
+  .block-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px;flex-wrap:wrap;}
+  .block-head h2{font-size:19px;font-family:var(--display);font-weight:700;letter-spacing:-.01em;}
+  .block-head .hint{font-size:12.5px;color:var(--ink-soft);margin-left:auto;text-align:right;}
+  .panel-actions{display:flex;gap:8px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+  .panel-actions .spacer{flex:1;}
+  /* ===== Discovery refine ===== */
+  .moscow.big button{padding:9px 15px;font-size:11.5px;}
+  .refine-toggle{margin-top:13px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 13px;font-size:12.5px;font-weight:600;color:var(--ink-soft);display:inline-flex;align-items:center;gap:8px;}
+  .refine-toggle:hover{border-color:var(--accent);color:var(--accent-deep);}
+  .refine-toggle .rc{font-family:var(--mono);font-size:11px;transition:.2s;}
+  .cap .sub-table{display:none;} .cap.open .sub-table{display:block;} .cap.open .refine-toggle .rc{transform:rotate(180deg);}
+  .cap.oos-cap{opacity:.55;}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent-deep);font-weight:600;}
+  header h1{font-size:34px;line-height:1.08;margin:10px 0 8px;max-width:790px;}
+  header p{color:var(--ink-soft);max-width:710px;margin:0;font-size:15px;}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;align-items:center;}
+  .btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:7px;transition:.12s;}
+  .btn:hover{border-color:var(--accent);color:var(--accent-deep);}
+  .btn-primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .btn-primary:hover{background:var(--accent-deep);border-color:var(--accent-deep);color:#fff;}
+  .toolbar .spacer{flex:1;}
+  .lock-note{font-family:var(--mono);font-size:11px;color:var(--ink-soft);display:inline-flex;align-items:center;gap:6px;}
+  .lock-note .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);}
+
+  section{margin-top:34px;}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px;}
+  .sec-head .num{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;}
+  .sec-toggle{cursor:pointer;user-select:none;}
+  .seccaret{font-family:var(--mono);color:var(--ink-soft);margin-left:14px;transition:transform .2s;align-self:center;}
+  .collapsible.collapsed .seccaret{transform:rotate(-90deg);}
+  .collapsible.collapsed .sec-body{display:none;}
+  .sec-head h2{font-size:19px;}
+  .sec-head .hint{font-size:12.5px;color:var(--ink-soft);margin-left:auto;text-align:right;}
+
+  .scoreboard{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;}
+  .rank-list{display:flex;flex-direction:column;gap:9px;}
+  .rank{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .rank.top{border-color:var(--accent);}
+  .rank .pos{font-family:var(--mono);font-size:13px;color:var(--ink-soft);font-weight:600;}
+  .rank.top .pos{color:var(--accent);}
+  .rank .pname{font-weight:600;font-size:15px;}
+  .rank .psub{font-size:11.5px;color:var(--ink-soft);font-family:var(--mono);margin-top:1px;}
+  .rank .pct{font-family:var(--display);font-size:24px;font-weight:600;text-align:right;line-height:1;}
+  .rank .pct span{font-size:12px;color:var(--ink-soft);font-weight:500;}
+  .bar-track{grid-column:1/-1;height:5px;background:var(--line-soft);border-radius:3px;margin-top:11px;overflow:hidden;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-deep));border-radius:3px;transition:width .35s ease;}
+
+  .stack-card{background:var(--ink);color:#fff;border-radius:var(--r);padding:22px;box-shadow:var(--shadow);align-self:start;}
+  .stack-card h3{color:#fff;font-size:15px;margin-bottom:4px;}
+  .stack-card .lead-sub{font-size:12px;color:#9fb0b3;font-family:var(--mono);margin-bottom:16px;}
+  .stack-row{padding:12px 0;border-top:1px solid #2a3744;} .stack-row:first-of-type{border-top:none;}
+  .stack-role{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--leader);font-weight:600;}
+  .stack-name{font-family:var(--display);font-size:17px;font-weight:600;margin:3px 0 4px;}
+  .stack-reason{font-size:12.5px;color:#b9c4c8;line-height:1.45;} .stack-empty{font-size:13px;color:#9fb0b3;line-height:1.5;}
+
+  .pill-grid{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);}
+  table.agg{border-collapse:collapse;width:100%;min-width:760px;}
+  table.agg th,table.agg td{padding:12px 10px;border-bottom:1px solid var(--line-soft);text-align:center;}
+  table.agg thead th{font-family:var(--display);font-size:12px;font-weight:600;background:var(--surface);border-bottom:1px solid var(--line);}
+  table.agg thead th.lbl,table.agg td.lbl{text-align:left;width:220px;}
+  table.agg td.lbl .pl-letter{font-family:var(--mono);font-size:11px;font-weight:600;color:#fff;background:var(--accent-deep);width:22px;height:22px;border-radius:5px;display:inline-grid;place-items:center;margin-right:9px;vertical-align:middle;}
+  table.agg td.lbl b{font-weight:600;font-size:13px;}
+  table.agg tr.total td{border-top:1px solid var(--line);border-bottom:none;background:#FAFBFA;}
+  table.agg tr.total td.lbl{font-family:var(--display);font-weight:600;}
+  .cell-cov{display:flex;flex-direction:column;align-items:center;gap:5px;}
+  .cell-cov .n{font-family:var(--mono);font-size:12px;font-weight:600;}
+  .cell-cov .mini{width:48px;height:5px;background:var(--line-soft);border-radius:3px;overflow:hidden;}
+  .cell-cov .mini i{display:block;height:100%;background:var(--accent);border-radius:3px;}
+  td.cov.leader{background:#EEF1FE;box-shadow:inset 0 0 0 2px var(--leader);} td.cov.leader .n{color:var(--leader);}
+  .cell-na{color:var(--no);font-family:var(--mono);font-size:11px;}
+
+  .pillar{margin-bottom:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);overflow:hidden;}
+  .pillar-head{display:flex;align-items:center;gap:12px;padding:15px 18px;cursor:pointer;user-select:none;background:linear-gradient(180deg,#fff,#fbfcfb);}
+  .pillar-head .pl-letter{font-family:var(--mono);font-size:12px;font-weight:600;color:#fff;background:var(--accent-deep);width:26px;height:26px;border-radius:6px;display:grid;place-items:center;}
+  .pillar-head h3{font-size:15.5px;}
+  .pillar-head .pl-count{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-left:8px;}
+  .pillar-head .caret{margin-left:auto;color:var(--ink-soft);transition:transform .2s;font-family:var(--mono);}
+  .pillar.collapsed .caret{transform:rotate(-90deg);} .pillar.collapsed .pillar-body{display:none;}
+  .pillar-body{padding:4px 0 8px;}
+  .cap{padding:16px 18px;border-top:1px solid var(--line-soft);}
+  .cap-top{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .cap-id{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);padding-top:3px;}
+  .cap-title-wrap{flex:1;min-width:240px;}
+  .cap-title{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+  .cap-title .selcount{font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--ink-soft);background:var(--line-soft);padding:1px 7px;border-radius:20px;}
+  .cap-title .selcount.has{color:var(--accent-deep);background:#E4F1F1;}
+  .cap-def{font-size:12.5px;color:var(--ink-soft);margin-top:3px;line-height:1.45;}
+  .cap-empty{font-size:12px;color:var(--ink-soft);font-style:italic;margin-top:10px;}
+  .moscow{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;align-self:flex-start;}
+  .moscow button{border:none;background:var(--surface);padding:6px 11px;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink-soft);border-right:1px solid var(--line);transition:.12s;}
+  .moscow button:last-child{border-right:none;}
+  .moscow button[data-on="must"].active{background:var(--must);color:#fff;}
+  .moscow button[data-on="should"].active{background:var(--should);color:#fff;}
+  .moscow button[data-on="could"].active{background:var(--could);color:#fff;}
+  .moscow button[data-on="wont"].active{background:var(--wont);color:#fff;}
+  .sub-table{margin-top:13px;border:1px solid var(--line-soft);border-radius:8px;overflow:hidden;}
+  .sub-caption{background:#F7F9F8;border-bottom:1px solid var(--line-soft);padding:7px 14px;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;}
+  .sub-row{display:flex;align-items:center;gap:12px;padding:9px 14px;border-top:1px solid var(--line-soft);}
+  .sub-row:first-of-type{border-top:none;} .sub-row.disabled{opacity:.4;pointer-events:none;}
+  .sub-q{flex:1;font-size:12.8px;display:flex;gap:10px;align-items:flex-start;line-height:1.38;cursor:pointer;}
+  .sub-q input[type=checkbox]{margin-top:1px;width:16px;height:16px;accent-color:var(--accent);flex:none;cursor:pointer;}
+  .sub-sup{flex:none;font-family:var(--mono);font-size:10px;color:var(--ink-soft);}
+
+  .matrix-toolbar{display:flex;align-items:center;gap:18px;margin-bottom:12px;flex-wrap:wrap;}
+  .toggle{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft);cursor:pointer;user-select:none;}
+  .toggle input{width:16px;height:16px;accent-color:var(--accent);}
+  .toggle.edit{font-weight:600;color:var(--ink);}
+  .btn-add-pillar{display:none;border:1px dashed var(--accent);background:#fff;color:var(--accent-deep);font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 12px;border-radius:7px;}
+  .btn-add-pillar.on{display:inline-flex;} .btn-add-pillar:hover{background:var(--yes-bg);}
+  table.mtx thead th.plhead{padding:8px 6px;}
+  th.plhead.dragging{opacity:.4;} th.plhead.drop-target{box-shadow:inset 3px 0 0 var(--accent);}
+  .plh{display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .plh [contenteditable]{min-width:28px;outline:none;border-radius:4px;padding:0 3px;}
+  .plh [contenteditable]:focus{box-shadow:inset 0 0 0 2px var(--accent);background:#F7FBFF;}
+  .drag-handle{cursor:grab;color:#AEB7B6;font-size:13px;line-height:1;user-select:none;}
+  .drag-handle:hover{color:var(--accent-deep);} .drag-handle:active{cursor:grabbing;}
+  .plretire{border:none;background:none;color:#9aa4a3;font-family:var(--mono);font-size:9px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;cursor:pointer;padding:2px 5px;border-radius:4px;}
+  .plretire:hover{color:var(--should);background:var(--should-bg);}
+  .retired-bar{margin-top:14px;display:none;flex-wrap:wrap;gap:8px;align-items:center;}
+  .rb-label{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;color:var(--wont);}
+  .retired-chip{display:inline-flex;align-items:center;gap:8px;border:1px dashed var(--line);border-radius:20px;padding:4px 6px 4px 12px;background:var(--surface);font-size:12.5px;}
+  .retired-chip b{font-weight:600;color:var(--ink-soft);}
+  .retired-chip button{border:none;background:none;color:var(--accent);font-weight:600;font-size:12px;cursor:pointer;padding:2px 8px;border-radius:14px;}
+  .retired-chip button:hover{background:var(--yes-bg);}
+  .edit-banner{margin-bottom:12px;background:var(--should-bg);border:1px solid #ECD9B0;border-radius:8px;padding:9px 14px;font-size:12.5px;color:#7A5A12;display:none;}
+  .edit-banner.on{display:block;}
+  .matrix-key{display:flex;gap:16px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;margin-left:auto;align-items:center;}
+  .matrix-key .k{display:inline-flex;align-items:center;gap:6px;}
+  .heat-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);}
+  table.mtx{border-collapse:collapse;width:100%;min-width:920px;}
+  table.mtx th,table.mtx td{padding:0;text-align:center;}
+  table.mtx thead th{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--line);padding:11px 7px;font-family:var(--display);font-size:11.5px;font-weight:600;z-index:3;}
+  table.mtx thead th.subhead{text-align:left;padding-left:16px;width:360px;}
+  table.mtx thead th.actcol{width:46px;}
+  tr.pillar-band td{background:var(--ink);color:#fff;text-align:left;padding:9px 16px;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;}
+  tr.pillar-band .pname[contenteditable="true"]{text-transform:none;letter-spacing:0;}
+  tr.cap-band td{background:#F2F5F4;text-align:left;padding:7px 16px;font-size:11.5px;font-weight:600;color:var(--ink);}
+  tr.cap-band td .cc{font-family:var(--mono);color:var(--accent);margin-right:7px;}
+  tr.cap-band td .chip{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;padding:1px 6px;border-radius:4px;margin-left:8px;}
+  .chip.must{color:var(--must);background:var(--must-bg);} .chip.should{color:var(--should);background:var(--should-bg);}
+  .chip.could{color:var(--could);background:var(--could-bg);} .chip.wont{color:var(--wont);background:var(--wont-bg);}
+  .ed-btn{margin-left:10px;border:1px dashed var(--accent);background:#fff;color:var(--accent-deep);font-family:var(--mono);font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:5px;}
+  .ed-btn:hover{background:var(--yes-bg);}
+  .ed-btn.danger{border-color:#E2B6BC;color:var(--gap);} .ed-btn.danger:hover{background:var(--gap-bg);}
+  tr.pillar-band .ed-btn{border-color:#5a6b78;color:#cfe3e6;background:transparent;} tr.pillar-band .ed-btn:hover{background:#243341;}
+  [contenteditable="true"]{outline:none;cursor:text;border-radius:5px;padding:1px 5px;margin:-1px -2px;}
+  [contenteditable="true"]:focus{box-shadow:inset 0 0 0 2px var(--accent);background:#F7FBFB;color:var(--ink);}
+  tr.pillar-band .pname[contenteditable="true"]:focus{background:#243341;color:#fff;box-shadow:inset 0 0 0 2px var(--accent);}
+  table.mtx td.sub-lbl{text-align:left;padding:8px 10px 8px 30px;font-size:12px;line-height:1.35;border-bottom:1px solid var(--line-soft);color:var(--ink-soft);}
+  table.mtx tr.needed td.sub-lbl{color:var(--ink);font-weight:500;}
+  table.mtx tr.needed{background:#F2FAF9;} table.mtx tr.flat td.sub-lbl{color:#9aa4a3;}
+  .qtext[contenteditable="true"]{display:inline-block;min-width:120px;}
+  .cflag{display:inline-block;font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--wont);background:var(--wont-bg);padding:1px 5px;border-radius:4px;margin-left:8px;vertical-align:middle;}
+  td.mk{border-bottom:1px solid var(--line-soft);border-left:1px solid var(--line-soft);height:38px;}
+  td.mk.editable{cursor:pointer;} td.mk.editable:hover{background:#F2FAF9;}
+  td.act{border-bottom:1px solid var(--line-soft);width:46px;}
+  .row-del{border:none;background:none;color:var(--no);font-size:16px;line-height:1;padding:4px 8px;border-radius:5px;}
+  .row-del:hover{color:var(--gap);background:var(--gap-bg);}
+  .ck{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:12px;font-weight:700;margin:0 auto;}
+  .ck.on{color:var(--no);} .ck.point{color:#fff;background:var(--yes);} .ck.off{color:#D5DBDA;font-weight:400;}
+  .ck.gap{color:var(--no);font-weight:600;} .ck.gap.must{color:var(--gap);background:var(--gap-bg);}
+  .ck.tog-on{color:#fff;background:var(--yes);} .ck.tog-off{color:#CBD4D3;font-weight:400;}
+  table.mtx tfoot td{position:sticky;bottom:0;background:#FAFBFA;border-top:1px solid var(--line);padding:11px 7px;}
+  table.mtx tfoot td.subhead{text-align:left;padding-left:16px;font-family:var(--display);font-weight:600;font-size:12.5px;}
+  .foot-pts{font-family:var(--display);font-size:16px;font-weight:600;}
+  .foot-pts small{font-family:var(--mono);font-size:10px;color:var(--ink-soft);font-weight:500;display:block;margin-top:2px;}
+
+  .profiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px;}
+  .pcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);}
+  .pcard h3{font-size:15px;display:flex;align-items:center;justify-content:space-between;}
+  .pcard .pcode{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:600;}
+  .pc-block{margin-top:12px;} .pc-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+  .pc-label.pro{color:var(--accent-deep);} .pc-label.con{color:var(--must);}
+  .pc-text{font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin-bottom:4px;display:flex;gap:7px;}
+  .pc-text .b{color:var(--line);flex:none;} .pc-text.con .b{color:#d9b3b8;}
+  .pcard h3{justify-content:flex-start;gap:9px;font-weight:700;}
+  .pcard .prank{font-family:var(--mono);font-size:11px;color:var(--ink-soft);font-weight:600;}
+  .pcard .pfit{margin-left:auto;font-family:var(--display);font-size:18px;font-weight:700;color:var(--accent);}
+  .pcard.dq .pfit{color:var(--gap);}
+  .pcard .pdq{margin:9px 0 2px;font-family:var(--mono);font-size:10px;color:var(--gap);background:var(--gap-bg);border-radius:5px;padding:4px 8px;line-height:1.4;}
+  .pc-cap{display:flex;gap:8px;align-items:flex-start;font-size:12.8px;line-height:1.4;margin-bottom:5px;color:var(--ink);}
+  .pc-cap .pc-tick{flex:none;font-weight:700;width:14px;text-align:center;}
+  .pc-tick.s{color:var(--yes);} .pc-tick.partial{color:var(--should);} .pc-tick.gap{color:var(--gap);}
+  .pc-cap .chip{font-size:8.5px;}
+  .pc-cap .pc-sub{color:var(--ink-soft);font-size:11.5px;}
+  .pc-note{font-size:12px;color:var(--ink-soft);font-style:italic;margin:-2px 0 9px 22px;line-height:1.45;}
+  .pc-more{font-size:11.5px;color:var(--ink-soft);margin:3px 0 0 22px;}
+  .pc-empty{font-size:12.3px;color:var(--ink-soft);font-style:italic;}
+  .pc-ref{margin-top:13px;border-top:1px solid var(--line-soft);padding-top:10px;}
+  .pc-ref summary{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);cursor:pointer;font-weight:600;list-style:none;}
+  .pc-ref summary::-webkit-details-marker{display:none;}
+  .pc-ref .pc-text{margin-top:8px;}
+  .footnote{margin-top:30px;font-size:12px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:14px;line-height:1.6;}
+
+  .rank.dq{opacity:.9;} .rank.dq .bar-fill{background:linear-gradient(90deg,#cf5b66,#9e2b38);}
+  .rank .pct.dqp{color:var(--gap);}
+  .dq-badge{grid-column:1/-1;margin-top:9px;font-family:var(--mono);font-size:10.5px;color:var(--gap);background:var(--gap-bg);border-radius:6px;padding:5px 9px;line-height:1.45;}
+  td.mk{position:relative;}
+  td.mk.hasnote .ck::after{content:"";position:absolute;top:5px;right:7px;width:6px;height:6px;border-radius:50%;background:var(--leader);}
+  td.mk.hasnote{cursor:help;}
+  .noteglyph{position:absolute;top:2px;right:2px;border:none;background:none;font-size:11px;line-height:1;color:#C2CBCA;padding:2px 3px;border-radius:4px;cursor:pointer;}
+  .noteglyph:hover{color:var(--accent-deep);background:var(--yes-bg);} .noteglyph.has{color:var(--leader);}
+  td.sub-lbl.oos{opacity:.5;}
+  .rat-pop{position:fixed;z-index:60;max-width:300px;background:var(--ink);color:#fff;border-radius:10px;padding:13px 15px;box-shadow:0 10px 34px rgba(22,32,43,.30);font-size:12.5px;line-height:1.5;display:none;}
+  .rat-pop.show{display:block;}
+  .rat-pop .rp-head{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:#9fb0b3;margin-bottom:6px;}
+  .rat-pop .rp-sub{font-family:var(--display);font-weight:600;margin-bottom:8px;color:#fff;font-size:13px;}
+  .rat-pop .rp-tone{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;padding:2px 7px;border-radius:4px;margin-bottom:8px;}
+  .rp-tone.pro{background:#13494f;color:#7fe0d6;} .rp-tone.con{background:#5c2a30;color:#f3b0b8;} .rp-tone.note{background:#2a3744;color:#c2cdd1;}
+  .rat-pop .rp-note{color:#e7edec;} .rat-pop .rp-empty{color:#8a9698;font-style:italic;}
+  .rat-pop textarea{width:100%;min-height:66px;background:#0f1822;border:1px solid #2a3744;color:#fff;border-radius:7px;padding:8px;font-family:var(--body);font-size:12.5px;resize:vertical;margin-top:2px;box-sizing:border-box;}
+  .rat-pop .rp-controls{display:flex;gap:8px;margin-top:8px;}
+  .rat-pop select{flex:1;background:#0f1822;border:1px solid #2a3744;color:#fff;border-radius:6px;padding:5px;font-family:var(--mono);font-size:11px;}
+  .rat-pop .rp-close{margin-top:10px;width:100%;border:1px solid #2a3744;background:#1d2935;color:#fff;border-radius:7px;padding:7px;font-size:12.5px;font-weight:500;}
+  .rat-pop .rp-close:hover{background:var(--accent-deep);border-color:var(--accent-deep);}
+  @media (max-width:820px){
+    .scoreboard{grid-template-columns:1fr;} header h1{font-size:27px;}
+    .sec-head{flex-wrap:wrap;} .sec-head .hint{margin-left:0;text-align:left;width:100%;} .matrix-key{margin-left:0;width:100%;}
+  }
+  /* ===== Methodology footer ===== */
+  .site-foot{background:#0B0B0C;color:#c7cbd1;margin-top:48px;}
+  .foot-inner{max-width:1260px;margin:0 auto;padding:36px 24px 44px;display:grid;grid-template-columns:200px 1fr;gap:34px;}
+  .foot-brand .mk-logo{font-family:var(--display);font-weight:800;font-size:22px;color:#fff;letter-spacing:-.02em;}
+  .foot-brand .mk-dot{color:var(--accent);}
+  .foot-tag{font-size:12.5px;color:#8a9097;margin-top:7px;}
+  .foot-method h3{font-family:var(--display);font-size:15px;color:#fff;font-weight:700;margin-bottom:11px;}
+  .foot-method p{font-size:13px;line-height:1.62;color:#b3b8bf;margin:0 0 11px;max-width:780px;}
+  .foot-method .foot-fine{font-size:11.5px;color:#7e848b;}
+  @media(max-width:680px){.foot-inner{grid-template-columns:1fr;gap:18px;}}
+  @media print{
+    body{background:#fff;} .tabs,.readme,.panel-actions,.brandbar .mk-title,.pillar-head .caret{display:none;}
+    .panel{display:none!important;} .panel.active{display:block!important;}
+    .btn,.stack-card{box-shadow:none;} .block,.pcard,.rank{break-inside:avoid;}
+    .site-foot{background:#fff!important;color:var(--ink-soft)!important;border-top:1px solid var(--line);margin-top:24px;}
+    .site-foot .mk-logo,.foot-method h3{color:var(--ink)!important;} .foot-method p{color:var(--ink-soft)!important;}
+    .mk-logo-img{display:none!important;} .mk-print-word{display:inline!important;color:var(--ink)!important;}
+  }
+  /* ===== cloud / assessment bar ===== */
+  .assess-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 24px;padding:11px 14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);}
+  .assess-bar .ab-label{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--ink-soft);}
+  .assess-bar select,.assess-bar .ab-input{border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-family:var(--body);font-size:13px;background:#fff;color:var(--ink);}
+  .assess-bar .ab-input{min-width:170px;}
+  .cloud-status{font-size:12px;color:var(--ink-soft);font-family:var(--mono);}
+  .cloud-status.ok{color:var(--accent-deep);} .cloud-status.err{color:var(--gap);}
+</style>
+<script src="config.js"></script>
+</head>
+<body>
+<header class="brandbar"><div class="brandbar-inner">
+  <span class="mk-logo"><img class="mk-logo-img" src="data:image/png;base64,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" alt="Merkle"><span class="mk-print-word">Merkle</span></span><span class="mk-sep"></span>
+  <span class="mk-title">Analytic Platform Assessment</span>
+</div></header>
+<div class="wrap">
+
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="discovery">1 &middot; Needs Discovery</button>
+    <button class="tab" data-tab="results">2 &middot; Results</button>
+    <button class="tab" data-tab="admin">Rubric Admin</button>
+  </nav>
+
+  <div class="assess-bar" id="assessBar" hidden>
+    <span class="ab-label">Assessment</span>
+    <select id="assessSelect"><option value="">— New / unsaved —</option></select>
+    <input id="assessName" class="ab-input" placeholder="Name this assessment">
+    <input id="assessClient" class="ab-input" placeholder="Client (optional)">
+    <button class="btn" id="btnSaveAssess">Save</button>
+    <button class="btn" id="btnDeleteAssess" hidden>Delete</button>
+    <span class="cloud-status" id="assessStatus"></span>
+  </div>
+
+  <!-- ===== DISCOVERY ===== -->
+  <section class="panel active" data-panel="discovery">
+    <div class="readme"><span class="rm-title">Setting your priorities</span>
+      For each capability below, choose how important it is to your business: <b>Must</b>, <b>Should</b>, <b>Could</b> or <b>Won't</b>. That single step is enough to rank the platforms against your needs &mdash; no other input is required. To be more precise, open <b>Refine</b> on any capability and switch off the sub-capabilities you don't need. Move to the <b>Results</b> tab at any time to see how the platforms compare.</div>
+    <div id="framework"></div>
+  </section>
+
+  <!-- ===== RESULTS ===== -->
+  <section class="panel" data-panel="results">
+    <div class="readme"><span class="rm-title">Reading your results</span>
+      Everything below updates live from the priorities you set in <b>Needs Discovery</b>. Platforms are ranked by weighted fit; one that cannot meet a Must capability at all is flagged <b>Disqualified</b> rather than simply scored lower. Use Print / Save as PDF to capture a snapshot you can share or present.</div>
+    <div class="panel-actions"><button class="btn btn-primary" id="btnPrint">Print / Save as PDF</button></div>
+    <div class="block">
+      <div class="block-head"><h2>Weighted fit score</h2><span class="hint">MoSCoW-weighted average of each platform's capability coverage</span></div>
+      <div class="scoreboard"><div class="rank-list" id="rankList"></div><div class="stack-card" id="stackCard"></div></div>
+    </div>
+    <div class="block">
+      <div class="block-head"><h2>Coverage by pillar</h2><span class="hint">Weighted coverage per pillar &middot; highlighted cell leads</span></div>
+      <div class="pill-grid"><table class="agg" id="aggTable"></table></div>
+    </div>
+    <div class="block">
+      <div class="block-head"><h2>Platform profiles</h2><span class="hint">Ranked by fit &middot; the Must/Should priorities each platform meets, and where it falls short</span></div>
+      <div class="profiles" id="profiles"></div>
+    </div>
+    <div class="footnote"><strong>How to read this.</strong> For each in-scope capability a platform's <em>coverage</em> is the share of the required sub-capabilities it supports (e.g. 2 of 3 = 67%). The overall score is the MoSCoW-weighted average of those coverages &mdash; Must 3, Should 2, Could 1, Won't out of scope. A Must capability a platform cannot cover at all is treated as a disqualifier, not just lost points. Assessments are Merkle's point of view, validated against current vendor releases.</div>
+  </section>
+
+  <!-- ===== ADMIN ===== -->
+  <section class="panel" data-panel="admin">
+    <div class="readme"><span class="rm-title">Consultant setup &mdash; do this before the workshop</span>
+      This is the master rubric and the only place anything is edited. Click any platform cell to toggle support; click the <b>✎</b> to capture your SME rationale (where it excels or fails in practice). Rename or add <b>pillars</b>, <b>capabilities</b> and <b>sub-capabilities</b> inline. Manage vendors from the column headers &mdash; drag the <b>⠿</b> handle to reorder, choose <b>retire</b> to drop a vendor from scoring while keeping all of its data, or use <b>+ Add vendor</b> for a new one. Everything here flows into Needs Discovery and Results; priority (MoSCoW) is a needs input and lives only on the Discovery tab. Export to save your work.</div>
+    <div class="panel-actions">
+      <button class="btn" id="btnExport">Export (.json)</button>
+      <button class="btn" id="btnImport">Import</button>
+      <input type="file" id="fileInput" accept="application/json" style="display:none">
+      <button class="btn" id="btnReset">Reset to defaults</button>
+      <button class="btn cloud-only" id="btnCloudSaveRubric" hidden>Save rubric to cloud</button>
+      <button class="btn cloud-only" id="btnCloudLoadRubric" hidden>Reload from cloud</button>
+      <span class="cloud-status" id="cloudStatus"></span>
+      <span class="spacer"></span>
+      <button class="btn-add-pillar on" id="addVendorBtn">+ Add vendor</button>
+      <button class="btn-add-pillar on" id="addPillarBtn">+ Add pillar</button>
+    </div>
+    <div class="matrix-key" style="margin-bottom:14px;">
+      <span class="k"><span class="ck tog-on" style="width:16px;height:16px;font-size:9px">✓</span> Supported</span>
+      <span class="k"><span class="ck tog-off" style="width:16px;height:16px;font-size:9px">–</span> Not supported</span>
+      <span class="k"><span class="noteglyph has" style="position:static">✎</span> Has SME rationale</span>
+    </div>
+    <div class="heat-scroll"><table class="mtx" id="mtxTable"></table></div>
+    <div id="retiredBar" class="retired-bar"></div>
+  </section>
+
+</div>
+
+<footer class="site-foot">
+  <div class="foot-inner">
+    <div class="foot-brand"><span class="mk-logo"><img class="mk-logo-img" src="data:image/png;base64,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" alt="Merkle"><span class="mk-print-word">Merkle</span></span><div class="foot-tag">Analytic Platform Assessment</div></div>
+    <div class="foot-method">
+      <h3>About this assessment &amp; methodology</h3>
+      <p>This assessment reflects Merkle's analytics consulting practice &mdash; a structured, vendor-neutral way to match analytics needs to the platforms in market, refined across enterprise platform selections. It is not a feature checklist: every judgement in the underlying rubric encodes our consultants' hands-on experience of where each platform genuinely performs or falls short in production.</p>
+      <p>The method is deliberately simple and defensible. Capabilities are grouped into pillars. You assign a MoSCoW priority to each capability &mdash; <b>Must</b>, <b>Should</b>, <b>Could</b> or <b>Won't</b> &mdash; to express how important it is. Each platform's coverage of a capability is measured from a yes/no assessment of its sub-capabilities, maintained in our master rubric, and rolls up to a priority-weighted fit score (Must&nbsp;3, Should&nbsp;2, Could&nbsp;1). A Must a platform cannot meet at all is treated as a disqualifier rather than a deduction, so a strong all-rounder never outranks a platform that clears every non-negotiable. The output is a best-of-breed recommendation: a lead platform, plus any specialist platforms that close priority gaps.</p>
+      <p class="foot-fine">Assessments represent Merkle's point of view and are validated against current vendor releases at the time of engagement.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ============ PLATFORMS (display order is reorderable; vendors can be added on the Rubric Admin tab) ============
+const _DEFAULT_PLATFORMS = [
+  {id:'ga4',name:'Google Analytics 4',code:'GA4'},
+  {id:'aa',name:'Adobe Analytics',code:'AA'},
+  {id:'cja',name:'Customer Journey Analytics',code:'CJA'},
+  {id:'amp',name:'Amplitude',code:'AMP'},
+  {id:'cs',name:'Contentsquare',code:'CS'},
+  {id:'piano',name:'Piano Analytics',code:'PIANO'},
+];
+let PLATFORMS = _DEFAULT_PLATFORMS.map(p=>({...p}));
+// the order the seed support arrays (s:[...]) below were authored in — keeps seeding correct no matter the display order
+const SEED_ORDER = ['ga4','aa','piano','cja','amp','cs'];
+const MOSCOW_W = {must:3, should:2, could:1, wont:0};
+
+// Opinionated rubric. Each sub-capability is a specific, discriminating claim; s = our POV per
+// platform in the order [ga4, aa, piano, cja, amp, cs]. Seeded from the engagement assessments.
+const SEED = [
+  {letter:'A', name:'Data Collection Architecture & Engineering', caps:[
+    {id:'C1', title:'Cross-platform Collection & Schema Control', def:'Captures web, app and server-side under one flexible, governed schema rather than a rigid predefined taxonomy.', subs:[
+      {id:'C1a', q:'Fully customizable event schema, not a fixed taxonomy (no eVar/prop-style constraints)', s:[1,0,1,1,1,0]},
+      {id:'C1b', q:'Server-side / Measurement Protocol ingestion for first-party data durability', s:[1,1,1,1,1,0]},
+      {id:'C1c', q:'Built-in schema governance / data dictionary to stop tag drift across teams', s:[0,1,1,1,1,0]},
+    ]},
+    {id:'C2', title:'Auto-capture (Codeless Collection)', def:'Captures front-end interactions with no upfront tagging, so events can be defined retroactively — trading schema discipline for speed.', subs:[
+      {id:'C2a', q:'Auto-captures clicks and views with zero upfront tagging', s:[0,0,0,0,1,1]},
+      {id:'C2b', q:'Define new events retroactively against historical auto-captured data', s:[0,0,0,0,1,1]},
+    ]},
+    {id:'C3', title:'Identity Resolution & Cross-device Stitching', def:'Unifies anonymous and known activity into one durable profile — strongest where built on a dedicated identity graph.', subs:[
+      {id:'C3a', q:'Deterministic cross-device stitching on a persistent identity graph', s:[1,1,1,1,1,0]},
+      {id:'C3b', q:'Retroactively binds prior anonymous sessions to the user on login', s:[0,0,0,1,1,0]},
+    ]},
+    {id:'C4', title:'Implementation & Migration Effort', def:'How fast it deploys via the existing TMS and how much re-modeling it forces on a team already running GA4 / GTM.', subs:[
+      {id:'C4a', q:'Low migration effort from an existing GA4/GTM setup (similar data model)', s:[1,0,1,0,1,1]},
+      {id:'C4b', q:'Lightweight footprint — minimal Core Web Vitals / performance impact', s:[1,0,1,0,1,1]},
+    ]},
+  ]},
+  {letter:'B', name:'Core Analytics & Behavioral Insights', caps:[
+    {id:'C5', title:'In-platform Analytical Depth', def:'Whether a senior analyst can answer the why inside the UI, or has to export to a warehouse first. The clearest GA4 pain point.', subs:[
+      {id:'C5a', q:'Robust ad-hoc exploration in-UI without exporting to a warehouse', s:[0,1,1,1,1,1]},
+      {id:'C5b', q:'Free-form drag-and-drop exploratory workspace (Analysis Workspace-class)', s:[0,1,0,1,1,1]},
+      {id:'C5c', q:'Familiar to UA-trained analysts — low retraining curve', s:[1,0,1,0,0,0]},
+    ]},
+    {id:'C6', title:'Funnel, Path & Session Analysis', def:'Reconstructs journeys and drop-off, with qualitative replay where the quantitative signal needs explaining.', subs:[
+      {id:'C6a', q:'Retroactive ordered/unordered funnels on historical data', s:[0,1,1,1,1,1]},
+      {id:'C6b', q:'Native session replay / heatmaps tied to the quantitative drop-off', s:[0,0,0,0,0,1]},
+      {id:'C6c', q:'Open-ended pathing that surfaces unexpected detours (not just predefined funnels)', s:[0,1,0,1,1,0]},
+    ]},
+    {id:'C7', title:'Cohort & Retention Analysis', def:'Behavioral segmentation and lifecycle value — the product-analytics core, where Amplitude-class tools lead.', subs:[
+      {id:'C7a', q:'Complex behavioral cohorts — did X but not Y within N days', s:[0,1,0,1,1,0]},
+      {id:'C7b', q:'N-day, unbounded and rolling retention curves out of the box', s:[0,0,0,1,1,0]},
+    ]},
+    {id:'C8', title:'In-platform ML / AI', def:'Native intelligence layered on the behavioral data — predictive, anomaly and assisted analysis, not nice-to-have dashboards.', subs:[
+      {id:'C8a', q:'Anomaly detection / contribution analysis on key metrics', s:[1,1,0,1,1,1]},
+      {id:'C8b', q:'Predictive metrics & audiences out of the box (churn / purchase propensity)', s:[1,0,0,0,1,0]},
+      {id:'C8c', q:'Natural-language querying / AI assistant (e.g., Ask Amplitude, Adobe AI Assistant)', s:[0,1,0,0,1,0]},
+    ]},
+  ]},
+  {letter:'C', name:'Ecosystem & Activation', caps:[
+    {id:'C9', title:'Google Marketing Platform Integration', def:'Real two-way value with the Google stack. In practice only GA4 clears the bar for activation, not just import.', subs:[
+      {id:'C9a', q:'Reliable audience export/activation to Google Ads for bidding (not just import)', s:[1,0,0,0,0,0]},
+      {id:'C9b', q:'Native Google Search Console / GMP reporting integration', s:[1,0,0,0,0,0]},
+    ]},
+    {id:'C10', title:'Third-party Integrations & Activation', def:'Breadth and ease of connectors to CDP, CRM, email and non-Google suites — and how much developer effort each takes.', subs:[
+      {id:'C10a', q:'Large library of point-and-click activation / destination connectors', s:[0,0,1,1,1,1]},
+      {id:'C10b', q:'Native reverse-ETL / audience activation to CRM & CDP', s:[0,0,0,1,1,0]},
+    ]},
+    {id:'C11', title:'A/B Testing & Personalization', def:'Whether experimentation lives natively in the platform, or requires buying and wiring a separate tool (Optimizely, VWO, AB Tasty).', subs:[
+      {id:'C11a', q:'Native experimentation / personalization engine — no separate purchase', s:[0,1,0,0,1,0]},
+      {id:'C11b', q:'Target live variants directly by behavioral cohort from the analytics', s:[0,1,0,0,1,0]},
+    ]},
+    {id:'C12', title:'Warehousing & BI Reporting', def:'Getting raw, unsampled event data into the warehouse and trusted BI dashboards without row caps.', subs:[
+      {id:'C12a', q:'Raw, unsampled, event-level export (no row or calculation caps)', s:[1,1,1,1,1,0]},
+      {id:'C12b', q:'Native connectors to BigQuery / Snowflake / Databricks', s:[1,0,1,1,1,0]},
+      {id:'C12c', q:'Direct reporting integration with BI tools (Tableau, Power BI)', s:[1,1,1,1,1,0]},
+    ]},
+  ]},
+  {letter:'D', name:'Operations, Governance & Commercials', caps:[
+    {id:'C13', title:'Data Privacy, Consent & Governance', def:'Fitness for a consent-driven, privacy-sensitive, potentially PHI-adjacent environment.', subs:[
+      {id:'C13a', q:'Will sign a BAA / supports PHI under HIPAA', s:[0,0,1,0,1,0]},
+      {id:'C13b', q:'Guaranteed regional data residency (e.g., EU storage)', s:[0,1,1,1,1,0]},
+      {id:'C13c', q:'Native OneTrust consent integration + Consent Mode v2 / server-side enforcement', s:[1,1,1,1,1,0]},
+      {id:'C13d', q:'Granular, country/region-level governance controls', s:[1,1,1,1,1,0]},
+    ]},
+    {id:'C14', title:'Reliability, Stability & Maintenance', def:'Whether it stays accurate and low-touch, or taxes engineering with breaking changes and re-tagging.', subs:[
+      {id:'C14a', q:'Strong uptime track record / contractual SLA', s:[0,1,1,1,1,1]},
+      {id:'C14b', q:'Low frequency of schema-breaking platform changes / forced re-tagging', s:[0,1,1,1,1,1]},
+    ]},
+    {id:'C15', title:'Pricing & Commercial Model', def:'Predictability and exposure to volume-driven cost spikes — the live concern with usage-based models.', subs:[
+      {id:'C15a', q:'Predictable pricing not driven by fluctuating event / MTU volume', s:[0,0,1,0,0,1]},
+      {id:'C15b', q:'Full-featured free / sandbox tier for development', s:[1,0,0,0,1,0]},
+    ]},
+  ]},
+];
+
+const PROS = {
+  ga4:['Free tier + native BigQuery export — strongest cost-to-value','Only platform with reliable audience activation to Google Ads','Ubiquitous skills base; GTM-native, lowest implementation lift'],
+  aa:['Analysis Workspace is best-in-class for ad-hoc analysis','Native Adobe Target for experimentation & personalization','Mature Attribution IQ and enterprise governance'],
+  piano:['UA-like UI — minimal retraining for existing teams','Privacy-first: EU residency, HIPAA, will sign a BAA','Solid in-platform analysis without a warehouse'],
+  cja:['Cross-channel identity stitching on AEP','Workspace-grade analysis over a full data lake','Ingests any online/offline schema'],
+  amp:['Best-in-class cohort, retention, funnel and pathing','Native experimentation — rare among analytics tools','Broad activation ecosystem; BAA + EU data centers'],
+  cs:['Best-in-class session replay, heatmaps and zoning','Auto-capture removes the tagging backlog','Auto-generated experience / frustration insights'],
+};
+const CONS = {
+  ga4:['In-platform analysis is limiting — real analysis needs BigQuery','Will not sign a BAA — unfit for PHI / regulated data','Usage-based pricing and frequent platform churn'],
+  aa:['Rigid eVar/prop model — higher migration effort from GA4','No native autocapture; steeper analyst learning curve','Expensive, variable commercial model'],
+  piano:['Lighter on experimentation (Composer is paywall-focused)','Smaller activation ecosystem than Google / Adobe','Weaker predictive / ML tooling'],
+  cja:['Premium AEP-based total cost of ownership','No native autocapture or experimentation','Implementation depends on AEP data engineering'],
+  amp:['Event-volume pricing can spike at scale','Google-stack integration not comparable to GA4','Not a session-replay or compliance-first platform'],
+  cs:['Weak cross-device identity and attribution','No raw warehouse export pipeline','Screen recording raises privacy questions'],
+};
+
+// ============ MUTABLE RUBRIC + STATE ============
+let RUBRIC, S, SUBIDX={}, subCounter=0, capCounter=15, pillarCounter=0, vendorCounter=0, dragId=null;
+let editMode=true, viewNeededOnly=false, pendingFocus=null;
+const collapsedPillars=new Set();
+
+// --- seeded SME rationale: subId -> { platformId: {note, tone(pro|con|note), conf(low|med|high)} } ---
+const RAT = {
+  C1a:{aa:{note:'Historically rigid eVar/prop model constrains free-form schema design.',tone:'con',conf:'med'}},
+  C2a:{cs:{note:'Auto-capture removes the tagging backlog entirely.',tone:'pro',conf:'high'},amp:{note:'Autocapture plus the ability to define events retroactively.',tone:'pro'}},
+  C5a:{ga4:{note:'Reports and Explore are limited; real analysis means exporting to BigQuery first.',tone:'con',conf:'high'}},
+  C5b:{aa:{note:'Analysis Workspace is best-in-class for free-form, drag-and-drop analysis.',tone:'pro',conf:'high'},amp:{note:'Comparable exploratory depth for product analytics.',tone:'pro'}},
+  C5c:{piano:{note:'If you liked the Universal Analytics UI, you will like Piano — minimal retraining.',tone:'pro',conf:'high'}},
+  C6b:{cs:{note:'Best-in-class session replay, heatmaps and zoning tied to the quantitative drop-off.',tone:'pro',conf:'high'}},
+  C8b:{amp:{note:'Predictive churn / conversion propensity available out of the box.',tone:'pro'},ga4:{note:'Native predictive metrics and predictive audiences.',tone:'pro'}},
+  C9a:{ga4:{note:'Only GA4 reliably activates audiences to Google Ads for bidding.',tone:'pro',conf:'high'},aa:{note:'Can push to GMP but subject to match-rate limits — not reliable for bidding.',tone:'con'},amp:{note:'GMP push exists but is match-rate limited.',tone:'con'}},
+  C11a:{aa:{note:'Adobe Target integrates natively and is considered best-in-class.',tone:'pro',conf:'high'},amp:{note:'Native experimentation — rare among analytics platforms.',tone:'pro',conf:'high'},ga4:{note:'Requires buying and wiring a separate tool (Optimizely, VWO, AB Tasty).',tone:'con'}},
+  C12a:{cs:{note:'No raw, unsampled warehouse export pipeline.',tone:'con'}},
+  C13a:{ga4:{note:'Will not sign a BAA; cannot receive PHI — disqualifying for regulated health data.',tone:'con',conf:'high'},piano:{note:'HIPAA compliant and will sign a BAA.',tone:'pro',conf:'high'},amp:{note:'Will sign BAAs as needed; EU data centers in Frankfurt.',tone:'pro'}},
+  C15a:{aa:{note:'Variable, usage-based pricing tends to run expensive.',tone:'con'},ga4:{note:'Usage-based, but exposure is mitigable with an upfront commitment.',tone:'note'}},
+};
+function cloneRat(sid){const src=RAT[sid];const out={};if(src)Object.keys(src).forEach(pl=>{out[pl]={note:src[pl].note||'',tone:src[pl].tone||'note',conf:src[pl].conf||''};});return out;}
+function buildRubric(){
+  return SEED.map((p,i)=>({key:String.fromCharCode(65+i), name:p.name, caps:p.caps.map(c=>({
+    id:c.id, title:c.title, def:c.def, subs:c.subs.map(s=>{
+      const sup={}; SEED_ORDER.forEach((pid,j)=>sup[pid]=!!(s.s&&s.s[j])); return {id:s.id, q:s.q, sup, rat:cloneRat(s.id)};
+    })
+  }))}));
+}
+function normalizeRubric(){
+  RUBRIC.forEach((p)=>{ if(!p.key)p.key='P'+(++pillarCounter); if(!p.caps)p.caps=[];
+    p.caps.forEach(c=>{ if(!c.subs)c.subs=[]; c.subs.forEach(s=>{ if(!s.sup)s.sup={}; PLATFORMS.forEach(pl=>{if(typeof s.sup[pl.id]!=='boolean')s.sup[pl.id]=false;}); if(!s.rat)s.rat={}; }); });
+  });
+}
+function reindex(){ SUBIDX={};
+  RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{SUBIDX[s.id]={sub:s,cap:c,pkey:p.key};}))); }
+function defaultState(){ const moscow={}, needs={};
+  RUBRIC.forEach(p=>p.caps.forEach(c=>{moscow[c.id]='should';c.subs.forEach(s=>needs[s.id]=true);})); return {moscow,needs}; }
+function findCap(id){let r=null;RUBRIC.forEach(p=>p.caps.forEach(c=>{if(c.id===id)r=c;}));return r;}
+function findPillar(key){return RUBRIC.find(p=>p.key===key);}
+function pIndex(key){return RUBRIC.findIndex(p=>p.key===key);}
+function pLetter(key){const i=pIndex(key);return i>=0?String.fromCharCode(65+i):'?';}
+
+// ============ COMPUTE (coverage model) ============
+function active(){return PLATFORMS.filter(p=>!p.retired);}
+function sup(subId,plId){return !!(SUBIDX[subId] && SUBIDX[subId].sub.sup[plId]);}
+function supportCount(subId){return active().filter(pl=>sup(subId,pl.id)).length;}
+function capInScope(c){return S.moscow[c.id]!=='wont';}
+function onSubs(c){return c.subs.filter(s=>S.needs[s.id]);}
+function scopedCaps(){const out=[];RUBRIC.forEach(p=>p.caps.forEach(c=>{if(capInScope(c)){const on=onSubs(c);if(on.length)out.push({c,p,on,w:MOSCOW_W[S.moscow[c.id]]});}}));return out;}
+function anyScope(){return scopedCaps().length>0;}
+function coverage(plId,c,on){on=on||onSubs(c);if(!on.length)return {sup:0,on:0,cov:0};const s=on.filter(x=>!!x.sup[plId]).length;return {sup:s,on:on.length,cov:s/on.length};}
+function compute(){
+  const caps=scopedCaps(); const wsum=caps.reduce((a,x)=>a+x.w,0);
+  return active().map(pl=>{ let acc=0,metCaps=0; const mustGaps=[];
+    caps.forEach(({c,on,w})=>{ const cv=coverage(pl.id,c,on); acc+=w*cv.cov; if(cv.sup>0)metCaps++;
+      if(S.moscow[c.id]==='must'&&cv.sup===0)mustGaps.push(c.title); });
+    return {...pl, fit: wsum?Math.round(100*acc/wsum):0, capCount:caps.length, metCaps, mustGaps, dq:mustGaps.length>0}; })
+    .sort((a,b)=> (a.dq?1:0)-(b.dq?1:0) || b.fit-a.fit || b.metCaps-a.metCaps );
+}
+function pillarAgg(){const out={};
+  RUBRIC.forEach(p=>{const caps=p.caps.filter(c=>capInScope(c)&&onSubs(c).length);const wsum=caps.reduce((a,c)=>a+MOSCOW_W[S.moscow[c.id]],0);
+    out[p.key]={inScope:caps.length>0};
+    active().forEach(pl=>{ if(!caps.length){out[p.key][pl.id]=null;return;}
+      let acc=0;caps.forEach(c=>{acc+=MOSCOW_W[S.moscow[c.id]]*coverage(pl.id,c).cov;});
+      out[p.key][pl.id]=wsum?Math.round(100*acc/wsum):0; }); });
+  return out; }
+function recommendStack(rows){
+  const qual=rows.filter(r=>!r.dq); const pool=qual.length?qual:rows; const primary=pool[0];
+  if(!primary)return{primary:null,augments:[]};
+  const gaps=[]; RUBRIC.forEach(p=>p.caps.forEach(c=>{ if(!capInScope(c))return; const on=onSubs(c); if(!on.length)return;
+    const pr=S.moscow[c.id]; if(pr!=='must'&&pr!=='should')return; const cv=coverage(primary.id,c,on);
+    if(cv.cov<1)gaps.push({c,on,leadCov:cv.cov}); }));
+  const aug={};
+  gaps.forEach(g=>{ let best=null; rows.forEach(r=>{ if(r.id===primary.id)return; const cv=coverage(r.id,g.c,g.on);
+      if(cv.cov>g.leadCov+1e-9 && (!best||cv.cov>best.cov)) best={id:r.id,cov:cv.cov}; });
+    if(best){ aug[best.id]=aug[best.id]||{caps:[],gain:0}; aug[best.id].caps.push(g.c.title); aug[best.id].gain+=(best.cov-g.leadCov); } });
+  const augments=Object.entries(aug).map(([id,v])=>({...PLATFORMS.find(p=>p.id===id),caps:v.caps,gain:v.gain}))
+    .sort((a,b)=>b.caps.length-a.caps.length||b.gain-a.gain).slice(0,2);
+  return {primary,augments};
+}
+
+// ============ RENDER ============
+function el(html){const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstChild;}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function renderScoreboard(){const rows=compute(),has=anyScope();
+  const list=document.getElementById('rankList');list.innerHTML='';
+  rows.forEach((r,i)=>{ const top=i===0&&has&&!r.dq;
+    const sub = has?`covers ${r.metCaps} of ${r.capCount} capabilities`:r.code;
+    const dq = has&&r.dq?`<div class="dq-badge">Disqualified — fails Must: ${esc(r.mustGaps.join(', '))}</div>`:'';
+    list.appendChild(el(`<div class="rank ${top?'top':''} ${has&&r.dq?'dq':''}">
+      <div class="pos">${String(i+1).padStart(2,'0')}</div>
+      <div><div class="pname">${r.name}</div><div class="psub">${sub}</div></div>
+      <div class="pct ${has&&r.dq?'dqp':''}">${has?r.fit:'—'}<span>%</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${has?r.fit:0}%"></div></div>${dq}</div>`)); });
+  renderStack(rows,has); }
+function renderStack(rows,has){const card=document.getElementById('stackCard');
+  if(!has){card.innerHTML=`<h3>Recommended stack</h3><div class="lead-sub">No capabilities in scope</div>
+    <div class="stack-empty">Set at least one capability to Must, Should or Could in section 04 — sub-capabilities are on by default — to generate a fit score and a best-of-breed recommendation.</div>`;return;}
+  const {primary,augments}=recommendStack(rows);
+  let html=`<h3>Recommended stack</h3><div class="lead-sub">Best-of-breed, not binary</div>`;
+  html+=`<div class="stack-row"><div class="stack-role">Lead platform</div><div class="stack-name">${primary.name}</div>
+    <div class="stack-reason">Highest weighted fit (${primary.fit}%), covering ${primary.metCaps} of ${primary.capCount} in-scope capabilities. Anchor the stack here.</div></div>`;
+  if(augments.length)augments.forEach(a=>html+=`<div class="stack-row"><div class="stack-role">Augment for</div><div class="stack-name">${a.name}</div>
+    <div class="stack-reason">Stronger on priority capabilities the lead doesn't fully cover: ${esc(a.caps.join(', '))}.</div></div>`);
+  else html+=`<div class="stack-row"><div class="stack-reason">The lead fully covers every Must and Should capability in scope — a single-platform stack is defensible.</div></div>`;
+  card.innerHTML=html; }
+function renderAgg(){const agg=pillarAgg(),rows=compute(),has=anyScope();
+  const t=document.getElementById('aggTable');
+  let head='<thead><tr><th class="lbl">Pillar</th>';active().forEach(p=>head+=`<th>${p.code}</th>`);head+='</tr></thead>';
+  let body='<tbody>';
+  RUBRIC.forEach(p=>{const row=agg[p.key];let lead=-1;
+    if(row.inScope)active().forEach(pl=>{if(row[pl.id]>lead)lead=row[pl.id];});
+    body+=`<tr><td class="lbl"><span class="pl-letter">${pLetter(p.key)}</span><b>${esc(p.name)}</b></td>`;
+    active().forEach(pl=>{ if(!row.inScope){body+=`<td class="cov"><span class="cell-na">— out of scope</span></td>`;}
+      else{const v=row[pl.id];const isLead=v===lead&&lead>0;
+        body+=`<td class="cov ${isLead?'leader':''}"><div class="cell-cov"><span class="n">${v}%</span><span class="mini"><i style="width:${v}%"></i></span></div></td>`;}});
+    body+='</tr>';});
+  body+='</tbody>';
+  let foot='<tbody><tr class="total"><td class="lbl">Weighted fit</td>';
+  active().forEach(pl=>{const r=rows.find(x=>x.id===pl.id);
+    foot+= has?`<td class="cov"><div class="cell-cov"><span class="n">${r.dq?'✕ ':''}${r.fit}%</span><span class="mini"><i style="width:${r.fit}%"></i></span></div></td>`:`<td class="cov"><span class="cell-na">—</span></td>`;});
+  foot+='</tr></tbody>'; t.innerHTML=head+body+foot; }
+function renderFramework(){const f=document.getElementById('framework');f.innerHTML='';
+  RUBRIC.forEach(p=>{const collapsed=collapsedPillars.has(p.key);
+    const pil=el(`<div class="pillar ${collapsed?'collapsed':''}"><div class="pillar-head" data-pillar="${p.key}">
+      <span class="pl-letter">${pLetter(p.key)}</span><h3>Pillar ${pLetter(p.key)} — ${esc(p.name)}</h3>
+      <span class="pl-count" data-plcount="${p.key}"></span><span class="caret">▼</span></div><div class="pillar-body"></div></div>`);
+    const body=pil.querySelector('.pillar-body');
+    p.caps.forEach(c=>{
+      const cap=el(`<div class="cap"><div class="cap-top"><span class="cap-id">${c.id}</span>
+        <div class="cap-title-wrap"><div class="cap-title">${esc(c.title)}<span class="selcount" data-selcount="${c.id}"></span></div>
+          <div class="cap-def">${esc(c.def)}</div></div>
+        <div class="moscow big" data-cap="${c.id}"><button data-on="must">Must</button><button data-on="should">Should</button>
+          <button data-on="could">Could</button><button data-on="wont">Won't</button></div></div>`);
+      if(c.subs.length){
+        cap.appendChild(el(`<button class="refine-toggle" data-refine="${c.id}">Refine sub-capabilities (${c.subs.length}) <span class="rc">▾</span></button>`));
+        const subWrap=el(`<div class="sub-table"><div class="sub-caption">Sub-capabilities are on by default — uncheck any you don't need</div></div>`);
+        c.subs.forEach(s=>{subWrap.appendChild(el(`<div class="sub-row" data-subrow="${s.id}">
+          <label class="sub-q"><input type="checkbox" data-need="${s.id}"> <span>${esc(s.q)}</span></label>
+          <span class="sub-sup" data-suplbl="${s.id}">${supportCount(s.id)}/${active().length} support</span></div>`));});
+        cap.appendChild(subWrap);
+      } else { cap.appendChild(el(`<div class="cap-empty">No sub-capabilities yet — add them on the Rubric Admin tab.</div>`)); }
+      body.appendChild(cap);
+    });
+    f.appendChild(pil);
+  });
+  syncFrameworkState(); }
+function syncFrameworkState(){
+  document.querySelectorAll('.moscow').forEach(m=>{const cap=m.dataset.cap;
+    m.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.on===S.moscow[cap]));
+    const cc=m.closest('.cap'); if(cc)cc.classList.toggle('oos-cap',S.moscow[cap]==='wont');});
+  document.querySelectorAll('[data-need]').forEach(cb=>{const sid=cb.dataset.need;cb.checked=S.needs[sid];
+    const info=SUBIDX[sid];const disabled=info&&S.moscow[info.cap.id]==='wont';
+    cb.closest('.sub-row').classList.toggle('disabled',disabled);cb.disabled=disabled;});
+  RUBRIC.forEach(p=>{let pc=0;
+    p.caps.forEach(c=>{const n=c.subs.filter(s=>S.needs[s.id]).length;if(capInScope(c))pc+=n;
+      const tag=document.querySelector(`[data-selcount="${c.id}"]`);
+      if(tag){ if(!capInScope(c)){tag.textContent='out of scope';tag.classList.remove('has');}
+        else{tag.textContent=`${n}/${c.subs.length} in scope`;tag.classList.toggle('has',n>0);} }});
+    const plc=document.querySelector(`[data-plcount="${p.key}"]`);if(plc)plc.textContent=pc?`${pc} in scope`:'';});}
+function updateSupportLabels(){document.querySelectorAll('[data-suplbl]').forEach(e=>{e.textContent=`${supportCount(e.dataset.suplbl)}/${active().length} support`;});}
+function hasNote(s,pl){return !!(s.rat&&s.rat[pl]&&s.rat[pl].note&&s.rat[pl].note.trim());}
+function renderMatrix(){const t=document.getElementById('mtxTable');
+  const effNeededOnly=viewNeededOnly&&!editMode;
+  const nCols=1+active().length+(editMode?1:0);
+  let head='<thead><tr><th class="subhead">Sub-capability</th>';
+  active().forEach((p)=>{ if(editMode){
+      head+=`<th class="plhead" data-plid="${p.id}"><div class="plh">`+
+        `<span class="drag-handle" draggable="true" data-drag="${p.id}" title="Drag to reorder">⠿</span>`+
+        `<span contenteditable="true" data-plcode="${p.id}">${esc(p.code)}</span>`+
+        `<button class="plretire" data-plretire="${p.id}" title="Retire — keeps all data, removes from scoring">retire</button></div></th>`;
+    } else head+=`<th>${esc(p.code)}</th>`; });
+  if(editMode)head+='<th class="actcol"></th>'; head+='</tr></thead>';
+  let body='<tbody>';
+  RUBRIC.forEach(p=>{
+    const pillarHasRows=p.caps.some(c=>c.subs.some(s=>!effNeededOnly||S.needs[s.id]));
+    if(!pillarHasRows&&!editMode)return;
+    const pedit=editMode?`<span class="pname" contenteditable="true" data-pname="${p.key}">${esc(p.name)}</span>
+      <button class="ed-btn" data-addcap="${p.key}">+ Capability</button><button class="ed-btn danger" data-delpillar="${p.key}">× Pillar</button>`:esc(p.name);
+    body+=`<tr class="pillar-band"><td colspan="${nCols}">Pillar ${pLetter(p.key)} — ${pedit}</td></tr>`;
+    p.caps.forEach(c=>{
+      const subsShown=c.subs.filter(s=>!effNeededOnly||S.needs[s.id]);
+      if(!subsShown.length&&!editMode)return;
+      const pr=S.moscow[c.id]; const inScope=capInScope(c);
+      const cedit=`<span contenteditable="true" data-ctitle="${c.id}">${esc(c.title)}</span>
+        <button class="ed-btn" data-addrow="${c.id}">+ Add</button><button class="ed-btn danger" data-delcap="${c.id}">× Cap</button>`;
+      body+=`<tr class="cap-band"><td colspan="${nCols}"><span class="cc">${c.id}</span>${cedit}</td></tr>`;
+      subsShown.forEach(s=>{
+        const needed=inScope&&S.needs[s.id];
+        body+=`<tr class="${needed?'needed':''} ${!inScope?'flat':''}">`;
+        body+=`<td class="sub-lbl ${!inScope?'oos':''}"><span class="qtext" data-sublbl="${s.id}" ${editMode?'contenteditable="true"':''}>${esc(s.q)}</span></td>`;
+        active().forEach(pl=>{const yes=sup(s.id,pl.id);const note=hasNote(s,pl.id);
+          if(editMode){const mark=yes?`<span class="ck tog-on">✓</span>`:`<span class="ck tog-off">–</span>`;
+            body+=`<td class="mk editable" data-tog="${s.id}" data-pl="${pl.id}">${mark}<button class="noteglyph ${note?'has':''}" data-note="${s.id}" data-pl="${pl.id}" title="SME rationale">✎</button></td>`;}
+          else{let mark; if(yes)mark=needed?`<span class="ck point">✓</span>`:`<span class="ck on">✓</span>`;
+            else if(needed)mark=pr==='must'?`<span class="ck gap must">✕</span>`:`<span class="ck gap">✕</span>`;
+            else mark=`<span class="ck off">–</span>`;
+            body+=`<td class="mk ${note?'hasnote':''}" ${note?`data-rat="${s.id}" data-pl="${pl.id}"`:''}>${mark}</td>`;}});
+        if(editMode)body+=`<td class="act"><button class="row-del" data-delrow="${s.id}" title="Delete row">×</button></td>`;
+        body+='</tr>';
+      });
+    });
+  });
+  if(body==='<tbody>')body+=`<tr><td class="sub-lbl" colspan="${nCols}" style="padding:20px 16px;text-align:center;">No rows to show — adjust the filter or add a pillar/capability/row in edit mode.</td></tr>`;
+  body+='</tbody>';
+  const rows=compute(),has=anyScope();
+  let foot='<tfoot><tr><td class="subhead">Weighted fit</td>';
+  active().forEach(pl=>{const r=rows.find(x=>x.id===pl.id);
+    foot+= has?`<td><div class="foot-pts">${r.dq?'✕ ':''}${r.fit}%<small>${r.metCaps}/${r.capCount} caps</small></div></td>`:`<td><span class="cell-na">—</span></td>`;});
+  if(editMode)foot+='<td></td>'; foot+='</tr></tfoot>';
+  t.innerHTML=head+body+foot;
+  if(pendingFocus){const c=t.querySelector(pendingFocus);
+    if(c){c.focus();const r=document.createRange();r.selectNodeContents(c);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);}
+    pendingFocus=null;}}
+function capProfile(plId){
+  const strengths=[],gaps=[]; const order={must:0,should:1};
+  RUBRIC.forEach(p=>p.caps.forEach(c=>{ if(!capInScope(c))return; const pr=S.moscow[c.id];
+    if(pr!=='must'&&pr!=='should')return; const on=onSubs(c); if(!on.length)return;
+    const cv=coverage(plId,c,on);
+    const notes=on.map(s=>s.rat&&s.rat[plId]).filter(r=>r&&r.note&&r.note.trim());
+    const item={title:c.title,pr,cov:cv.cov,sup:cv.sup,on:cv.on,notes};
+    if(cv.cov>=0.999)strengths.push(item); else gaps.push(item); }));
+  strengths.sort((a,b)=>order[a.pr]-order[b.pr]||b.cov-a.cov);
+  gaps.sort((a,b)=>order[a.pr]-order[b.pr]||a.cov-b.cov);
+  return {strengths,gaps};
+}
+function pickNote(notes,pref){ if(!notes.length)return null; return notes.find(n=>n.tone===pref)||notes[0]; }
+function renderProfiles(){const wrap=document.getElementById('profiles');wrap.innerHTML='';
+  const has=anyScope(); const rows=compute();
+  rows.forEach((r,i)=>{
+    const card=el(`<div class="pcard ${has&&r.dq?'dq':''}"></div>`);
+    const rank=has?`<span class="prank">${String(i+1).padStart(2,'0')}</span>`:'';
+    const fit=has?`<span class="pfit">${r.fit}%</span>`:'';
+    card.appendChild(el(`<h3>${rank}<span>${esc(r.name)}</span>${fit}</h3>`));
+    if(has&&r.dq)card.appendChild(el(`<div class="pdq">Disqualified — fails Must: ${esc(r.mustGaps.join(', '))}</div>`));
+    if(has){
+      const {strengths,gaps}=capProfile(r.id);
+      const sb=el(`<div class="pc-block"><div class="pc-label pro">Strengths · priorities it meets</div></div>`);
+      if(strengths.length){ strengths.slice(0,6).forEach(it=>{
+          sb.appendChild(el(`<div class="pc-cap"><span class="pc-tick s">✓</span><span>${esc(it.title)} <span class="chip ${it.pr}">${it.pr}</span></span></div>`));
+          const nt=pickNote(it.notes,'pro'); if(nt)sb.appendChild(el(`<div class="pc-note">“${esc(nt.note)}”</div>`)); });
+        if(strengths.length>6)sb.appendChild(el(`<div class="pc-more">+ ${strengths.length-6} more priority capabilities fully covered</div>`));
+      } else sb.appendChild(el(`<div class="pc-empty">No Must or Should priorities fully covered.</div>`));
+      card.appendChild(sb);
+      const gb=el(`<div class="pc-block"><div class="pc-label con">Gaps &amp; watch-outs</div></div>`);
+      if(gaps.length){ gaps.slice(0,6).forEach(it=>{
+          const zero=it.sup===0; const tick=zero?'✕':'◑'; const cls=zero?'gap':'partial';
+          const tag=zero?(it.pr==='must'?' — not covered (disqualifies)':' — not covered'):` — covers ${it.sup} of ${it.on}`;
+          gb.appendChild(el(`<div class="pc-cap"><span class="pc-tick ${cls}">${tick}</span><span>${esc(it.title)} <span class="chip ${it.pr}">${it.pr}</span><span class="pc-sub">${tag}</span></span></div>`));
+          const nt=pickNote(it.notes,'con'); if(nt)gb.appendChild(el(`<div class="pc-note">“${esc(nt.note)}”</div>`)); });
+        if(gaps.length>6)gb.appendChild(el(`<div class="pc-more">+ ${gaps.length-6} more</div>`));
+      } else gb.appendChild(el(`<div class="pc-empty">Meets every Must and Should priority in scope.</div>`));
+      card.appendChild(gb);
+    }
+    const ref=el(`<details class="pc-ref"${has?'':' open'}><summary>General profile</summary></details>`);
+    (PROS[r.id]||[]).forEach(tx=>ref.appendChild(el(`<div class="pc-text"><span class="b">+</span><span>${tx}</span></div>`)));
+    (CONS[r.id]||[]).forEach(tx=>ref.appendChild(el(`<div class="pc-text con"><span class="b">–</span><span>${tx}</span></div>`)));
+    card.appendChild(ref);
+    wrap.appendChild(card);
+  });
+}
+function renderRetired(){const bar=document.getElementById('retiredBar'); if(!bar)return;
+  const r=PLATFORMS.filter(p=>p.retired);
+  if(!r.length){bar.innerHTML='';bar.style.display='none';return;}
+  bar.style.display='flex';
+  bar.innerHTML='<span class="rb-label">Retired \u00b7 data kept, not scored</span>'+
+    r.map(p=>`<span class="retired-chip"><b>${esc(p.name)}</b><button data-plrestore="${p.id}">Restore</button></span>`).join('');}
+function renderAll(){renderFramework();renderAgg();renderMatrix();renderScoreboard();renderProfiles();renderRetired();}
+function renderLive(){syncFrameworkState();renderAgg();renderMatrix();renderScoreboard();renderProfiles();}
+
+// ============ RATIONALE POPOVER ============
+let ratPinned=null, currentRatCell=null, ratHideTimer=null;
+function ratPop(){return document.getElementById('ratPop');}
+function hideRat(){const p=ratPop();if(p)p.classList.remove('show');ratPinned=null;currentRatCell=null;}
+function positionPop(cell){const p=ratPop();p.classList.add('show');
+  const rect=cell.getBoundingClientRect();const pw=p.offsetWidth,ph=p.offsetHeight;
+  let left=rect.left+rect.width/2-pw/2; left=Math.max(8,Math.min(left,innerWidth-pw-8));
+  let top=rect.bottom+8; if(top+ph>innerHeight-8 && rect.top-ph-8>8) top=rect.top-ph-8;
+  p.style.left=left+'px'; p.style.top=Math.max(8,top)+'px'; }
+function toneLabel(t){return t==='pro'?'In favour':t==='con'?'Caveat':'Note';}
+function showRatView(cell){const sid=cell.dataset.rat,pl=cell.dataset.pl,info=SUBIDX[sid];if(!info)return;
+  const r=info.sub.rat&&info.sub.rat[pl];if(!r||!(r.note&&r.note.trim()))return;
+  const plName=PLATFORMS.find(x=>x.id===pl).name; const yes=!!info.sub.sup[pl]; const tone=r.tone||'note';
+  ratPop().innerHTML=`<div class="rp-head">${esc(plName)} · ${yes?'Supported':'Not supported'}${r.conf?' · confidence '+r.conf:''}</div>
+    <div class="rp-sub">${esc(info.sub.q)}</div><span class="rp-tone ${tone}">${toneLabel(tone)}</span>
+    <div class="rp-note">${esc(r.note)}</div>`;
+  positionPop(cell); }
+function showRatEdit(btn){const sid=btn.dataset.note,pl=btn.dataset.pl,info=SUBIDX[sid];if(!info)return;
+  if(!info.sub.rat)info.sub.rat={}; if(!info.sub.rat[pl])info.sub.rat[pl]={note:'',tone:'note',conf:''};
+  const r=info.sub.rat[pl]; const plName=PLATFORMS.find(x=>x.id===pl).name;
+  ratPop().innerHTML=`<div class="rp-head">${esc(plName)} — SME rationale</div><div class="rp-sub">${esc(info.sub.q)}</div>
+    <textarea id="rpNote" placeholder="Your point of view — where it excels or fails in practice…">${esc(r.note||'')}</textarea>
+    <div class="rp-controls"><select id="rpTone"><option value="note">Note</option><option value="pro">In favour</option><option value="con">Caveat</option></select>
+    <select id="rpConf"><option value="">Confidence —</option><option value="low">Low</option><option value="med">Med</option><option value="high">High</option></select></div>
+    <button class="rp-close" id="rpClose">Done</button>`;
+  const p=ratPop(); const ta=p.querySelector('#rpNote'),tn=p.querySelector('#rpTone'),cf=p.querySelector('#rpConf');
+  tn.value=r.tone||'note'; cf.value=r.conf||'';
+  ta.oninput=()=>{r.note=ta.value;}; tn.onchange=()=>{r.tone=tn.value;}; cf.onchange=()=>{r.conf=cf.value;};
+  p.querySelector('#rpClose').onclick=()=>{ if(!r.note||!r.note.trim()){ if(info.sub.rat[pl])delete info.sub.rat[pl]; } hideRat(); renderMatrix(); renderProfiles(); };
+  ratPinned='edit'; positionPop(btn.closest('td')); ta.focus(); }
+
+// ============ EVENTS ============
+document.addEventListener('click',e=>{
+  const scl=e.target.closest('[data-seccollapse]'); if(scl){scl.closest('.collapsible').classList.toggle('collapsed');return;}
+  const rf=e.target.closest('[data-refine]'); if(rf){rf.closest('.cap').classList.toggle('open');return;}
+  const noteBtn=e.target.closest('[data-note]'); if(noteBtn&&editMode){showRatEdit(noteBtn);return;}
+  const ratCell=e.target.closest('[data-rat]'); if(ratCell&&!editMode){
+    if(ratPinned==='cell'&&currentRatCell===ratCell){hideRat();} else {showRatView(ratCell);ratPinned='cell';currentRatCell=ratCell;} return;}
+  const ph=e.target.closest('[data-pillar]'); if(ph){const k=ph.dataset.pillar;
+    if(collapsedPillars.has(k))collapsedPillars.delete(k);else collapsedPillars.add(k);
+    ph.parentElement.classList.toggle('collapsed');return;}
+  const mb=e.target.closest('.moscow button'); if(mb){S.moscow[mb.parentElement.dataset.cap]=mb.dataset.on;renderLive();return;}
+  const tog=e.target.closest('[data-tog]'); if(tog){const sid=tog.dataset.tog,pl=tog.dataset.pl;
+    SUBIDX[sid].sub.sup[pl]=!SUBIDX[sid].sub.sup[pl]; renderMatrix();renderAgg();renderScoreboard();renderProfiles();updateSupportLabels();return;}
+  const addrow=e.target.closest('[data-addrow]'); if(addrow){const cap=findCap(addrow.dataset.addrow);
+    const id='sx'+(++subCounter); const supObj={};PLATFORMS.forEach(pl=>supObj[pl.id]=false);
+    cap.subs.push({id,q:'New sub-capability — describe a distinguishing requirement',sup:supObj,rat:{}});
+    S.needs[id]=true; reindex(); collapsedPillars.delete(SUBIDX[id].pkey);
+    pendingFocus=`[data-sublbl="${id}"]`; renderAll(); return;}
+  const delrow=e.target.closest('[data-delrow]'); if(delrow){const sid=delrow.dataset.delrow;
+    RUBRIC.forEach(p=>p.caps.forEach(c=>{c.subs=c.subs.filter(s=>s.id!==sid);})); delete S.needs[sid]; reindex(); renderAll(); return;}
+  const addcap=e.target.closest('[data-addcap]'); if(addcap){const p=findPillar(addcap.dataset.addcap);
+    const id='C'+(++capCounter); p.caps.push({id,title:'New capability',def:'',subs:[]});
+    S.moscow[id]='should'; reindex(); collapsedPillars.delete(p.key);
+    pendingFocus=`[data-ctitle="${id}"]`; renderAll(); return;}
+  const delcap=e.target.closest('[data-delcap]'); if(delcap){const capId=delcap.dataset.delcap;const cap=findCap(capId);
+    if(confirm(`Delete capability "${cap.title}" and its ${cap.subs.length} sub-capabilities?`)){
+      cap.subs.forEach(s=>delete S.needs[s.id]); delete S.moscow[capId];
+      RUBRIC.forEach(p=>{p.caps=p.caps.filter(c=>c.id!==capId);}); reindex(); renderAll();} return;}
+  const delp=e.target.closest('[data-delpillar]'); if(delp){const p=findPillar(delp.dataset.delpillar);
+    const subN=p.caps.reduce((a,c)=>a+c.subs.length,0);
+    if(confirm(`Delete pillar "${p.name}" with ${p.caps.length} capabilities and ${subN} sub-capabilities?`)){
+      p.caps.forEach(c=>{c.subs.forEach(s=>delete S.needs[s.id]);delete S.moscow[c.id];});
+      RUBRIC=RUBRIC.filter(x=>x.key!==p.key); reindex(); renderAll();} return;}
+  const prt=e.target.closest('[data-plretire]'); if(prt){const p=PLATFORMS.find(x=>x.id===prt.dataset.plretire);
+    if(active().length<=2){alert('Keep at least two active vendors to compare.');return;}
+    if(p)p.retired=true; renderAll(); return;}
+  const prs=e.target.closest('[data-plrestore]'); if(prs){const p=PLATFORMS.find(x=>x.id===prs.dataset.plrestore); if(p)p.retired=false; renderAll(); return;}
+  if(e.target.id==='addVendorBtn'){const name=(prompt('New vendor name (e.g., Heap):')||'').trim(); if(!name)return;
+    const id='v'+(++vendorCounter); const code=name.length<=12?name:name.slice(0,12);
+    PLATFORMS.push({id,name,code,custom:true});
+    RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{s.sup[id]=false;})));
+    reindex();renderAll();return;}
+  if(e.target.id==='addPillarBtn'){const key='P'+(++pillarCounter);
+    RUBRIC.push({key,name:'New pillar',caps:[]}); reindex();
+    pendingFocus=`[data-pname="${key}"]`; renderAll(); return;}
+});
+// dismiss pinned popover on outside click
+document.addEventListener('click',e=>{ if(e.target.closest('#ratPop')||e.target.closest('[data-rat]')||e.target.closest('[data-note]'))return; if(ratPinned)hideRat(); });
+// hover preview (view mode only, when not pinned)
+document.addEventListener('mouseover',e=>{ if(editMode||ratPinned)return; const c=e.target.closest('[data-rat]'); if(c){clearTimeout(ratHideTimer);showRatView(c);} });
+document.addEventListener('mouseout',e=>{ if(editMode||ratPinned)return; const c=e.target.closest('[data-rat]'); if(c){ratHideTimer=setTimeout(hideRat,140);} });
+
+document.addEventListener('change',e=>{
+  if(e.target.matches('[data-need]')){S.needs[e.target.dataset.need]=e.target.checked;renderLive();}
+});
+// ===== tab switching =====
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.dataset.panel===t.dataset.tab));
+  hideRat(); window.scrollTo({top:0,behavior:'smooth'});
+}));
+document.addEventListener('blur',e=>{
+  if(e.target.matches('[data-sublbl]')){const sid=e.target.dataset.sublbl,info=SUBIDX[sid];
+    if(info){const txt=e.target.textContent.trim();info.sub.q=txt||info.sub.q;}
+    renderMatrix(); const span=document.querySelector(`[data-subrow="${sid}"] .sub-q span`); if(span&&info)span.textContent=info.sub.q; return;}
+  if(e.target.matches('[data-ctitle]')){const id=e.target.dataset.ctitle,cap=findCap(id);
+    if(cap){const txt=e.target.textContent.trim();cap.title=txt||cap.title;} renderFramework(); return;}
+  if(e.target.matches('[data-pname]')){const key=e.target.dataset.pname,p=findPillar(key);
+    if(p){const txt=e.target.textContent.trim();p.name=txt||p.name;} renderFramework();renderAgg(); return;}
+  if(e.target.matches('[data-plcode]')){const id=e.target.dataset.plcode,p=PLATFORMS.find(x=>x.id===id);
+    if(p){const txt=e.target.textContent.trim();p.code=txt||p.code;} renderAll(); return;}
+},true);
+
+// ===== drag-to-reorder vendor columns =====
+document.addEventListener('dragstart',e=>{const hd=e.target.closest('[data-drag]'); if(!hd||!editMode)return;
+  dragId=hd.dataset.drag; e.dataTransfer.effectAllowed='move'; const th=hd.closest('.plhead'); if(th)th.classList.add('dragging');});
+document.addEventListener('dragover',e=>{ if(!dragId)return; const th=e.target.closest('.plhead'); if(!th)return; e.preventDefault();
+  document.querySelectorAll('.plhead.drop-target').forEach(x=>{if(x!==th)x.classList.remove('drop-target');});
+  if(th.dataset.plid!==dragId)th.classList.add('drop-target');});
+document.addEventListener('drop',e=>{ if(!dragId)return; const th=e.target.closest('.plhead'); e.preventDefault();
+  if(th&&th.dataset.plid&&th.dataset.plid!==dragId){const arr=[...PLATFORMS];const from=arr.findIndex(p=>p.id===dragId);
+    const [m]=arr.splice(from,1); const to=arr.findIndex(p=>p.id===th.dataset.plid); arr.splice(to,0,m); PLATFORMS=arr;}
+  dragId=null; renderAll();});
+document.addEventListener('dragend',()=>{dragId=null; document.querySelectorAll('.dragging,.drop-target').forEach(x=>x.classList.remove('dragging','drop-target'));});
+document.getElementById('btnPrint').onclick=()=>window.print();
+document.getElementById('btnReset').onclick=()=>{if(confirm('Reset the rubric and all selections to defaults?')){
+  pillarCounter=0;capCounter=15;subCounter=0;vendorCounter=0; PLATFORMS=_DEFAULT_PLATFORMS.map(p=>({...p})); RUBRIC=buildRubric();reindex();S=defaultState();
+  collapsedPillars.clear();hideRat();
+  renderAll();}};
+document.getElementById('btnExport').onclick=()=>{const payload={platforms:PLATFORMS,rubric:RUBRIC,selections:S};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='platform-evaluation-'+new Date().toISOString().slice(0,10)+'.json';a.click();};
+document.getElementById('btnImport').onclick=()=>document.getElementById('fileInput').click();
+document.getElementById('fileInput').onchange=e=>{const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);
+    if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms;
+    vendorCounter=PLATFORMS.reduce((m,p)=>{const n=/^v(\d+)$/.exec(p.id);return n?Math.max(m,+n[1]):m;},0);
+    RUBRIC = d.rubric ? d.rubric : buildRubric(); normalizeRubric(); reindex();
+    const base=defaultState(); const sel=d.selections||d;
+    S={moscow:{...base.moscow,...(sel.moscow||{})},needs:{...base.needs,...(sel.needs||{})}}; renderAll();}
+    catch(err){alert('Could not read that file — it may not be a valid engagement export.');}};
+  r.readAsText(file); e.target.value='';};
+
+// ============ INIT ============
+const _rp=el('<div class="rat-pop" id="ratPop"></div>'); document.body.appendChild(_rp);
+_rp.addEventListener('mouseenter',()=>clearTimeout(ratHideTimer));
+_rp.addEventListener('mouseleave',()=>{ if(ratPinned!=='edit')hideRat(); });
+window.addEventListener('scroll',()=>{ if(ratPinned!=='edit')hideRat(); },true);
+RUBRIC=buildRubric(); reindex(); S=defaultState();
+renderAll();
+
+// ===== integration API for the persistence layer (js/db.js) =====
+function _setVendorCounter(){vendorCounter=PLATFORMS.reduce((m,p)=>{const n=/^v(\d+)$/.exec(p.id);return n?Math.max(m,+n[1]):m;},0);}
+window.PET={
+  exportData:()=>({platforms:PLATFORMS,rubric:RUBRIC,selections:{moscow:S.moscow,needs:S.needs}}),
+  exportRubric:()=>({platforms:PLATFORMS,rubric:RUBRIC}),
+  importData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms; _setVendorCounter();
+    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex();
+    const base=defaultState(); const sel=d.selections||{};
+    S={moscow:{...base.moscow,...(sel.moscow||{})},needs:{...base.needs,...(sel.needs||{})}}; collapsedPillars.clear(); renderAll(); },
+  loadRubricData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms; _setVendorCounter();
+    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex(); S=defaultState(); collapsedPillars.clear(); renderAll(); }
+};
+document.dispatchEvent(new Event('pet-ready'));
+</script>
+<script type="module" src="js/db.js"></script>
+</body>
+</html>

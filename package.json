@@ -1,0 +1,9 @@
+{
+  "name": "merkle-platform-assessment",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Merkle Analytic Platform Assessment — static front-end with Supabase persistence.",
+  "scripts": {
+    "dev": "npx --yes serve ."
+  }
+}
