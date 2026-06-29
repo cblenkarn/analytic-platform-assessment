@@ -1,4 +1,17 @@
+# OS / editor
 .DS_Store
+Thumbs.db
+.vscode/
+
+# dependencies & logs
 node_modules/
 *.log
+npm-debug.log*
+
+# Vercel
 .vercel
+
+# secrets / env (only if you later add a build step)
+.env
+.env.local
+.env*.local
