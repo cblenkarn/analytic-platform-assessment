@@ -4,6 +4,6 @@
 // Access is enforced by Row Level Security policies (see supabase/schema.sql).
 // Leave blank to run fully offline (Export/Import JSON still works).
 window.APP_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: ""
+  SUPABASE_URL: "https://abpbtrnkyluzhfsoloan.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_V2O43JUAsoQUONdZhP6UOA_kkHIemv1"
 };
