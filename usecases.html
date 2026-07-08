@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<title>Use Case Library · Merkle Analytic Platform Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<script src="config.js"></script>
+</head>
+<body data-page="usecases">
+<header class="brandbar"><div class="brandbar-inner">
+  <a href="/dashboard" class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></a>
+  <span class="mk-sep"></span><span class="mk-title">Analytic Platform Assessment</span>
+</div></header>
+<div class="subnav">
+  <a class="backlink" href="/dashboard">← Dashboard</a>
+  <span class="sn-title">Use case library · master</span>
+  <span class="autosave" id="autosave"><span class="dot"></span><span id="autosaveText">—</span></span>
+</div>
+<div id="syncBanner" class="sync-banner">
+  <span>This library was updated by another editor. Reload to pull their changes (your unsaved edits would otherwise overwrite theirs).</span>
+  <button class="btn" id="btnSyncReload" style="margin-left:auto;">Reload</button>
+</div>
+<div class="wrap">
+  <div class="readme collapsible" id="libReadme">
+    <div class="rm-head" data-seccollapse>
+      <span class="rm-title">Managing the common use case library — how this works</span>
+      <span class="seccaret">▼</span>
+    </div>
+    <div class="sec-body">
+      <p>This is the <strong>master library</strong> of common analytical use cases consultants can drop into any client assessment. Edits here appear as the picker chips on <em>every</em> new assessment's Use Cases tab, and refresh live on any open assessment.</p>
+      <ul class="rm-list">
+        <li><strong>Edit in place</strong> — click a title or description to rewrite it. Changes autosave.</li>
+        <li><strong>Map capabilities</strong> — <em>+ Capability</em> opens a picker grouped by pillar. These pre-selections seed each use case when a consultant adds it to an assessment; the consultant can still refine per client.</li>
+        <li><strong>Add or remove</strong> — <em>+ Add use case</em> creates a blank entry; the <em>×</em> on a card removes it. Removing a library entry does <em>not</em> touch use cases already captured in existing assessments.</li>
+        <li><strong>Seed items</strong> are labelled <span class="lib-seed-tag" style="position:static;vertical-align:middle;">seed</span>; feel free to edit or delete them.</li>
+        <li><strong>Saving</strong> — every change autosaves alongside the rubric and syncs live to anyone else editing.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel-actions">
+    <button class="btn btn-primary" id="btnAddLibItem">+ Add use case</button>
+    <span class="spacer"></span>
+    <span class="autosave" style="margin-left:0;"><span id="libCount" style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);">0 use cases</span></span>
+  </div>
+  <div id="libEditor" class="uc-selected lib-editor"></div>
+</div>
+<footer class="site-foot">
+  <div class="foot-inner">
+    <div class="foot-brand"><span class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></span><div class="foot-tag">Analytic Platform Assessment</div></div>
+    <div class="foot-method">
+      <h3>About the use case library</h3>
+      <p>The library is a shortlist of the analytical outcomes clients most often ask for — cross-channel attribution, retention analysis, consent-compliant measurement and so on — pre-mapped to the capabilities that typically deliver them. Consultants use it as a scaffolding: drop the relevant items into the assessment, rewrite them for the client's specific situation, and use the pre-mapped capabilities as a starting point for the prioritization conversation.</p>
+      <p class="foot-fine">The library is stored alongside the master rubric. Edits here apply to every future assessment and refresh live on any open assessment. Existing use cases already captured in assessments are independent copies and are not modified retroactively.</p>
+    </div>
+  </div>
+</footer>
+<script src="js/core.js"></script>
+<script type="module" src="js/db.js"></script>
+</body>
+</html>

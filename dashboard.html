@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <meta name="googlebot" content="noindex, nofollow">
-<title>Assessments · Merkle Analytic Platform Assessment</title>
+<title>Dashboard · Merkle Analytic Platform Assessment</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -19,14 +19,62 @@
 </div></header>
 <div class="dash-wrap">
   <div id="dashMsg" class="dash-msg" hidden></div>
-  <div class="dash-head">
-    <h1>Assessments</h1>
-    <span class="spacer"></span>
-    <a class="btn" href="/admin">Manage rubric</a>
-    <button class="btn btn-primary" id="btnNew">+ New assessment</button>
+
+  <!-- Metrics -->
+  <div class="metrics-row">
+    <div class="metric-tile">
+      <div class="metric-value" id="mUseCases">—</div>
+      <div class="metric-label">Use cases in library</div>
+    </div>
+    <div class="metric-tile">
+      <div class="metric-value" id="mAssessments">—</div>
+      <div class="metric-label">Active assessments</div>
+    </div>
+    <div class="metric-tile">
+      <div class="metric-value" id="mPillars">—</div>
+      <div class="metric-label">Pillars</div>
+    </div>
+    <div class="metric-tile">
+      <div class="metric-value" id="mSubs">—</div>
+      <div class="metric-label">Sub-capabilities</div>
+    </div>
   </div>
-  <div id="assessGrid" class="assess-grid"></div>
-  <div id="dashEmpty" class="dash-empty" hidden>No assessments yet — create your first one to begin matching client needs to platforms.</div>
+
+  <!-- Platform administration -->
+  <section class="dash-section">
+    <div class="dash-sec-head">
+      <h2 class="dash-sec-title">Platform administration</h2>
+      <span class="dash-sec-hint">The shared foundation every client assessment draws from</span>
+    </div>
+    <div class="admin-tiles">
+      <a class="admin-tile" href="/admin">
+        <div class="at-eyebrow">Master rubric</div>
+        <div class="at-title">Pillars, capabilities &amp; vendors</div>
+        <div class="at-desc">The single source of truth used by every assessment. Add or refine pillars, capabilities, sub-capabilities, vendor coverage and SME rationale.</div>
+        <div class="at-meta"><span id="mtPillars">—</span> pillars · <span id="mtCaps">—</span> capabilities · <span id="mtSubs">—</span> sub-capabilities · <span id="mtVendors">—</span> vendors</div>
+        <div class="at-cta">Manage rubric →</div>
+      </a>
+      <a class="admin-tile" href="/usecases">
+        <div class="at-eyebrow">Use case library</div>
+        <div class="at-title">Common analytical outcomes</div>
+        <div class="at-desc">A pre-mapped shortlist of the analytical outcomes clients most often ask for. Consultants drop these into assessments and refine per client.</div>
+        <div class="at-meta"><span id="mtUC">—</span> use cases in library</div>
+        <div class="at-cta">Manage use cases →</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Assessments -->
+  <section class="dash-section">
+    <div class="dash-sec-head">
+      <h2 class="dash-sec-title">Client assessments</h2>
+      <span class="dash-sec-hint">One workspace per RFP or platform selection</span>
+      <span class="spacer"></span>
+      <button class="btn btn-primary" id="btnNew">+ New assessment</button>
+    </div>
+    <div id="assessGrid" class="assess-grid"></div>
+    <div id="dashEmpty" class="dash-empty" hidden>No assessments yet — create your first one to begin matching client needs to platforms.</div>
+  </section>
 </div>
 <script type="module" src="js/db.js"></script>
 </body>

@@ -24,13 +24,30 @@
 </div>
 <div class="wrap">
   <nav class="tabs">
-    <button class="tab active" data-tab="discovery">1 · Workshop</button>
-    <button class="tab" data-tab="results">2 · Results</button>
+    <button class="tab active" data-tab="usecases">1 · Use Cases</button>
+    <button class="tab" data-tab="discovery">2 · Prioritization</button>
+    <button class="tab" data-tab="results">3 · Results</button>
   </nav>
-  <section class="panel active" data-panel="discovery">
+  <section class="panel active" data-panel="usecases">
+    <div class="readme">
+      <h4>Capturing analytical use cases</h4>
+      <p>Use cases are the <strong>business outcomes</strong> the client wants analytics to deliver — populated ahead of the workshop from what you already know, then refined live with the client. Pick from the common library, edit any use case to match the client's exact situation, and map each to the capabilities that would deliver it. <strong>Capabilities without any linked use case have no client demand behind them</strong>, and are candidates to downgrade in the next tab.</p>
+    </div>
+    <div class="uc-library-block">
+      <div class="uc-block-head"><span class="uc-block-title">Common use cases</span><span class="uc-block-hint">Click to add — you can edit anything after</span></div>
+      <div id="ucLibrary" class="uc-library"></div>
+      <div class="uc-custom-row"><button class="btn" id="btnAddCustomUC">+ Add custom use case</button></div>
+    </div>
+    <div class="uc-selected-block">
+      <div class="uc-block-head"><span class="uc-block-title">In scope for this client</span><span class="uc-block-hint" id="ucCount">0 use cases</span></div>
+      <div id="ucSelected" class="uc-selected"></div>
+      <div id="ucEmpty" class="uc-empty">No use cases captured yet. Add one from the library above, or draft a custom one for this client.</div>
+    </div>
+  </section>
+  <section class="panel" data-panel="discovery">
     <div class="readme">
       <h4>Setting your priorities</h4>
-      <p>Apply a <strong>MoSCoW priority</strong> to each capability — <em>Must</em>, <em>Should</em>, <em>Could</em>, or <em>Won't</em> (out of scope). Priorities alone produce an immediate ranking. Open a capability to fine-tune which sub-capabilities are in play; everything is on by default, so you only adjust where scope is narrower than the standard.</p>
+      <p>Apply a <strong>MoSCoW priority</strong> to each capability — <em>Must</em>, <em>Should</em>, <em>Could</em>, or <em>Won't</em> (out of scope). The use cases you captured on the previous tab appear under each capability as a working prompt: <strong>a capability with no linked use case has nothing on the client's list riding on it</strong> and is a candidate for <em>Should</em>, <em>Could</em>, or <em>Won't</em>. Open a capability to fine-tune which sub-capabilities are in play.</p>
     </div>
     <div id="framework"></div>
   </section>

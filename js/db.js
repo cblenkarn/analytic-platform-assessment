@@ -2,7 +2,7 @@
 // db.js — Supabase data layer (single master rubric + assessments)
 // Page-routed by <body data-page="dashboard|assessment|admin">.
 //   rubrics     : one row id='master', data jsonb = {platforms, rubric, _rev}
-//   assessments : id, name, client, data jsonb = {moscow, needs}
+//   assessments : id, name, client, data jsonb = {moscow, needs, useCases}
 // Rubric edits autosave (last-write-wins) and live-sync across editors.
 // ===================================================================
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -41,7 +41,9 @@ function ready() {
 // ---------------- data access ----------------
 async function getRubric() {
   const { data, error } = await sb.from('rubrics').select('data').eq('id', RUBRIC_ID).maybeSingle();
-  if (error) throw error;
+  // maybeSingle should return {data:null, error:null} when no row matches, but some
+  // client versions surface PGRST116 ("no rows") as an error — treat that as "not seeded yet".
+  if (error && error.code !== 'PGRST116') throw error;
   return data ? data.data : null;
 }
 async function putRubric(d) {
@@ -58,7 +60,7 @@ async function listAssessments() {
 }
 async function createAssessment(name, client) {
   const { data, error } = await sb.from('assessments')
-    .insert({ name, client, data: { moscow: {}, needs: {} } }).select('id').single();
+    .insert({ name, client, data: { moscow: {}, needs: {}, useCases: [] } }).select('id').single();
   if (error) throw error;
   return data.id;
 }
@@ -90,6 +92,8 @@ if (!sb) {
   initAssessment();
 } else if (page === 'admin') {
   initAdmin();
+} else if (page === 'usecases') {
+  initUsecasesAdmin();
 }
 
 // ================= DASHBOARD =================
@@ -106,9 +110,58 @@ async function initDashboard() {
 async function renderDash() {
   const grid = $('assessGrid'), empty = $('dashEmpty'), msg = $('dashMsg');
   if (!grid) return;
-  let list;
+
+  // Fetch each independently — a rubric fetch failure must not blank the assessments list,
+  // and vice versa. Log any errors so they show in DevTools console for diagnosis.
+  let list = [], rubric = null;
+  let listErr = null, rubricErr = null;
   try { list = await listAssessments(); }
-  catch (e) { if (msg) { msg.hidden = false; msg.classList.add('err'); msg.textContent = 'Could not load assessments: ' + e.message; } return; }
+  catch (e) { listErr = e; console.error('[dashboard] listAssessments failed:', e); }
+  try { rubric = await getRubric(); }
+  catch (e) { rubricErr = e; console.error('[dashboard] getRubric failed:', e); }
+
+  // ---- Metrics ----
+  let nPillars = 0, nCaps = 0, nSubs = 0, nUseCases = 0, nVendors = 0;
+  if (rubric && typeof rubric === 'object') {
+    const r = Array.isArray(rubric.rubric) ? rubric.rubric : [];
+    nPillars = r.length;
+    r.forEach(p => (p.caps || []).forEach(c => { nCaps++; nSubs += (c.subs || []).length; }));
+    nUseCases = Array.isArray(rubric.useCases) ? rubric.useCases.length : 0;
+    // "Active" vendors = not retired (retired ones are kept for history)
+    nVendors = Array.isArray(rubric.platforms) ? rubric.platforms.filter(p => !p.retired).length : 0;
+  }
+  const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+  // Top row
+  set('mUseCases', nUseCases);
+  set('mAssessments', list.length);
+  set('mPillars', nPillars);
+  set('mSubs', nSubs);
+  // Admin tile metadata rows
+  set('mtPillars', nPillars);
+  set('mtCaps', nCaps);
+  set('mtSubs', nSubs);
+  set('mtVendors', nVendors);
+  set('mtUC', nUseCases);
+
+  // Banner — errors first, then first-run hint if applicable
+  if (msg) {
+    if (listErr || rubricErr) {
+      const parts = [];
+      if (listErr) parts.push('assessments (' + listErr.message + ')');
+      if (rubricErr) parts.push('rubric (' + rubricErr.message + ')');
+      msg.hidden = false;
+      msg.classList.add('err');
+      msg.textContent = 'Could not load ' + parts.join(' and ') + '. See browser console for details.';
+    } else if (!rubric && !list.length) {
+      msg.hidden = false;
+      msg.classList.remove('err');
+      msg.textContent = 'The master rubric hasn\u2019t been initialized yet. Open Manage rubric or Manage use cases once to seed it, then come back to see the metrics populate.';
+    } else {
+      msg.hidden = true;
+    }
+  }
+
+  // ---- Assessments grid ----
   grid.innerHTML = '';
   if (!list.length) { if (empty) empty.hidden = false; return; }
   if (empty) empty.hidden = true;
@@ -154,6 +207,10 @@ async function initAssessment() {
     try { await putSelections(id, window.PET.getSelections()); setAuto('saved', 'saved ' + new Date().toLocaleTimeString()); }
     catch (e) { setAuto('err', 'save failed'); }
   }, 700);
+  // Primary trigger: any state mutation in core.js dispatches this custom event
+  // (covers MoSCoW, sub-capability needs, use case add/edit/delete/capability-mapping).
+  document.addEventListener('pet-selections-changed', save);
+  // Belt-and-braces: keep the original click/change listener in case any code path forgets to dispatch.
   ['click', 'change'].forEach(ev => document.addEventListener(ev, e => {
     if (e.target.closest('.moscow') || e.target.matches('[data-need]')) save();
   }, true));
@@ -210,6 +267,62 @@ async function initAdmin() {
   $('btnSyncReload')?.addEventListener('click', () => {
     if (!pendingRemote) return;
     window.PET.loadRubricData(pendingRemote);
+    lastSaved = JSON.stringify(window.PET.exportRubric());
+    pendingRemote = null;
+    $('syncBanner')?.classList.remove('show');
+    setAuto('saved', 'reloaded');
+  });
+}
+
+// ================= USE CASE LIBRARY ADMIN =================
+// Edits USE_CASE_LIBRARY, persisted alongside the rubric in rubrics.master.
+async function initUsecasesAdmin() {
+  if (!await ready()) return;
+  setAuto('saving', 'loading...');
+  let lastSaved = null;
+  try {
+    let r = await getRubric();
+    if (!r) { r = window.PET.exportRubric(); await putRubric(r); }
+    else { window.PET.loadRubricData(r); }
+    // Render into #libEditor now that the rubric (capabilities) is loaded
+    window.PET.renderLibraryEditor();
+    lastSaved = JSON.stringify(window.PET.exportRubric());
+    setAuto('saved', 'all changes saved');
+  } catch (e) { setAuto('err', 'load failed'); console.error(e); }
+
+  const doSave = debounce(async () => {
+    const cur = JSON.stringify(window.PET.exportRubric());
+    if (cur === lastSaved) return;
+    setAuto('saving', 'saving...');
+    try { await putRubric(window.PET.exportRubric()); lastSaved = cur; setAuto('saved', 'all changes saved \u00b7 ' + new Date().toLocaleTimeString()); }
+    catch (e) { setAuto('err', 'save failed - retry an edit'); }
+  }, 800);
+  // Any interaction on the page triggers a save-check; doSave no-ops when nothing changed.
+  ['click', 'input', 'change', 'blur'].forEach(ev => document.addEventListener(ev, () => doSave(), true));
+  // Belt-and-braces: also react to our explicit library-changed event.
+  document.addEventListener('pet-library-changed', doSave);
+
+  let pendingRemote = null;
+  sb.channel('rub-uc').on('postgres_changes',
+    { event: '*', schema: 'public', table: 'rubrics', filter: 'id=eq.' + RUBRIC_ID },
+    payload => {
+      const d = payload.new && payload.new.data;
+      if (!d || d._rev === myRev) return;
+      const cur = JSON.stringify(window.PET.exportRubric());
+      if (cur === lastSaved) {
+        window.PET.loadRubricData(d);
+        window.PET.renderLibraryEditor();
+        lastSaved = JSON.stringify(window.PET.exportRubric());
+        setAuto('saved', 'updated by another editor');
+      } else {
+        pendingRemote = d;
+        $('syncBanner')?.classList.add('show');
+      }
+    }).subscribe();
+  $('btnSyncReload')?.addEventListener('click', () => {
+    if (!pendingRemote) return;
+    window.PET.loadRubricData(pendingRemote);
+    window.PET.renderLibraryEditor();
     lastSaved = JSON.stringify(window.PET.exportRubric());
     pendingRemote = null;
     $('syncBanner')?.classList.remove('show');

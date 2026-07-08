@@ -8,12 +8,9 @@ const _DEFAULT_PLATFORMS = [
   {id:'piano',name:'Piano Analytics',code:'PIANO'},
 ];
 let PLATFORMS = _DEFAULT_PLATFORMS.map(p=>({...p}));
-// the order the seed support arrays (s:[...]) below were authored in — keeps seeding correct no matter the display order
 const SEED_ORDER = ['ga4','aa','piano','cja','amp','cs'];
 const MOSCOW_W = {must:3, should:2, could:1, wont:0};
 
-// Opinionated rubric. Each sub-capability is a specific, discriminating claim; s = our POV per
-// platform in the order [ga4, aa, piano, cja, amp, cs]. Seeded from the engagement assessments.
 const SEED = [
   {letter:'A', name:'Data Collection Architecture & Engineering', caps:[
     {id:'C1', title:'Cross-platform Collection & Schema Control', def:'Captures web, app and server-side under one flexible, governed schema rather than a rigid predefined taxonomy.', subs:[
@@ -109,12 +106,68 @@ const CONS = {
   cs:['Weak cross-device identity and attribution','No raw warehouse export pipeline','Screen recording raises privacy questions'],
 };
 
+// ============ USE CASE LIBRARY ============
+// Common analytical use cases a consultant can drop in and refine per client.
+// Each is pre-mapped to the capabilities that typically deliver it.
+// This is the default seed — it can be edited on /usecases and is persisted
+// alongside the rubric in the master 'rubrics' row (data.useCases).
+let USE_CASE_LIBRARY = [
+  { id:'lib-attribution', title:'Cross-channel marketing attribution',
+    desc:'Understand how paid, owned and earned channels contribute to conversion so spend can be reallocated to real incremental value.',
+    caps:['C1','C9','C10','C12'] },
+  { id:'lib-journey', title:'Cross-device customer journey',
+    desc:'Follow prospects from anonymous to known across devices and sessions to see the real path to conversion, not one-session snapshots.',
+    caps:['C1','C3','C6'] },
+  { id:'lib-funnel', title:'Funnel drop-off diagnosis',
+    desc:'Locate where users abandon a critical flow (checkout, signup, application) and understand qualitatively what they do instead.',
+    caps:['C6','C2'] },
+  { id:'lib-adoption', title:'Product feature adoption',
+    desc:'Measure how quickly and deeply new features are adopted, and how usage changes core outcomes (activation, revenue, retention).',
+    caps:['C2','C5','C7'] },
+  { id:'lib-retention', title:'Retention & churn analysis',
+    desc:'Track how well cohorts stick, identify leading indicators of churn and quantify the impact of interventions.',
+    caps:['C7','C8'] },
+  { id:'lib-predictive', title:'Predictive audiences (churn / propensity / LTV)',
+    desc:'Score users on likelihood to churn, convert or spend so marketing can act upstream of the outcome, not after it.',
+    caps:['C8','C10','C12'] },
+  { id:'lib-experimentation', title:'A/B testing & personalization',
+    desc:'Run controlled experiments and target variants to the behavioural cohorts most likely to respond.',
+    caps:['C11','C7'] },
+  { id:'lib-activation', title:'Audience activation to paid media',
+    desc:'Push behavioural segments to Google, Meta, CRM and CDP for suppression, retargeting and lookalike modelling.',
+    caps:['C9','C10','C3'] },
+  { id:'lib-friction', title:'UX friction & rage-click diagnosis',
+    desc:'Identify pages and interactions where users struggle, and understand qualitatively what breaks the experience.',
+    caps:['C6','C2'] },
+  { id:'lib-selfserve', title:'Ad-hoc analyst self-serve',
+    desc:'Enable senior analysts to answer new questions directly in the platform without engineering or warehouse export.',
+    caps:['C5'] },
+  { id:'lib-bi', title:'Executive KPI dashboards in BI',
+    desc:'Deliver a single, trusted view of business KPIs to leadership in the enterprise BI tool (Tableau, Power BI, Looker).',
+    caps:['C12'] },
+  { id:'lib-privacy', title:'Consent-compliant measurement',
+    desc:'Maintain durable measurement under GDPR / CCPA consent flows and Consent Mode v2 without losing signal to opt-outs.',
+    caps:['C13','C1'] },
+  { id:'lib-phi', title:'HIPAA / PHI-safe measurement',
+    desc:'Collect and analyse behavioural data on regulated properties where the vendor must sign a BAA and PHI is possible.',
+    caps:['C13'] },
+  { id:'lib-firstparty', title:'First-party data foundation',
+    desc:'Establish a governed first-party event schema and identity spine that feeds CDP, activation and warehouse downstream.',
+    caps:['C1','C3','C12','C10'] },
+  { id:'lib-content', title:'Content & landing page performance',
+    desc:'Measure engagement and conversion contribution of content and campaign landing pages by cohort.',
+    caps:['C5','C6'] },
+  { id:'lib-onboarding', title:'Onboarding funnel optimization',
+    desc:'Measure and improve first-time user activation from signup through the "aha moment" and habit-forming actions.',
+    caps:['C6','C7','C11'] },
+];
+
 // ============ MUTABLE RUBRIC + STATE ============
 let RUBRIC, S, SUBIDX={}, subCounter=0, capCounter=15, pillarCounter=0, vendorCounter=0, dragId=null;
+let useCaseCounter=0;
 let editMode=true, viewNeededOnly=false, pendingFocus=null;
 const collapsedPillars=new Set();
 
-// --- seeded SME rationale: subId -> { platformId: {note, tone(pro|con|note), conf(low|med|high)} } ---
 const RAT = {
   C1a:{aa:{note:'Historically rigid eVar/prop model constrains free-form schema design.',tone:'con',conf:'med'}},
   C2a:{cs:{note:'Auto-capture removes the tagging backlog entirely.',tone:'pro',conf:'high'},amp:{note:'Autocapture plus the ability to define events retroactively.',tone:'pro'}},
@@ -139,35 +192,26 @@ function buildRubric(){
 }
 function normalizeRubric(){
   RUBRIC.forEach((p)=>{ if(!p.key)p.key='P'+(++pillarCounter); if(!p.caps)p.caps=[];
-    if(typeof p.retired!=='boolean')p.retired=false;
-    p.caps.forEach(c=>{ if(!c.subs)c.subs=[]; if(typeof c.retired!=='boolean')c.retired=false;
-      c.subs.forEach(s=>{ if(!s.sup)s.sup={}; PLATFORMS.forEach(pl=>{if(typeof s.sup[pl.id]!=='boolean')s.sup[pl.id]=false;});
-        if(!s.rat)s.rat={}; if(typeof s.retired!=='boolean')s.retired=false; }); });
+    p.caps.forEach(c=>{ if(!c.subs)c.subs=[]; c.subs.forEach(s=>{ if(!s.sup)s.sup={}; PLATFORMS.forEach(pl=>{if(typeof s.sup[pl.id]!=='boolean')s.sup[pl.id]=false;}); if(!s.rat)s.rat={}; }); });
   });
 }
 function reindex(){ SUBIDX={};
   RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{SUBIDX[s.id]={sub:s,cap:c,pkey:p.key};}))); }
 function defaultState(){ const moscow={}, needs={};
-  RUBRIC.forEach(p=>p.caps.forEach(c=>{moscow[c.id]='should';c.subs.forEach(s=>needs[s.id]=true);})); return {moscow,needs}; }
+  RUBRIC.forEach(p=>p.caps.forEach(c=>{moscow[c.id]='should';c.subs.forEach(s=>needs[s.id]=true);})); return {moscow,needs,useCases:[]}; }
 function findCap(id){let r=null;RUBRIC.forEach(p=>p.caps.forEach(c=>{if(c.id===id)r=c;}));return r;}
 function findPillar(key){return RUBRIC.find(p=>p.key===key);}
 function pIndex(key){return RUBRIC.findIndex(p=>p.key===key);}
 function pLetter(key){const i=pIndex(key);return i>=0?String.fromCharCode(65+i):'?';}
-function capPillar(c){return RUBRIC.find(p=>p.caps.some(x=>x.id===c.id));}
+function capMeta(capId){ for(const p of RUBRIC){ for(const c of p.caps){ if(c.id===capId) return {c,p,letter:pLetter(p.key)}; } } return null; }
+function _markChanged(){ document.dispatchEvent(new Event('pet-selections-changed')); }
 
-// ============ COMPUTE (coverage model) ============
+// ============ COMPUTE ============
 function active(){return PLATFORMS.filter(p=>!p.retired);}
 function sup(subId,plId){return !!(SUBIDX[subId] && SUBIDX[subId].sub.sup[plId]);}
 function supportCount(subId){return active().filter(pl=>sup(subId,pl.id)).length;}
-// A capability is "in scope" iff neither it, nor its parent pillar, is retired, AND its MoSCoW is not "wont".
-function capInScope(c){
-  if(c.retired) return false;
-  const p=capPillar(c);
-  if(p && p.retired) return false;
-  return S.moscow[c.id]!=='wont';
-}
-// Sub-capabilities that are needed AND not retired.
-function onSubs(c){return c.subs.filter(s=>!s.retired && S.needs[s.id]);}
+function capInScope(c){return S.moscow[c.id]!=='wont';}
+function onSubs(c){return c.subs.filter(s=>S.needs[s.id]);}
 function scopedCaps(){const out=[];RUBRIC.forEach(p=>p.caps.forEach(c=>{if(capInScope(c)){const on=onSubs(c);if(on.length)out.push({c,p,on,w:MOSCOW_W[S.moscow[c.id]]});}}));return out;}
 function anyScope(){return scopedCaps().length>0;}
 function coverage(plId,c,on){on=on||onSubs(c);if(!on.length)return {sup:0,on:0,cov:0};const s=on.filter(x=>!!x.sup[plId]).length;return {sup:s,on:on.length,cov:s/on.length};}
@@ -181,7 +225,7 @@ function compute(){
 }
 function pillarAgg(){const out={};
   RUBRIC.forEach(p=>{const caps=p.caps.filter(c=>capInScope(c)&&onSubs(c).length);const wsum=caps.reduce((a,c)=>a+MOSCOW_W[S.moscow[c.id]],0);
-    out[p.key]={inScope:caps.length>0,retired:!!p.retired};
+    out[p.key]={inScope:caps.length>0};
     active().forEach(pl=>{ if(!caps.length){out[p.key][pl.id]=null;return;}
       let acc=0;caps.forEach(c=>{acc+=MOSCOW_W[S.moscow[c.id]]*coverage(pl.id,c).cov;});
       out[p.key][pl.id]=wsum?Math.round(100*acc/wsum):0; }); });
@@ -201,6 +245,115 @@ function recommendStack(rows){
   return {primary,augments};
 }
 
+// ============ USE CASE HELPERS ============
+function useCasesForCap(capId){ return (S.useCases||[]).filter(u=>u.capIds&&u.capIds.includes(capId)); }
+function libraryUsedIds(){ const set=new Set(); (S.useCases||[]).forEach(u=>{ if(u.sourceLibId) set.add(u.sourceLibId); }); return set; }
+function _nextUCId(){ return 'uc'+(++useCaseCounter); }
+function addUseCaseFromLibrary(libId){
+  const lib=USE_CASE_LIBRARY.find(l=>l.id===libId); if(!lib) return;
+  if(libraryUsedIds().has(libId)) return;
+  S.useCases.push({ id:_nextUCId(), title:lib.title, desc:lib.desc, capIds:[...(lib.caps||[])], sourceLibId:libId });
+  _markChanged();
+}
+function addCustomUseCase(){
+  S.useCases.push({ id:_nextUCId(), title:'', desc:'', capIds:[], sourceLibId:null });
+  _markChanged();
+}
+function deleteUseCase(id){
+  S.useCases = S.useCases.filter(u=>u.id!==id);
+  _markChanged();
+}
+function toggleUCCap(ucId, capId){
+  const uc=S.useCases.find(u=>u.id===ucId); if(!uc) return;
+  if(!uc.capIds) uc.capIds=[];
+  const i=uc.capIds.indexOf(capId);
+  if(i>=0) uc.capIds.splice(i,1); else uc.capIds.push(capId);
+  _markChanged();
+}
+
+// ============ LIBRARY ADMIN (edits USE_CASE_LIBRARY on the /usecases page) ============
+let libCounter = 0;
+function _nextLibId(){
+  // never reuse an existing id (including built-in lib-* seed ids)
+  let n = libCounter;
+  const taken = new Set(USE_CASE_LIBRARY.map(x=>x.id));
+  do { n++; } while(taken.has('lib-custom-'+n));
+  libCounter = n;
+  return 'lib-custom-'+n;
+}
+function _markLibChanged(){ document.dispatchEvent(new Event('pet-library-changed')); }
+function libAddItem(){
+  USE_CASE_LIBRARY.push({ id:_nextLibId(), title:'', desc:'', caps:[] });
+  _markLibChanged();
+}
+function libDeleteItem(id){
+  USE_CASE_LIBRARY = USE_CASE_LIBRARY.filter(x=>x.id!==id);
+  _markLibChanged();
+}
+function libToggleCap(libId, capId){
+  const it = USE_CASE_LIBRARY.find(x=>x.id===libId); if(!it) return;
+  if(!it.caps) it.caps = [];
+  const i = it.caps.indexOf(capId);
+  if(i>=0) it.caps.splice(i,1); else it.caps.push(capId);
+  _markLibChanged();
+}
+function renderLibraryEditor(){
+  const wrap = document.getElementById('libEditor'); if(!wrap) return;
+  const count = document.getElementById('libCount');
+  if(count) count.textContent = USE_CASE_LIBRARY.length === 1 ? '1 use case' : (USE_CASE_LIBRARY.length + ' use cases');
+  wrap.innerHTML = '';
+  if(!USE_CASE_LIBRARY.length){
+    wrap.appendChild(el(`<div class="uc-empty">No use cases in the library yet. Click <b>+ Add use case</b> above to create one.</div>`));
+    return;
+  }
+  USE_CASE_LIBRARY.forEach(item=>{
+    const capChips = (item.caps||[]).map(cid=>{
+      const meta = capMeta(cid);
+      if(!meta) return `<span class="uc-cap-chip missing" title="This capability no longer exists in the rubric"><span class="uc-cap-code">?? · ${esc(cid)}</span><span class="uc-cap-title">Missing capability</span><button class="uc-cap-x" data-libeditremcap data-lib="${item.id}" data-cap="${cid}" title="Remove">×</button></span>`;
+      return `<span class="uc-cap-chip" title="Pillar ${meta.letter} · ${esc(meta.c.title)}"><span class="uc-cap-code">${meta.letter} · ${meta.c.id}</span><span class="uc-cap-title">${esc(meta.c.title)}</span><button class="uc-cap-x" data-libeditremcap data-lib="${item.id}" data-cap="${cid}" title="Remove capability">×</button></span>`;
+    }).join('');
+    const capsBody = capChips || '<span class="uc-cap-none">No capabilities mapped yet — click <b>+ Capability</b> to map one.</span>';
+    const seedTag = !/^lib-custom-/.test(item.id) ? '<span class="lib-seed-tag" title="Part of the seed library — safe to edit or delete">seed</span>' : '';
+    const card = el(`<div class="uc-card" data-lib="${item.id}">
+      <div class="uc-head">
+        <div class="uc-title" contenteditable="true" data-libedittitle="${item.id}">${esc(item.title||'')}</div>
+        ${seedTag}
+        <button class="uc-del" data-libeditdel="${item.id}" title="Remove from library">×</button>
+      </div>
+      <div class="uc-desc" contenteditable="true" data-libeditdesc="${item.id}">${esc(item.desc||'')}</div>
+      <div class="uc-caps-wrap">
+        <div class="uc-caps-label">Maps to capabilities <span class="uc-caps-count">${(item.caps||[]).length}</span></div>
+        <div class="uc-caps">${capsBody}<span class="uc-add-cap"><button class="uc-add-cap-btn" data-libeditaddcap="${item.id}">+ Capability</button></span></div>
+      </div>
+    </div>`);
+    wrap.appendChild(card);
+  });
+}
+function toggleLibCapPicker(btn){
+  const already = btn.parentElement.querySelector('.uc-cap-pop');
+  document.querySelectorAll('.uc-cap-pop').forEach(p=>p.remove());
+  if(already) return; // second click closes
+  const libId = btn.dataset.libeditaddcap;
+  const item = USE_CASE_LIBRARY.find(x=>x.id===libId); if(!item) return;
+  const holder = btn.parentElement;
+  const pop = document.createElement('div');
+  pop.className = 'uc-cap-pop show';
+  pop.dataset.lib = libId;
+  let html = '';
+  RUBRIC.forEach(p=>{
+    if(!p.caps.length) return;
+    html += `<div class="ucp-pillar"><div class="ucp-plname">Pillar ${pLetter(p.key)} — ${esc(p.name)}</div>`;
+    p.caps.forEach(c=>{
+      const checked = (item.caps||[]).includes(c.id);
+      html += `<label class="ucp-opt ${checked?'checked':''}"><input type="checkbox" data-libeditpick data-lib="${libId}" data-cap="${c.id}" ${checked?'checked':''}><span class="ucp-code">${c.id}</span><span>${esc(c.title)}</span></label>`;
+    });
+    html += '</div>';
+  });
+  html += '<div class="ucp-close"><button data-libeditpickclose>Done</button></div>';
+  pop.innerHTML = html;
+  holder.appendChild(pop);
+}
+
 // ============ RENDER ============
 function el(html){const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstChild;}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -218,7 +371,7 @@ function renderScoreboard(){const rows=compute(),has=anyScope();
   renderStack(rows,has); }
 function renderStack(rows,has){const card=document.getElementById('stackCard'); if(!card)return;
   if(!has){card.innerHTML=`<h3>Recommended stack</h3><div class="lead-sub">No capabilities in scope</div>
-    <div class="stack-empty">Set at least one capability to Must, Should or Could in section 04 — sub-capabilities are on by default — to generate a fit score and a best-of-breed recommendation.</div>`;return;}
+    <div class="stack-empty">Set at least one capability to Must, Should or Could on the Prioritization tab — sub-capabilities are on by default — to generate a fit score and a best-of-breed recommendation.</div>`;return;}
   const {primary,augments}=recommendStack(rows);
   let html=`<h3>Recommended stack</h3><div class="lead-sub">Best-of-breed, not binary</div>`;
   html+=`<div class="stack-row"><div class="stack-role">Lead platform</div><div class="stack-name">${primary.name}</div>
@@ -233,9 +386,8 @@ function renderAgg(){const agg=pillarAgg(),rows=compute(),has=anyScope();
   let body='<tbody>';
   RUBRIC.forEach(p=>{const row=agg[p.key];let lead=-1;
     if(row.inScope)active().forEach(pl=>{if(row[pl.id]>lead)lead=row[pl.id];});
-    const nameHtml = `<span class="pl-letter">${pLetter(p.key)}</span><b>${esc(p.name)}</b>${p.retired?' <span class="retired-tag">retired</span>':''}`;
-    body+=`<tr class="${p.retired?'row-retired':''}"><td class="lbl">${nameHtml}</td>`;
-    active().forEach(pl=>{ if(!row.inScope){body+=`<td class="cov"><span class="cell-na">${p.retired?'— retired':'— out of scope'}</span></td>`;}
+    body+=`<tr><td class="lbl"><span class="pl-letter">${pLetter(p.key)}</span><b>${esc(p.name)}</b></td>`;
+    active().forEach(pl=>{ if(!row.inScope){body+=`<td class="cov"><span class="cell-na">— out of scope</span></td>`;}
       else{const v=row[pl.id];const isLead=v===lead&&lead>0;
         body+=`<td class="cov ${isLead?'leader':''}"><div class="cell-cov"><span class="n">${v}%</span><span class="mini"><i style="width:${v}%"></i></span></div></td>`;}});
     body+='</tr>';});
@@ -244,23 +396,37 @@ function renderAgg(){const agg=pillarAgg(),rows=compute(),has=anyScope();
   active().forEach(pl=>{const r=rows.find(x=>x.id===pl.id);
     foot+= has?`<td class="cov"><div class="cell-cov"><span class="n">${r.dq?'✕ ':''}${r.fit}%</span><span class="mini"><i style="width:${r.fit}%"></i></span></div></td>`:`<td class="cov"><span class="cell-na">—</span></td>`;});
   foot+='</tr></tbody>'; t.innerHTML=head+body+foot; }
+
 function renderFramework(){const f=document.getElementById('framework'); if(!f)return; f.innerHTML='';
   RUBRIC.forEach(p=>{const collapsed=collapsedPillars.has(p.key);
-    const pil=el(`<div class="pillar ${collapsed?'collapsed':''} ${p.retired?'pillar-retired':''}"><div class="pillar-head" data-pillar="${p.key}">
-      <span class="pl-letter">${pLetter(p.key)}</span><h3>Pillar ${pLetter(p.key)} — ${esc(p.name)}${p.retired?' <span class="retired-tag">retired</span>':''}</h3>
+    const pil=el(`<div class="pillar ${collapsed?'collapsed':''}"><div class="pillar-head" data-pillar="${p.key}">
+      <span class="pl-letter">${pLetter(p.key)}</span><h3>Pillar ${pLetter(p.key)} — ${esc(p.name)}</h3>
       <span class="pl-count" data-plcount="${p.key}"></span><span class="caret">▼</span></div><div class="pillar-body"></div></div>`);
     const body=pil.querySelector('.pillar-body');
     p.caps.forEach(c=>{
-      const cap=el(`<div class="cap ${c.retired?'cap-retired':''}"><div class="cap-top"><span class="cap-id">${c.id}</span>
-        <div class="cap-title-wrap"><div class="cap-title">${esc(c.title)}${c.retired?' <span class="retired-tag">retired</span>':''}<span class="selcount" data-selcount="${c.id}"></span></div>
+      const cap=el(`<div class="cap"><div class="cap-top"><span class="cap-id">${c.id}</span>
+        <div class="cap-title-wrap"><div class="cap-title">${esc(c.title)}<span class="selcount" data-selcount="${c.id}"></span></div>
           <div class="cap-def">${esc(c.def)}</div></div>
         <div class="moscow big" data-cap="${c.id}"><button data-on="must">Must</button><button data-on="should">Should</button>
           <button data-on="could">Could</button><button data-on="wont">Won't</button></div></div>`);
+
+      // Use case footnote — driven by the Use Cases tab.
+      // We only surface the "no use case" hint once the consultant has actually
+      // populated some use cases; otherwise every capability would nag on a fresh assessment.
+      const ucs=useCasesForCap(c.id);
+      const anyUC=(S.useCases||[]).length>0;
+      if(ucs.length){
+        const chips=ucs.map(u=>`<span class="cu-uc">${esc((u.title||'Untitled use case'))}</span>`).join('');
+        cap.appendChild(el(`<div class="cap-usecases"><span class="cu-label">Use cases · ${ucs.length}</span><span class="cu-list">${chips}</span></div>`));
+      } else if(anyUC){
+        cap.appendChild(el(`<div class="cap-nouse"><span class="cu-label">No use case</span><span class="cu-hint">Nothing on the client's list rides on this capability — consider Should, Could, or Won't.</span></div>`));
+      }
+
       if(c.subs.length){
         cap.appendChild(el(`<button class="refine-toggle" data-refine="${c.id}">Refine sub-capabilities (${c.subs.length}) <span class="rc">▾</span></button>`));
         const subWrap=el(`<div class="sub-table"><div class="sub-caption">Sub-capabilities are on by default — uncheck any you don't need</div></div>`);
-        c.subs.forEach(s=>{subWrap.appendChild(el(`<div class="sub-row ${s.retired?'sub-retired':''}" data-subrow="${s.id}">
-          <label class="sub-q"><input type="checkbox" data-need="${s.id}"> <span>${esc(s.q)}${s.retired?' <span class="retired-tag">retired</span>':''}</span></label></div>`));});
+        c.subs.forEach(s=>{subWrap.appendChild(el(`<div class="sub-row" data-subrow="${s.id}">
+          <label class="sub-q"><input type="checkbox" data-need="${s.id}"> <span>${esc(s.q)}</span></label></div>`));});
         cap.appendChild(subWrap);
       } else { cap.appendChild(el(`<div class="cap-empty">No sub-capabilities yet — add them on the Rubric Admin tab.</div>`)); }
       body.appendChild(cap);
@@ -273,25 +439,92 @@ function syncFrameworkState(){
     m.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.on===S.moscow[cap]));
     const cc=m.closest('.cap'); if(cc)cc.classList.toggle('oos-cap',S.moscow[cap]==='wont');});
   document.querySelectorAll('[data-need]').forEach(cb=>{const sid=cb.dataset.need;cb.checked=S.needs[sid];
-    const info=SUBIDX[sid];
-    const capOOS = info && S.moscow[info.cap.id]==='wont';
-    const subRet = info && info.sub.retired;
-    const capRet = info && info.cap.retired;
-    const pilRet = info && (capPillar(info.cap)||{}).retired;
-    const disabled = capOOS || subRet || capRet || pilRet;
+    const info=SUBIDX[sid];const disabled=info&&S.moscow[info.cap.id]==='wont';
     cb.closest('.sub-row').classList.toggle('disabled',disabled);cb.disabled=disabled;});
   RUBRIC.forEach(p=>{let pc=0;
-    p.caps.forEach(c=>{const n=c.subs.filter(s=>!s.retired && S.needs[s.id]).length;if(capInScope(c))pc+=n;
+    p.caps.forEach(c=>{const n=c.subs.filter(s=>S.needs[s.id]).length;if(capInScope(c))pc+=n;
       const tag=document.querySelector(`[data-selcount="${c.id}"]`);
-      if(tag){ if(!capInScope(c)){tag.textContent=c.retired?'retired':'out of scope';tag.classList.remove('has');}
+      if(tag){ if(!capInScope(c)){tag.textContent='out of scope';tag.classList.remove('has');}
         else{tag.textContent=`${n}/${c.subs.length} in scope`;tag.classList.toggle('has',n>0);} }});
     const plc=document.querySelector(`[data-plcount="${p.key}"]`);if(plc)plc.textContent=pc?`${pc} in scope`:'';});}
+
+// ---------- USE CASES TAB ----------
+function renderUseCases(){
+  renderUCLibrary();
+  renderUCSelected();
+}
+function renderUCLibrary(){
+  const lib=document.getElementById('ucLibrary'); if(!lib)return;
+  const used=libraryUsedIds();
+  lib.innerHTML='';
+  USE_CASE_LIBRARY.forEach(item=>{
+    const isUsed=used.has(item.id);
+    const chip=el(`<button class="uc-lib-chip ${isUsed?'used':''}" data-libadd="${item.id}" title="${esc(item.desc)}">${esc(item.title)}</button>`);
+    lib.appendChild(chip);
+  });
+}
+function renderUCSelected(){
+  const wrap=document.getElementById('ucSelected'); if(!wrap)return;
+  const empty=document.getElementById('ucEmpty');
+  const count=document.getElementById('ucCount');
+  const list=S.useCases||[];
+  if(count) count.textContent = list.length===1 ? '1 use case' : (list.length+' use cases');
+  if(!list.length){ wrap.innerHTML=''; if(empty)empty.hidden=false; return; }
+  if(empty) empty.hidden=true;
+  wrap.innerHTML='';
+  list.forEach(uc=>{
+    const capChips = (uc.capIds||[]).map(cid=>{
+      const meta=capMeta(cid);
+      if(!meta) return '';
+      return `<span class="uc-cap-chip" title="Pillar ${meta.letter} · ${esc(meta.c.title)}"><span class="uc-cap-code">${meta.letter} · ${meta.c.id}</span><span class="uc-cap-title">${esc(meta.c.title)}</span><button class="uc-cap-x" data-uccap-remove data-uc="${uc.id}" data-cap="${cid}" title="Remove capability">×</button></span>`;
+    }).join('');
+    const capsBody = capChips || '<span class="uc-cap-none">No capabilities mapped yet — click <b>+ Capability</b> to map one.</span>';
+    const card=el(`<div class="uc-card" data-uc="${uc.id}">
+      <div class="uc-head">
+        <div class="uc-title" contenteditable="true" data-uctitle="${uc.id}">${esc(uc.title||'')}</div>
+        <button class="uc-del" data-ucdel="${uc.id}" title="Remove use case">×</button>
+      </div>
+      <div class="uc-desc" contenteditable="true" data-ucdesc="${uc.id}">${esc(uc.desc||'')}</div>
+      <div class="uc-caps-wrap">
+        <div class="uc-caps-label">Maps to capabilities <span class="uc-caps-count">${(uc.capIds||[]).length}</span></div>
+        <div class="uc-caps">${capsBody}<span class="uc-add-cap"><button class="uc-add-cap-btn" data-ucaddcap="${uc.id}">+ Capability</button></span></div>
+      </div>
+    </div>`);
+    wrap.appendChild(card);
+  });
+}
+function toggleUCCapPicker(btn){
+  const already=btn.parentElement.querySelector('.uc-cap-pop');
+  document.querySelectorAll('.uc-cap-pop').forEach(p=>p.remove());
+  if(already) return; // second click on same button closes
+  const ucId=btn.dataset.ucaddcap;
+  const uc=S.useCases.find(u=>u.id===ucId); if(!uc) return;
+  const holder=btn.parentElement;
+  const pop=document.createElement('div');
+  pop.className='uc-cap-pop show';
+  pop.dataset.uc=ucId;
+  let html='';
+  RUBRIC.forEach(p=>{
+    if(!p.caps.length) return;
+    html+=`<div class="ucp-pillar"><div class="ucp-plname">Pillar ${pLetter(p.key)} — ${esc(p.name)}</div>`;
+    p.caps.forEach(c=>{
+      const checked=(uc.capIds||[]).includes(c.id);
+      html+=`<label class="ucp-opt ${checked?'checked':''}"><input type="checkbox" data-ucpick data-uc="${ucId}" data-cap="${c.id}" ${checked?'checked':''}><span class="ucp-code">${c.id}</span><span>${esc(c.title)}</span></label>`;
+    });
+    html+='</div>';
+  });
+  html+='<div class="ucp-close"><button data-ucpickclose>Done</button></div>';
+  pop.innerHTML=html;
+  holder.appendChild(pop);
+}
+function closeUCCapPickers(){ document.querySelectorAll('.uc-cap-pop').forEach(p=>p.remove()); }
+
 function updateSupportLabels(){document.querySelectorAll('[data-suplbl]').forEach(e=>{e.textContent=`${supportCount(e.dataset.suplbl)}/${active().length} support`;});}
 function hasNote(s,pl){return !!(s.rat&&s.rat[pl]&&s.rat[pl].note&&s.rat[pl].note.trim());}
+
 function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)return;
   const effNeededOnly=viewNeededOnly&&!editMode;
   const nCols=1+active().length+(editMode?1:0);
-  // shared vendor header row, repeated (and pinned) per pillar section
   let headRow='<tr><th class="subhead">Platform Evaluation</th>';
   active().forEach((p)=>{ if(editMode){
       headRow+=`<th class="plhead" data-plid="${p.id}"><div class="plh">`+
@@ -305,23 +538,20 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
   RUBRIC.forEach(p=>{
     const pillarHasRows=p.caps.some(c=>c.subs.some(s=>!effNeededOnly||S.needs[s.id]));
     if(!pillarHasRows&&!editMode)return;
-    const retireLabelP = p.retired ? 'Unretire pillar' : 'Retire pillar';
     const pedit=editMode?`<span class="pname" contenteditable="true" data-pname="${p.key}">${esc(p.name)}</span>
-      <button class="ed-btn" data-addcap="${p.key}">+ Capability</button><button class="ed-btn" data-retirepillar="${p.key}">${retireLabelP}</button>${p.retired?'<span class="retired-tag on-dark">retired</span>':''}`:esc(p.name)+(p.retired?' <span class="retired-tag on-dark">retired</span>':'');
-    let body=`<tr class="pillar-band ${p.retired?'retired':''}"><td colspan="${nCols}">Pillar ${pLetter(p.key)} — ${pedit}</td></tr>`;
+      <button class="ed-btn" data-addcap="${p.key}">+ Capability</button><button class="ed-btn danger" data-delpillar="${p.key}">× Pillar</button>`:esc(p.name);
+    let body=`<tr class="pillar-band"><td colspan="${nCols}">Pillar ${pLetter(p.key)} — ${pedit}</td></tr>`;
     p.caps.forEach(c=>{
       const subsShown=c.subs.filter(s=>!effNeededOnly||S.needs[s.id]);
       if(!subsShown.length&&!editMode)return;
       const pr=S.moscow[c.id]; const inScope=capInScope(c);
-      const retireLabelC = c.retired ? 'Unretire capability' : 'Retire capability';
       const cedit=`<span contenteditable="true" data-ctitle="${c.id}">${esc(c.title)}</span>
-        <button class="ed-btn" data-addrow="${c.id}">+ Add</button><button class="ed-btn" data-retirecap="${c.id}">${retireLabelC}</button>${c.retired?'<span class="retired-tag">retired</span>':''}`;
-      body+=`<tr class="cap-band ${c.retired?'retired':''}"><td colspan="${nCols}"><span class="cc">${c.id}</span>${cedit}</td></tr>`;
+        <button class="ed-btn" data-addrow="${c.id}">+ Add</button><button class="ed-btn danger" data-delcap="${c.id}">× Cap</button>`;
+      body+=`<tr class="cap-band"><td colspan="${nCols}"><span class="cc">${c.id}</span>${cedit}</td></tr>`;
       subsShown.forEach(s=>{
-        const needed=inScope&&S.needs[s.id]&&!s.retired;
-        const rowCls = `${needed?'needed':''} ${!inScope?'flat':''} ${s.retired?'sub-retired':''}`.trim();
-        body+=`<tr class="${rowCls}">`;
-        body+=`<td class="sub-lbl ${!inScope?'oos':''}"><span class="qtext" data-sublbl="${s.id}" ${editMode?'contenteditable="true"':''}>${esc(s.q)}</span>${s.retired?' <span class="retired-tag">retired</span>':''}</td>`;
+        const needed=inScope&&S.needs[s.id];
+        body+=`<tr class="${needed?'needed':''} ${!inScope?'flat':''}">`;
+        body+=`<td class="sub-lbl ${!inScope?'oos':''}"><span class="qtext" data-sublbl="${s.id}" ${editMode?'contenteditable="true"':''}>${esc(s.q)}</span></td>`;
         active().forEach(pl=>{const yes=sup(s.id,pl.id);const note=hasNote(s,pl.id);
           const tone=note?((s.rat[pl.id].tone)||'note'):'';
           if(editMode){const mark=yes?`<span class="ck tog-on">✓</span>`:`<span class="ck tog-off">–</span>`;
@@ -330,14 +560,11 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
             else if(needed)mark=pr==='must'?`<span class="ck gap must">✕</span>`:`<span class="ck gap">✕</span>`;
             else mark=`<span class="ck off">–</span>`;
             body+=`<td class="mk ${note?'hasnote':''}" ${note?`data-rat="${s.id}" data-pl="${pl.id}"`:''}>${mark}</td>`;}});
-        if(editMode){
-          const rowLabel = s.retired ? 'Unretire' : 'Retire';
-          body+=`<td class="act"><button class="row-retire" data-retirerow="${s.id}" title="${rowLabel} sub-capability">${rowLabel}</button></td>`;
-        }
+        if(editMode)body+=`<td class="act"><button class="row-del" data-delrow="${s.id}" title="Delete row">×</button></td>`;
         body+='</tr>';
       });
     });
-    html+=`<section class="pillar-card ${p.retired?'pillar-retired':''}"><table class="mtx"><thead>${headRow}</thead><tbody>${body}</tbody></table></section>`;
+    html+=`<section class="pillar-card"><table class="mtx"><thead>${headRow}</thead><tbody>${body}</tbody></table></section>`;
   });
   if(!html)html=`<section class="pillar-card"><table class="mtx"><thead>${headRow}</thead><tbody><tr><td class="sub-lbl" colspan="${nCols}" style="padding:20px 16px;text-align:center;">No rows yet — add a pillar, capability or row.</td></tr></tbody></table></section>`;
   t.innerHTML=html;
@@ -395,9 +622,9 @@ function renderRetired(){const bar=document.getElementById('retiredBar'); if(!ba
   const r=PLATFORMS.filter(p=>p.retired);
   if(!r.length){bar.innerHTML='';bar.style.display='none';return;}
   bar.style.display='flex';
-  bar.innerHTML='<span class="rb-label">Retired vendors \u00b7 data kept, not scored</span>'+
+  bar.innerHTML='<span class="rb-label">Retired \u00b7 data kept, not scored</span>'+
     r.map(p=>`<span class="retired-chip"><b>${esc(p.name)}</b><button data-plrestore="${p.id}">Restore</button></span>`).join('');}
-function renderAll(){renderFramework();renderAgg();renderMatrix();renderScoreboard();renderProfiles();renderRetired();}
+function renderAll(){renderFramework();renderAgg();renderMatrix();renderScoreboard();renderProfiles();renderRetired();renderUseCases();}
 function renderLive(){syncFrameworkState();renderAgg();renderMatrix();renderScoreboard();renderProfiles();}
 
 // ============ RATIONALE POPOVER ============
@@ -435,33 +662,78 @@ function showRatEdit(btn){const sid=btn.dataset.note,pl=btn.dataset.pl,info=SUBI
 document.addEventListener('click',e=>{
   const scl=e.target.closest('[data-seccollapse]'); if(scl){scl.closest('.collapsible').classList.toggle('collapsed');return;}
   const rf=e.target.closest('[data-refine]'); if(rf){rf.closest('.cap').classList.toggle('open');return;}
+
+  // ----- Use case events -----
+  const libAdd=e.target.closest('[data-libadd]'); if(libAdd){ addUseCaseFromLibrary(libAdd.dataset.libadd); renderUseCases(); renderFramework(); return; }
+  if(e.target.id==='btnAddCustomUC'){ addCustomUseCase(); renderUCSelected();
+    requestAnimationFrame(()=>{ const cards=document.querySelectorAll('.uc-card'); const last=cards[cards.length-1]; const t=last&&last.querySelector('.uc-title'); if(t){t.focus();}});
+    return; }
+  const ucDel=e.target.closest('[data-ucdel]'); if(ucDel){ deleteUseCase(ucDel.dataset.ucdel); renderUseCases(); renderFramework(); return; }
+  const capRem=e.target.closest('[data-uccap-remove]'); if(capRem){ toggleUCCap(capRem.dataset.uc, capRem.dataset.cap); renderUCSelected(); renderFramework(); return; }
+  const ucAddCap=e.target.closest('[data-ucaddcap]'); if(ucAddCap){ toggleUCCapPicker(ucAddCap); return; }
+  const ucPick=e.target.closest('[data-ucpick]');
+  if(ucPick){ toggleUCCap(ucPick.dataset.uc, ucPick.dataset.cap);
+    const ucId=ucPick.dataset.uc; renderUCSelected(); renderFramework();
+    const btn=document.querySelector(`[data-ucaddcap="${ucId}"]`); if(btn) toggleUCCapPicker(btn);
+    return; }
+  if(e.target.closest('[data-ucpickclose]')){ closeUCCapPickers(); return; }
+  if(!e.target.closest('.uc-cap-pop') && !e.target.closest('[data-ucaddcap]') && !e.target.closest('[data-libeditaddcap]')) closeUCCapPickers();
+
+  // ----- Library editor events (/usecases page) -----
+  if(e.target.id==='btnAddLibItem'){ libAddItem(); renderLibraryEditor();
+    requestAnimationFrame(()=>{ const cards=document.querySelectorAll('#libEditor .uc-card'); const last=cards[cards.length-1]; const t=last&&last.querySelector('.uc-title'); if(t){t.focus();}});
+    return; }
+  const libDel=e.target.closest('[data-libeditdel]');
+  if(libDel){
+    const item = USE_CASE_LIBRARY.find(x=>x.id===libDel.dataset.libeditdel);
+    if(item && confirm(`Delete "${item.title||'this use case'}" from the library?\n\nExisting assessments that already added this use case keep their copies — only new assessments are affected.`)){
+      libDeleteItem(libDel.dataset.libeditdel); renderLibraryEditor();
+    }
+    return;
+  }
+  const libRem=e.target.closest('[data-libeditremcap]');
+  if(libRem){ libToggleCap(libRem.dataset.lib, libRem.dataset.cap); renderLibraryEditor(); return; }
+  const libAddCap=e.target.closest('[data-libeditaddcap]');
+  if(libAddCap){ toggleLibCapPicker(libAddCap); return; }
+  const libPick=e.target.closest('[data-libeditpick]');
+  if(libPick){
+    const libId=libPick.dataset.lib;
+    libToggleCap(libId, libPick.dataset.cap);
+    renderLibraryEditor();
+    const btn=document.querySelector(`[data-libeditaddcap="${libId}"]`); if(btn) toggleLibCapPicker(btn);
+    return;
+  }
+  if(e.target.closest('[data-libeditpickclose]')){ closeUCCapPickers(); return; }
+
   const noteBtn=e.target.closest('[data-note]'); if(noteBtn&&editMode){showRatEdit(noteBtn);return;}
   const ratCell=e.target.closest('[data-rat]'); if(ratCell&&!editMode){
     if(ratPinned==='cell'&&currentRatCell===ratCell){hideRat();} else {showRatView(ratCell);ratPinned='cell';currentRatCell=ratCell;} return;}
   const ph=e.target.closest('[data-pillar]'); if(ph){const k=ph.dataset.pillar;
     if(collapsedPillars.has(k))collapsedPillars.delete(k);else collapsedPillars.add(k);
     ph.parentElement.classList.toggle('collapsed');return;}
-  const mb=e.target.closest('.moscow button'); if(mb){S.moscow[mb.parentElement.dataset.cap]=mb.dataset.on;renderLive();return;}
+  const mb=e.target.closest('.moscow button'); if(mb){S.moscow[mb.parentElement.dataset.cap]=mb.dataset.on;renderLive();_markChanged();return;}
   const tog=e.target.closest('[data-tog]'); if(tog){const sid=tog.dataset.tog,pl=tog.dataset.pl;
     SUBIDX[sid].sub.sup[pl]=!SUBIDX[sid].sub.sup[pl]; renderMatrix();renderAgg();renderScoreboard();renderProfiles();updateSupportLabels();return;}
   const addrow=e.target.closest('[data-addrow]'); if(addrow){const cap=findCap(addrow.dataset.addrow);
     const id='sx'+(++subCounter); const supObj={};PLATFORMS.forEach(pl=>supObj[pl.id]=false);
-    cap.subs.push({id,q:'New sub-capability — describe a distinguishing requirement',sup:supObj,rat:{},retired:false});
+    cap.subs.push({id,q:'New sub-capability — describe a distinguishing requirement',sup:supObj,rat:{}});
     S.needs[id]=true; reindex(); collapsedPillars.delete(SUBIDX[id].pkey);
     pendingFocus=`[data-sublbl="${id}"]`; renderAll(); return;}
-  // Retire / unretire a sub-capability (data-preserving toggle; replaces delete)
-  const retirerow=e.target.closest('[data-retirerow]'); if(retirerow){const sid=retirerow.dataset.retirerow;
-    const info=SUBIDX[sid]; if(info) info.sub.retired=!info.sub.retired; renderAll(); return;}
+  const delrow=e.target.closest('[data-delrow]'); if(delrow){const sid=delrow.dataset.delrow;
+    RUBRIC.forEach(p=>p.caps.forEach(c=>{c.subs=c.subs.filter(s=>s.id!==sid);})); delete S.needs[sid]; reindex(); renderAll(); return;}
   const addcap=e.target.closest('[data-addcap]'); if(addcap){const p=findPillar(addcap.dataset.addcap);
-    const id='C'+(++capCounter); p.caps.push({id,title:'New capability',def:'',subs:[],retired:false});
+    const id='C'+(++capCounter); p.caps.push({id,title:'New capability',def:'',subs:[]});
     S.moscow[id]='should'; reindex(); collapsedPillars.delete(p.key);
     pendingFocus=`[data-ctitle="${id}"]`; renderAll(); return;}
-  // Retire / unretire a capability (data-preserving toggle; replaces delete)
-  const retirecap=e.target.closest('[data-retirecap]'); if(retirecap){const cap=findCap(retirecap.dataset.retirecap);
-    if(cap) cap.retired=!cap.retired; renderAll(); return;}
-  // Retire / unretire a pillar (data-preserving toggle; replaces delete)
-  const retirepil=e.target.closest('[data-retirepillar]'); if(retirepil){const p=findPillar(retirepil.dataset.retirepillar);
-    if(p) p.retired=!p.retired; renderAll(); return;}
+  const delcap=e.target.closest('[data-delcap]'); if(delcap){const capId=delcap.dataset.delcap;const cap=findCap(capId);
+    if(confirm(`Delete capability "${cap.title}" and its ${cap.subs.length} sub-capabilities?`)){
+      cap.subs.forEach(s=>delete S.needs[s.id]); delete S.moscow[capId];
+      RUBRIC.forEach(p=>{p.caps=p.caps.filter(c=>c.id!==capId);}); reindex(); renderAll();} return;}
+  const delp=e.target.closest('[data-delpillar]'); if(delp){const p=findPillar(delp.dataset.delpillar);
+    const subN=p.caps.reduce((a,c)=>a+c.subs.length,0);
+    if(confirm(`Delete pillar "${p.name}" with ${p.caps.length} capabilities and ${subN} sub-capabilities?`)){
+      p.caps.forEach(c=>{c.subs.forEach(s=>delete S.needs[s.id]);delete S.moscow[c.id];});
+      RUBRIC=RUBRIC.filter(x=>x.key!==p.key); reindex(); renderAll();} return;}
   const prt=e.target.closest('[data-plretire]'); if(prt){const p=PLATFORMS.find(x=>x.id===prt.dataset.plretire);
     if(active().length<=2){alert('Keep at least two active vendors to compare.');return;}
     if(p)p.retired=true; renderAll(); return;}
@@ -472,25 +744,35 @@ document.addEventListener('click',e=>{
     RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{s.sup[id]=false;})));
     reindex();renderAll();return;}
   if(e.target.id==='addPillarBtn'){const key='P'+(++pillarCounter);
-    RUBRIC.push({key,name:'New pillar',caps:[],retired:false}); reindex();
+    RUBRIC.push({key,name:'New pillar',caps:[]}); reindex();
     pendingFocus=`[data-pname="${key}"]`; renderAll(); return;}
 });
-// dismiss pinned popover on outside click
 document.addEventListener('click',e=>{ if(e.target.closest('#ratPop')||e.target.closest('[data-rat]')||e.target.closest('[data-note]'))return; if(ratPinned)hideRat(); });
-// hover preview (view mode only, when not pinned)
 document.addEventListener('mouseover',e=>{ if(editMode||ratPinned)return; const c=e.target.closest('[data-rat]'); if(c){clearTimeout(ratHideTimer);showRatView(c);} });
 document.addEventListener('mouseout',e=>{ if(editMode||ratPinned)return; const c=e.target.closest('[data-rat]'); if(c){ratHideTimer=setTimeout(hideRat,140);} });
 
 document.addEventListener('change',e=>{
-  if(e.target.matches('[data-need]')){S.needs[e.target.dataset.need]=e.target.checked;renderLive();}
+  if(e.target.matches('[data-need]')){S.needs[e.target.dataset.need]=e.target.checked;renderLive();_markChanged();}
 });
 // ===== tab switching =====
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.dataset.panel===t.dataset.tab));
-  hideRat(); window.scrollTo({top:0,behavior:'smooth'});
+  hideRat(); closeUCCapPickers(); window.scrollTo({top:0,behavior:'smooth'});
 }));
 document.addEventListener('blur',e=>{
+  if(e.target.matches('[data-libedittitle]')){const id=e.target.dataset.libedittitle, it=USE_CASE_LIBRARY.find(x=>x.id===id);
+    if(it){ it.title=e.target.textContent.trim(); _markLibChanged(); }
+    return;}
+  if(e.target.matches('[data-libeditdesc]')){const id=e.target.dataset.libeditdesc, it=USE_CASE_LIBRARY.find(x=>x.id===id);
+    if(it){ it.desc=e.target.textContent.trim(); _markLibChanged(); }
+    return;}
+  if(e.target.matches('[data-uctitle]')){const id=e.target.dataset.uctitle,uc=S.useCases.find(u=>u.id===id);
+    if(uc){ uc.title=e.target.textContent.trim(); _markChanged(); renderFramework(); }
+    return;}
+  if(e.target.matches('[data-ucdesc]')){const id=e.target.dataset.ucdesc,uc=S.useCases.find(u=>u.id===id);
+    if(uc){ uc.desc=e.target.textContent.trim(); _markChanged(); }
+    return;}
   if(e.target.matches('[data-sublbl]')){const sid=e.target.dataset.sublbl,info=SUBIDX[sid];
     if(info){const txt=e.target.textContent.trim();info.sub.q=txt||info.sub.q;}
     renderMatrix(); const span=document.querySelector(`[data-subrow="${sid}"] .sub-q span`); if(span&&info)span.textContent=info.sub.q; return;}
@@ -524,22 +806,38 @@ const _rp=el('<div class="rat-pop" id="ratPop"></div>'); document.body.appendChi
 _rp.addEventListener('mouseenter',()=>clearTimeout(ratHideTimer));
 _rp.addEventListener('mouseleave',()=>{ if(ratPinned!=='edit')hideRat(); });
 window.addEventListener('scroll',()=>{ if(ratPinned!=='edit')hideRat(); },true);
-RUBRIC=buildRubric(); normalizeRubric(); reindex(); S=defaultState();
+RUBRIC=buildRubric(); reindex(); S=defaultState();
 renderAll();
 
 // ===== integration API for the persistence layer (js/db.js) =====
 function _setVendorCounter(){vendorCounter=PLATFORMS.reduce((m,p)=>{const n=/^v(\d+)$/.exec(p.id);return n?Math.max(m,+n[1]):m;},0);}
+function _setUseCaseCounter(){useCaseCounter=(S.useCases||[]).reduce((m,u)=>{const n=/^uc(\d+)$/.exec(u.id||'');return n?Math.max(m,+n[1]):m;},0);}
 window.PET={
-  exportData:()=>({platforms:PLATFORMS,rubric:RUBRIC,selections:{moscow:S.moscow,needs:S.needs}}),
-  exportRubric:()=>({platforms:PLATFORMS,rubric:RUBRIC}),
+  exportData:()=>({platforms:PLATFORMS,rubric:RUBRIC,useCases:USE_CASE_LIBRARY,selections:{moscow:S.moscow,needs:S.needs,useCases:S.useCases}}),
+  exportRubric:()=>({platforms:PLATFORMS,rubric:RUBRIC,useCases:USE_CASE_LIBRARY}),
   importData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms; _setVendorCounter();
     RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex();
+    if(Array.isArray(d.useCases)) USE_CASE_LIBRARY = d.useCases;
     const base=defaultState(); const sel=d.selections||{};
-    S={moscow:{...base.moscow,...(sel.moscow||{})},needs:{...base.needs,...(sel.needs||{})}}; collapsedPillars.clear(); renderAll(); },
+    S={moscow:{...base.moscow,...(sel.moscow||{})},needs:{...base.needs,...(sel.needs||{})},useCases:Array.isArray(sel.useCases)?sel.useCases:[]};
+    _setUseCaseCounter(); collapsedPillars.clear(); renderAll(); },
   loadRubricData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms; _setVendorCounter();
-    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex(); S=defaultState(); collapsedPillars.clear(); renderAll(); }
+    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex();
+    if(Array.isArray(d.useCases)) USE_CASE_LIBRARY = d.useCases;
+    S=defaultState(); collapsedPillars.clear(); renderAll(); renderLibraryEditor(); }
 };
-window.PET.applySelections=(sel)=>{const base=defaultState();S={moscow:{...base.moscow,...((sel&&sel.moscow)||{})},needs:{...base.needs,...((sel&&sel.needs)||{})}};collapsedPillars.clear();renderAll();};
-window.PET.getSelections=()=>({moscow:S.moscow,needs:S.needs});
+window.PET.applySelections=(sel)=>{
+  const base=defaultState();
+  S={
+    moscow:{...base.moscow,...((sel&&sel.moscow)||{})},
+    needs:{...base.needs,...((sel&&sel.needs)||{})},
+    useCases:Array.isArray(sel&&sel.useCases)?sel.useCases:[]
+  };
+  _setUseCaseCounter();
+  collapsedPillars.clear();
+  renderAll();
+};
+window.PET.getSelections=()=>({moscow:S.moscow,needs:S.needs,useCases:S.useCases});
 window.PET.setEditMode=(b)=>{editMode=!!b;renderMatrix();};
+window.PET.renderLibraryEditor=()=>renderLibraryEditor();
 document.dispatchEvent(new Event('pet-ready'));
