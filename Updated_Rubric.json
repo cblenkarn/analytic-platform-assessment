@@ -1,0 +1,865 @@
+{
+  "meta": {
+    "title": "Enterprise Analytics Platform Capability Rubric: GA4, Adobe Analytics, CJA, Amplitude",
+    "as_of": "2026-01",
+    "platforms": [
+      { "id": "ga4", "name": "Google Analytics 4", "notes": "GA4 free + GA4 360 treated as one platform. 360 adds unsampled explorations (only when a query would exceed ~1B events; standard Explorations sample above 10M events), higher BigQuery export limits (standard is capped at 1M events/day daily export), subproperties & roll-up properties, Fresh Daily BigQuery export, higher cardinality limits, and SLAs. 360 retail starts at $50,000/year for 25M events/month, scaling toward ~$150,000/yr at high volume." },
+      { "id": "aa", "name": "Adobe Analytics", "notes": "Select/Prime/Ultimate treated as one platform. Analysis Workspace, Attribution IQ, Anomaly Detection, Contribution Analysis. Contribution Analysis and hourly/weekly/monthly anomaly detection are gated above Select/Foundation tiers." },
+      { "id": "cja", "name": "Customer Journey Analytics", "notes": "Adobe Experience Platform-based. Report-time processing, field-based (Select+) and graph-based (Prime+) stitching, AI Assistant, Data Insights Agent, Content Analytics add-on, Forecasting (Select+). HIPAA-ready." },
+      { "id": "amp", "name": "Amplitude", "notes": "Starter(free)/Plus/Growth/Enterprise treated as one platform. Analytics, Experiment (Amplitude took over Statsig's brand/customers May 2026 after OpenAI's $1.1B acquisition — code without the founding team), CDP/Data, Session Replay, Amplitude AI (Ask Amplitude, Global Agent). Billed on MTUs + event volume with 1.2x overage." }
+    ],
+    "methodology": "Built from vendor documentation (support.google.com, experienceleague.adobe.com, amplitude.com/docs), vendor release notes, and reputable independent comparisons (Vendr, Cardinal Path, InfoTrust), cross-referenced against help/docs rather than marketing pages. Support ratings reflect consultant judgment about real-world behavior including tier gating, add-ons, and implementation gotchas. Confidence reflects source strength and recency as of Jan 2026."
+  },
+  "pillars": [
+    {
+      "id": "P1",
+      "name": "Data Collection & Ingestion",
+      "description": "How each platform captures data across web, mobile, server, and offline sources, and how much taxonomy control it imposes.",
+      "capabilities": [
+        {
+          "id": "C1",
+          "name": "Web & Mobile SDK Coverage",
+          "description": "Breadth of first-party collection libraries determines implementation flexibility.",
+          "sub_capabilities": [
+            {
+              "id": "C1a",
+              "question": "Provides a first-party web JavaScript SDK/tag for browser tracking",
+              "support": {
+                "ga4": { "supported": true, "rationale": "gtag.js and Google Tag Manager; also Firebase for apps.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "AppMeasurement.js (legacy) and Web SDK (alloy.js) via Edge Network; Web SDK is the recommended path for new customers.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Uses Experience Platform Web SDK (alloy.js) sending to Edge Network / AEP datasets; can also reuse Adobe Analytics source connector.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Browser SDK 2.x with built-in autocapture; also GTM/Segment integrations.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C1b",
+              "question": "Offers native mobile SDKs for iOS, Android, and cross-platform frameworks (React Native, Flutter)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Firebase SDKs cover iOS, Android, Flutter, React Native, Unity.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Adobe Experience Platform Mobile SDK (iOS, Android; React Native and Flutter wrappers).", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same AEP Mobile SDK feeding Edge Network/AEP; React Native and Flutter extensions available.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "iOS-Swift, Android-Kotlin, React Native, Flutter SDKs, all with autocapture support.",  "confidence": "high" }
+              }
+            },
+            {
+              "id": "C1c",
+              "question": "Auto-captures clicks, page views, and form interactions without upfront per-event tagging",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Enhanced Measurement auto-collects page views, scrolls, outbound clicks, site search, form interactions, video engagement out of the box.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Activity Map captures click data; but Adobe's model is fundamentally tag-and-map (eVars/props/events), so true codeless autocapture is limited vs GA4/Amplitude.", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "CJA analyzes whatever is ingested into AEP; it has no independent autocapture layer — collection depends on Web SDK/other sources you configure.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Autocapture (Browser SDK 2.10+) captures sessions, page views, clicks, form interactions, file downloads, attribution; element interactions require elementInteractions:true. Visual labeling works retroactively.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C1d",
+              "question": "Supports server-side collection (Measurement Protocol, server-side tag manager, Edge Network, or HTTP API)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Measurement Protocol and server-side Google Tag Manager containers.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Bulk Data Insertion API and Data Insertion API for server-side; Edge Network server-side forwarding.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Edge Network server-side; AEP streaming/batch ingestion APIs and source connectors.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "HTTP V2 API, Batch API, and server-side SDKs (Node, Python, Java, Go, etc.).", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C1e",
+              "question": "Supports connected-TV/OTT and streaming-media measurement",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No dedicated OTT/CTV SDK; video engagement events on web only. CTV must be piped via Measurement Protocol with custom work.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Streaming Media Collection with OTT SDKs (Roku, tvOS, etc.).", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Streaming Media Collection now documented for CJA/Edge implementations.", "confidence": "med" },
+                "amp": { "supported": false, "rationale": "No dedicated OTT SDK; would require custom HTTP API integration.", "confidence": "med" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "name": "Data Sources, Offline & Warehouse Ingestion",
+          "description": "Ability to bring in CRM, offline, file, and warehouse data broadens analysis beyond digital.",
+          "sub_capabilities": [
+            {
+              "id": "C2a",
+              "question": "Ingests offline/CRM/POS data via file upload or data import",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Data Import (cost, item, user, offline event data) via CSV/SFTP; offline conversions via Measurement Protocol. Join keys limited.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Data Sources and classifications/SAINT for offline enrichment; Customer Attributes for CRM traits.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Core strength: ingests any online/offline dataset into AEP data lake (call-center, POS, CRM) and blends at person level.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "CSV import, HTTP API, and warehouse imports; profile/group properties.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C2b",
+              "question": "Ingests data directly from cloud data warehouses (Snowflake, BigQuery, Databricks)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No warehouse-to-GA4 ingestion; GA4 is one-directional out to BigQuery. Data Import is file/API only.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "Adobe Analytics report suites cannot ingest from warehouses directly; you'd route via AEP/CJA instead.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "AEP source connectors for cloud storage/warehouses; Data Mirror (with CDC) for Snowflake/BigQuery/Databricks is rolling out.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Warehouse-native import from Snowflake, BigQuery, Databricks, Redshift with append-only or CDC mirror sync;  Snowflake Native Amplitude queries data in place.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C2c",
+              "question": "Enforces data governance at collection (validation, tracking plans, blocking bad data)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Minimal collection-time validation; no native tracking-plan enforcement. Bad events land as-is.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Processing rules, VISTA rules, marketing-channel rules at collection time; report-suite governance.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "AEP schema enforcement (XDM), Data Prep validation, data governance labels/policies.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Amplitude Data: tracking plans, taxonomy validation, observability, AI Data Assistant suggestions.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C2d",
+              "question": "Uses an open/flexible event schema rather than a fixed taxonomy",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Event + parameter model, open; but hard limits on custom dimensions/registered params.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "Fixed taxonomy of eVars, props, and success events that must be pre-allocated and mapped; the defining constraint of the classic model.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Open XDM schema in AEP; eVars/props concept dropped in favor of arbitrary dimensions and report-time derived fields.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Open event + property model with arbitrary user/event/group properties.", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Identity & Profile Management",
+      "description": "How platforms resolve users across devices/channels — the biggest architectural differentiator between web analytics and journey analytics.",
+      "capabilities": [
+        {
+          "id": "C3",
+          "name": "Cross-Device & Cross-Channel Identity",
+          "description": "Deterministic and graph-based stitching quality determines journey accuracy.",
+          "sub_capabilities": [
+            {
+              "id": "C3a",
+              "question": "Provides deterministic cross-device stitching via a logged-in user ID",
+              "support": {
+                "ga4": { "supported": true, "rationale": "User-ID feature plus Google Signals; reporting identity blends User-ID, device, and modeled data.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Cross-Device Analytics (CDA) with field-based stitching via the Experience Cloud ID and a declared person ID.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Field-based stitching (Select+) rekeys events to a person ID across authenticated/unauthenticated events within a dataset.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Amplitude ID merges anonymous device IDs to user IDs deterministically on login, including retroactive merge.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C3b",
+              "question": "Offers identity-graph resolution across multiple identifiers/namespaces",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No true identity graph; relies on User-ID + Google Signals modeling, not a configurable multi-namespace graph.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "Classic Adobe Analytics has no configurable identity graph; CDA stitching is single-key field-based.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Graph-based stitching (Prime+) uses the AEP Identity Service graph to resolve a person ID across namespaces (email, phone, ECID); shares the graph with RTCDP/AJO.", "confidence": "high" },
+                "amp": { "supported": false, "rationale": "Amplitude resolves anonymous-to-known via merge but is not a multi-namespace identity graph like AEP's.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C3c",
+              "question": "Binds anonymous history to a user retroactively on login (backfill)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "User-ID associates future sessions; retroactive stitching of prior anonymous events is not reliably supported in the UI.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "Stitching happens going forward; classic AA does not retroactively rewrite historical anonymous hits at person level.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Replay stitching reprocesses historical data to bind anonymous events to a person ID (lookback window/backfill per package).", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "On merge, prior anonymous events are attributed to the resolved user; visual-labeled and autocaptured events also apply retroactively.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C3d",
+              "question": "Supports account/household-level (B2B) identity analysis",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No account/group entity; user- and session-scoped only.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No native account-level roll-up of individuals; visitor-centric.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "CJA B2B Edition connects individuals to buying groups, accounts, and opportunities.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Accounts add-on enables group/organization-level bucketing and analysis.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C3e",
+              "question": "Works with first-party cookieless / consent-degraded environments via modeling",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Consent Mode v2 with behavioral & conversion modeling to fill gaps when consent is denied.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "First-party server-side (CNAME) collection; but no equivalent to Google's conversion modeling.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Edge Network first-party collection and AEP consent handling; person-based model less cookie-dependent.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "First-party SDK with server-side options; less reliant on third-party cookies but no ML consent modeling.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "Data Modeling & Schema Flexibility",
+      "description": "How dimensions, metrics, and transformations are defined — and whether changes apply retroactively.",
+      "capabilities": [
+        {
+          "id": "C4",
+          "name": "Custom Dimensions, Metrics & Transformations",
+          "description": "Governs analytical flexibility and how easily the model adapts after launch.",
+          "sub_capabilities": [
+            {
+              "id": "C4a",
+              "question": "Supports calculated/derived metrics defined in-platform",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Calculated metrics available (limited number per property); custom metrics via parameters.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Calculated Metrics builder with segments, functions, containers — very mature.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Calculated metrics plus report-time derived fields that transform data on the fly.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Custom/computed metrics and formulas; derived properties.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C4b",
+              "question": "Applies data transformations retroactively to historical data without reprocessing pipelines",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Most config changes (custom dimensions, channel groups partially) are not fully retroactive; historical data largely fixed.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "Collection-time processing (processing rules, VISTA) is not retroactive; classifications and some report-time attribution are exceptions.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Signature strength: report-time processing and derived fields transform data retroactively across all reporting without re-ingesting.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Visual labeling and many transformations apply retroactively; data is event-stored and re-queried.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C4c",
+              "question": "Supports lookups/classifications (SAINT-style enrichment) of dimension values",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No SAINT equivalent; limited to data import joins on keys.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Classifications / SAINT and Classification Rule Builder are core AA features.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Lookup datasets and classifications supported via AEP + Analysis Workspace joins.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Lookup tables and property enrichment supported.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C4d",
+              "question": "Provides virtual report views/data views to reshape data per audience without new collection",
+              "support": {
+                "ga4": { "supported": true, "rationale": "360 subproperties and roll-up properties act as filtered/aggregated views (at additional 50% event cost).", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Virtual Report Suites reshape and segment data without new collection.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Data Views are the core reshaping layer — per-view components, attribution, session definitions, all report-time.", "confidence": "high" },
+                "amp": { "supported": false, "rationale": "Projects segment access but there's no equivalent report-time 'data view' reshaping layer per audience.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C4e",
+              "question": "Handles high-cardinality dimensions without heavy sampling or '(other)' bucketing",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Standard properties bucket high-cardinality values into '(other)'; 360 enables automatic custom tables to reduce this.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Handles high-cardinality eVars well; unsampled by design.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Processes full datasets without sampling in most workflows.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Handles high-cardinality properties; some UI limits on group-by breadth.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "Core Analytics & Exploration",
+      "description": "Depth of self-serve analysis: segmentation, funnels, pathing, retention, and freeform exploration.",
+      "capabilities": [
+        {
+          "id": "C5",
+          "name": "Segmentation & Ad-hoc Exploration",
+          "description": "The workhorse of analysis — flexibility of segments and free-form workspace.",
+          "sub_capabilities": [
+            {
+              "id": "C5a",
+              "question": "Provides a free-form drag-and-drop exploration workspace",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Explorations module (free-form, funnel, path, cohort, segment overlap). Less powerful than Workspace/Amplitude.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Analysis Workspace is the industry benchmark for free-form analysis.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same Analysis Workspace, extended to cross-channel data.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Highly self-serve chart builder (Event Segmentation, funnels, etc.).", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C5b",
+              "question": "Supports sequential segmentation (event order, then/before/after logic)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Sequence segments in Explorations with step ordering and time constraints.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Sequential segments with then/within logic, hit/visit/visitor containers.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same segmentation engine, person-scoped.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Behavioral cohorts with sequence, order, and time-window conditions.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C5c",
+              "question": "Runs unsampled analysis on large datasets in the UI",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Standard Explorations sample above 10M events; 360 raises to ~1B and offers unsampled explorations only when a query would exceed 1B events. True unsampled requires BigQuery.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Analysis Workspace is unsampled by default.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Processes full datasets without sampling in standard workflows.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Core analyses run on full data; some very large queries may use approximation but not GA-style sampling.", "confidence": "med" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C6",
+          "name": "Funnels, Pathing, Retention & Flow",
+          "description": "Behavioral analysis techniques where product-analytics tools historically lead.",
+          "sub_capabilities": [
+            {
+              "id": "C6a",
+              "question": "Supports ordered and unordered funnel analysis with conversion windows",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Funnel exploration with open/closed funnels and step ordering.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Fallout visualization with flexible step logic.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same fallout/flow tooling, cross-channel.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Best-in-class funnels with ordered/unordered/any-order, conversion windows, and micro-segmentation.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C6b",
+              "question": "Provides open-ended path/journey analysis (next/previous step, Sankey/flow)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Path exploration (forward and backward from a node).", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Flow visualization with next/previous nodes.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Flow plus Journey Canvas for cross-channel journeys.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Pathfinder and Journeys for open-ended path discovery.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C6c",
+              "question": "Offers advanced retention/cohort analysis (N-day, unbounded, rolling, bracket)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Cohort exploration with limited retention criteria.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Cohort tables in Workspace with rolling/retention/churn options.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same cohort tables, cross-channel.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Deepest retention analysis: N-day, unbounded, bracketed, rolling; retention drivers.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C6d",
+              "question": "Retroactively analyzes funnels/segments defined after data was collected",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Explorations query historical events retroactively within retention limits.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Segments/fallout apply retroactively to collected data.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Report-time model is inherently retroactive.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "All events retained and re-queryable; funnels/cohorts fully retroactive.", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P5",
+      "name": "Attribution & Marketing Analytics",
+      "description": "Multi-touch attribution, channel modeling, and statistical diagnostics — where Adobe and GA4 lead over product-analytics tools.",
+      "capabilities": [
+        {
+          "id": "C7",
+          "name": "Attribution Modeling",
+          "description": "Rule-based and algorithmic attribution for marketing measurement.",
+          "sub_capabilities": [
+            {
+              "id": "C7a",
+              "question": "Offers data-driven/algorithmic attribution beyond simple rules",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Data-Driven Attribution is the default model, using ML across paths; also last-click and Google Ads-preferred.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Attribution IQ algorithmic model uses the Harsanyi Dividend from cooperative game theory, a generalization of the Shapley value solution.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same Attribution IQ models plus cross-channel attribution and incrementality.", "confidence": "high" },
+                "amp": { "supported": false, "rationale": "Amplitude does multi-touch and first/last-touch attribution but lacks a mature algorithmic marketing-attribution model comparable to DDA/Attribution IQ.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C7b",
+              "question": "Provides a broad set of rule-based multi-touch models (linear, U-shaped, time-decay, custom, comparable in one view)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "GA4 deprecated most rule-based models; effectively DDA + last-click (paid/organic) remain.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Ten models incl. custom, side-by-side in the Attribution IQ panel; any metric, any lookback.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same Attribution IQ model set, applied cross-channel.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "First/last/linear multi-touch available but marketing-channel focus is shallower than Adobe.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C7c",
+              "question": "Includes marketing-channel attribution with configurable channel rules",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Default and custom channel groups; deep Google Ads/DV360/SA360 linking.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Marketing Channel processing rules (collection-time).", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Marketing channels via source connector or report-time derived fields.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Channel/attribution via UTM and marketing analytics module, less rich than Adobe.", "confidence": "med" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C8",
+          "name": "Statistical Diagnostics",
+          "description": "Anomaly detection, contribution/root-cause, and forecasting for proactive insight.",
+          "sub_capabilities": [
+            {
+              "id": "C8a",
+              "question": "Provides automated anomaly detection with statistical confidence bands",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Insights anomaly detection in reports; less configurable.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Anomaly Detection with hourly/daily/weekly/monthly granularity and seasonality; hourly+ gated above Select/Foundation.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same anomaly detection engine cross-channel.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Anomaly detection and automated monitors/alerts.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C8b",
+              "question": "Offers contribution/root-cause analysis to explain an anomaly",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No dedicated contribution-analysis engine; manual investigation.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Contribution Analysis (Cramér's V + Pearson residuals) on top 50,000 items/dimension; token-limited and excludes Select/Foundation tiers.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Contribution Analysis available; Data Insights Agent adds AI-assisted root-cause.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Root Cause / anomaly explanation via AI Agents and impact analysis.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C8c",
+              "question": "Includes native time-series forecasting inside dashboards",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No native forecasting in UI beyond predictive metrics; forecasting done in BigQuery/BQML.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "No general-purpose time-series forecasting in Analysis Workspace (predictive is limited).", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Forecasting (Select+) uses Meta's open-source Prophet model for time-series prediction with a 95% prediction interval inside freeform tables/line charts.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Forecasting on metrics and predictive charts.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P6",
+      "name": "AI & Machine Learning",
+      "description": "Predictive metrics, predictive audiences, and natural-language/generative AI assistants.",
+      "capabilities": [
+        {
+          "id": "C9",
+          "name": "Predictive Metrics & Audiences",
+          "description": "Native churn/purchase/LTV prediction and predictive segment creation.",
+          "sub_capabilities": [
+            {
+              "id": "C9a",
+              "question": "Ships native predictive metrics (churn, purchase probability, predicted revenue)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Purchase probability, churn probability, predicted revenue — but require, in the last 28 days over a seven-day period, at least 1,000 returning users who triggered the condition and at least 1,000 who did not, plus purchase events, to stay eligible.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No native churn/purchase-probability scoring in classic AA.", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "No native GA propensity metric; churn/conversion scoring comes from AEP Customer AI (separate) ingested into CJA.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Predictive cohorts/scores (e.g., likelihood to convert/churn) available on higher tiers.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C9b",
+              "question": "Builds predictive audiences that can be activated downstream",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Predictive audiences (e.g., 'Likely 7-day purchasers') auto-shared to Google Ads/DV360/SA360.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "Not natively; requires Adobe Audience Manager/RTCDP.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Behavioral/predictive audiences (with AEP Customer AI scores) activatable via RTCDP.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Predictive cohorts sync to destinations via Amplitude CDP.", "confidence": "med" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C10",
+          "name": "Generative & Natural-Language AI",
+          "description": "Conversational querying, AI-generated insights, and content AI.",
+          "sub_capabilities": [
+            {
+              "id": "C10a",
+              "question": "Offers a natural-language / conversational query assistant",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Gemini-powered insights in GA4 and via Gemini Enterprise connectors for NL querying.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "AI Assistant available for Adobe Analytics (NL product knowledge + some analysis).", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "AI Assistant (all tiers) plus Data Insights Agent (generative NL, builds Workspace visualizations); Data Insights Agent free for a limited time then needs Agent Orchestrator license.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Ask Amplitude and Global Agent (via Amazon Bedrock LLM) create charts and answer questions in NL.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C10b",
+              "question": "Auto-generates written insights/summaries of report data",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Automated & custom Insights narratives.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Intelligent Alerts and generated insights/captions.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Intelligent Captions translate visualizations to NL summaries; auto-generated insights.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "AI-generated summaries/insights and notebooks.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C10c",
+              "question": "Provides content-performance AI (attribute-level content analytics)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No content-attribute AI; page/content reports only.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "No content-featurization AI in classic AA.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Content Analytics uses AI featurization to break assets into attributes and measure impact; add-on (rollout Mar 2025), English-only, and no longer licensable as a CJA add-on as of Feb 2026 (standalone purchase required).", "confidence": "high" },
+                "amp": { "supported": false, "rationale": "No content-attribute AI equivalent.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P7",
+      "name": "Experimentation & Personalization",
+      "description": "Native A/B testing, feature flags, and personalization — a decisive Amplitude advantage.",
+      "capabilities": [
+        {
+          "id": "C11",
+          "name": "Native Experimentation",
+          "description": "Whether the platform can run and analyze experiments itself.",
+          "sub_capabilities": [
+            {
+              "id": "C11a",
+              "question": "Includes a native A/B testing engine with a statistics engine",
+              "support": {
+                "ga4": { "supported": false, "rationale": "GA4 has no native A/B engine; Google Optimize was sunset in 2023. Relies on third-party tools.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "Adobe's testing lives in Adobe Target (A4T integration), a separate product; AA only analyzes results.", "confidence": "high" },
+                "cja": { "supported": false, "rationale": "CJA can evaluate lift/confidence of experiments from any connected data source but doesn't run tests itself.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Amplitude Experiment: full A/B engine with sequential testing, T-tests, CUPED, multi-armed bandits, mutual exclusion groups. Note: Amplitude took over Statsig's brand/customers in May 2026 (code without the founding engineering team), a support-continuity risk to monitor.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C11b",
+              "question": "Provides native feature flags / feature management",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No feature-flag capability.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No feature-flag capability.", "confidence": "high" },
+                "cja": { "supported": false, "rationale": "No feature-flag capability.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Enterprise-grade feature flags, client/server-side, local/remote evaluation, payloads; unlimited flags even on free tier.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C11c",
+              "question": "Analyzes experiment results using the platform's own behavioral metrics/segments",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No native experiment analysis.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Analytics for Target (A4T) analyzes Target tests with AA metrics/segments.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Can evaluate experiment lift/confidence from any connected dataset.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Experiment Results ties test analysis to full behavioral data; can bring your own flags.", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P8",
+      "name": "Qualitative & Experience Analytics",
+      "description": "Session replay, heatmaps, and frustration signals that explain the 'why' behind metrics.",
+      "capabilities": [
+        {
+          "id": "C12",
+          "name": "Session Replay & Heatmaps",
+          "description": "Visual behavioral analytics — historically a gap for analytics suites.",
+          "sub_capabilities": [
+            {
+              "id": "C12a",
+              "question": "Offers native session replay for web and mobile",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No native session replay.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No native session replay (Adobe positions this via partners).", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "No native session replay.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Native Session Replay for web and mobile, integrated with charts/funnels; sampling & targeted capture.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C12b",
+              "question": "Provides heatmaps / zone/click analysis",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No native heatmaps.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Activity Map provides click/link overlays (a limited heatmap).", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "No native heatmaps.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Heatmaps and Zoning insights (click, selector, scroll).", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C12c",
+              "question": "Detects frustration signals (rage clicks, dead clicks, errors)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No frustration-signal detection.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No frustration-signal detection.", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "No frustration-signal detection.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Session Replay Agent surfaces rage clicks, dead clicks, form abandonment, console/network errors.", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P9",
+      "name": "Activation & Ecosystem",
+      "description": "Ad-platform integrations, native CDP, and audience activation to downstream systems.",
+      "capabilities": [
+        {
+          "id": "C13",
+          "name": "Ad Platform & Ecosystem Integrations",
+          "description": "Depth of native connections to ad and marketing platforms.",
+          "sub_capabilities": [
+            {
+              "id": "C13a",
+              "question": "Has deep native integrations with major ad platforms",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Best-in-class for Google stack: Google Ads, DV360, SA360; audience sharing built in. Non-Google (Meta/TikTok) requires third-party.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Integrations via Adobe Advertising and Experience Cloud; not as turnkey for non-Adobe ad platforms.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Activation via RTCDP to many ad/marketing destinations.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "65+ turnkey integrations incl. Google Ads, Meta, TikTok via Amplitude CDP.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C13b",
+              "question": "Includes native CDP capabilities (audience building + activation)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Audiences exist but no true CDP; activation limited to Google ecosystem.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "CDP is a separate product (Adobe RTCDP), not part of AA.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Built on AEP; tightly integrated with RTCDP for profiles and activation (though RTCDP is a distinct license).", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Amplitude CDP built in: identity resolution, governance, audience syncing without a separate tool.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C13c",
+              "question": "Supports reverse-ETL / audience activation to CRM, email, push",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No general reverse-ETL; activation confined to Google destinations.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "Not natively; via RTCDP/Audience Manager.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "RTCDP destinations catalog + Journey Optimizer/Campaign for activation.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Amplitude Activation syncs cohorts to email/push/ads; supports reverse-ETL patterns with Hightouch etc.", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P10",
+      "name": "Data Export & Warehousing",
+      "description": "Raw event export, BI connectivity, and warehouse interoperability — critical for enterprise data teams.",
+      "capabilities": [
+        {
+          "id": "C14",
+          "name": "Raw Event Export & Warehouse Interop",
+          "description": "Whether you own and can export raw, unsampled event data.",
+          "sub_capabilities": [
+            {
+              "id": "C14a",
+              "question": "Exports raw, event-level data to a cloud data warehouse",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Free native BigQuery export — the platform's standout feature. Standard daily export capped at 1M events/day; exceed it consistently and the daily export pauses without backfill. 360 removes the cap and adds Fresh Daily.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Data Feeds deliver raw, unsampled, hit-level clickstream to cloud storage; Data Warehouse for aggregated exports.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "AEP Data Access API and Destinations export raw event/row-level data; Full Table Export is the evolution of Data Warehouse.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Recurring event + merged-ID export to Snowflake, BigQuery, Redshift, S3, Kinesis; also raw Export API.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C14b",
+              "question": "Delivers raw export without punitive row/event caps on the base license",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Standard tier's 1M-events/day daily-export cap is a hard gotcha for high-traffic sites; streaming export is uncapped but best-effort with incomplete attribution intraday.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Data Feeds process unlimited rows per request.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Row-level export of all ingested data; subject to AEP guardrails not punitive caps.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Export scales with your contracted volume; no artificial daily cap like GA4 free.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C14c",
+              "question": "Connects natively to major BI tools (Looker, Tableau, Power BI)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Looker Studio native; Tableau/Power BI via BigQuery or connectors.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Report Builder (Excel) and API; BI via data feeds.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "BI via AEP Query Service (PSQL interface) and exports.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Warehouse exports feed any BI; dashboards native.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C14d",
+              "question": "Provides SQL access to the underlying event data",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Full SQL via BigQuery (nested/UNNEST schema learning curve).", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No SQL over AA data directly; must export to a warehouse first.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "AEP Query Service offers SQL access to the data lake (Data Distiller for advanced).", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Snowflake Native Amplitude and warehouse exports enable SQL; no in-product SQL editor for core analysis.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P11",
+      "name": "Privacy, Consent & Governance",
+      "description": "Compliance posture: consent, residency, certifications, HIPAA/BAA, retention, and access control.",
+      "capabilities": [
+        {
+          "id": "C15",
+          "name": "Compliance & Certifications",
+          "description": "Regulatory readiness that gates use in healthcare, government, and the EU.",
+          "sub_capabilities": [
+            {
+              "id": "C15a",
+              "question": "Integrates with consent management and honors consent signals",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Consent Mode v2, integrations with OneTrust/Cookiebot; models conversions when consent denied.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Consent handling via Edge/AEP and tag-based CMP integrations.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "AEP consent policies and data governance labels enforce consent.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Consent controls in SDK/replay; CMP integrations.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C15b",
+              "question": "Supports HIPAA compliance with a signed BAA",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Google does not sign a BAA for GA; not usable with PHI. Server-side stripping only mitigates risk.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "Adobe Analytics is NOT HIPAA-ready per Adobe.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "CJA is HIPAA-ready; AEP/CJA covered under Adobe's SOC 2 + HIPAA scope, with BAA and Healthcare Shield options.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "HIPAA compliance and BAA available on Enterprise plan.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C15c",
+              "question": "Holds FedRAMP authorization for government use",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Google Cloud/Gemini via Vertex hold FedRAMP High; GA4 itself is not the typical FedRAMP vehicle — validate scope.", "confidence": "low" },
+                "aa": { "supported": false, "rationale": "Adobe Analytics is not FedRAMP-authorized (FedRAMP applies to specific Adobe gov products).", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "CJA/AEP not FedRAMP-authorized as of early 2026 (holds SOC 2, ISO, HIPAA, IRAP for some regions).", "confidence": "med" },
+                "amp": { "supported": false, "rationale": "No FedRAMP authorization.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C15d",
+              "question": "Offers regional data residency (EU/US/APAC)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Limited residency control; data processed in Google's global infrastructure — a repeated EU DPA concern.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Report-suite data center selection (Americas/EU/APAC).", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "AEP sandbox/region selection for residency.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "EU and US data residency; residency options on Enterprise.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C15e",
+              "question": "Automates right-to-be-forgotten / DSAR deletion requests",
+              "support": {
+                "ga4": { "supported": true, "rationale": "User Deletion API; retention controls (2–14 months standard).", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Adobe Privacy Service handles access/deletion requests.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "AEP Privacy Service; GDPR deletions propagate to data lake, typically within 7 days.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Privacy/deletion API and DSAR handling; profile deletion via privacy@amplitude.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C15f",
+              "question": "Provides granular per-dataset/per-property data retention controls",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Only 2 or 14 months for standard; 360 adds up to 50 months. Coarse controls.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Configurable retention per contract/report suite.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Rolling data window per connection; dataset-level TTL in AEP.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Retention by tier (1yr Starter/Plus, 2yr Growth, unlimited Enterprise); custom on Enterprise.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P12",
+      "name": "Administration, Developer Experience & Commercial",
+      "description": "Enterprise operations, APIs, access control, and licensing economics.",
+      "capabilities": [
+        {
+          "id": "C16",
+          "name": "Enterprise Administration & Access",
+          "description": "Multi-tenant structure, RBAC, SSO/SCIM, and audit.",
+          "sub_capabilities": [
+            {
+              "id": "C16a",
+              "question": "Supports roll-up / cross-property reporting across business units",
+              "support": {
+                "ga4": { "supported": true, "rationale": "360 roll-up properties (up to 200 source properties) and subproperties; both at additional 50% event cost.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Global/rollup report suites.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Connections combine multiple datasets across BUs at person level.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Portfolio analysis (higher tiers) and multi-project structure.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C16b",
+              "question": "Provides SSO/SAML and SCIM user provisioning",
+              "support": {
+                "ga4": { "supported": true, "rationale": "SSO via Google identity; enterprise SSO through Google Workspace/Cloud Identity.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Adobe Admin Console SSO/SAML and user sync.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same Adobe Admin Console SSO/SAML/user sync.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "SSO on Growth+; SCIM provisioning on Growth/Enterprise (SSO prerequisite). Gated behind higher tiers.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C16c",
+              "question": "Provides fine-grained role-based access control and audit logs",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Property/account roles; 360 subproperties enable data-level access separation. Audit via change history.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Admin Console RBAC, component/segment governance, audit logs.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "AEP attribute-based access control, object-level permissions, and audit.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Org/project permissions; full custom RBAC only on Enterprise; no native idle-user report.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C16d",
+              "question": "Offers a contractual uptime SLA and enterprise support/TAM",
+              "support": {
+                "ga4": { "supported": true, "rationale": "SLAs and support only on GA4 360; free tier has no SLA or dedicated support.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Enterprise SLAs and support/TAM standard.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Enterprise SLAs and support standard.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Dedicated support, CSM, and custom SLAs on Enterprise only.", "confidence": "high" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C17",
+          "name": "Developer Experience & APIs",
+          "description": "Programmatic access and infrastructure-as-code.",
+          "sub_capabilities": [
+            {
+              "id": "C17a",
+              "question": "Exposes public reporting, admin, and data-import APIs",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Data API, Admin API, Measurement Protocol, Data Import.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Analytics 2.0 Reporting API, admin APIs, ingestion APIs.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "CJA APIs plus full AEP API surface (ingestion, query, privacy).", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Export, Dashboard REST, Taxonomy, Behavioral Cohort, Identify APIs.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C17b",
+              "question": "Provides Terraform / infrastructure-as-code provisioning",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No official Terraform provider for GA4 config (some community modules).", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "No official Terraform provider.", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "No official Terraform provider; API-driven config.", "confidence": "low" },
+                "amp": { "supported": false, "rationale": "No official Terraform provider; API/SDK-driven.", "confidence": "med" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C18",
+          "name": "Commercial & Licensing",
+          "description": "Pricing model, free tier, and cost predictability.",
+          "sub_capabilities": [
+            {
+              "id": "C18a",
+              "question": "Offers a genuinely usable free tier",
+              "support": {
+                "ga4": { "supported": true, "rationale": "GA4 free is fully featured for most SMBs; the primary reason for its ubiquity.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No free tier; enterprise contract only.", "confidence": "high" },
+                "cja": { "supported": false, "rationale": "No free tier; enterprise AEP-based contract.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Starter free plan: 10K MTUs / ~2M events, session replay, unlimited feature flags, web experimentation, and AI — unusually generous.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C18b",
+              "question": "Has predictable, transparent pricing",
+              "support": {
+                "ga4": { "supported": false, "rationale": "360 moved to usage-based pricing with a retail start of $50,000/year for 25M events/month, scaling toward ~$150,000/yr at high volume; quotes are otherwise opaque and volume-driven.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "Custom enterprise pricing; opaque and negotiation-driven.", "confidence": "high" },
+                "cja": { "supported": false, "rationale": "AEP + CJA licensing is complex and opaque, with add-ons (Content Analytics, Agent Orchestrator).", "confidence": "high" },
+                "amp": { "supported": false, "rationale": "MTU + event dual billing with 1.2x overage; Plus is public ($49/mo billed annually, scaling to 300K MTUs) but Growth/Enterprise opaque; median annual contract ~$63,720 (Vendr, n=358).", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
