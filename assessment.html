@@ -54,7 +54,7 @@
   <section class="panel" data-panel="results">
     <div class="readme">
       <h4>Reading your results</h4>
-      <p>Weighted fit is the MoSCoW-weighted average of capability coverage. A <strong>Must</strong> capability with zero coverage is a knockout — it flags the platform rather than merely costing points. Profiles below are written against <em>your</em> priorities: strengths are the priorities a platform fully meets, and gaps call out partial or disqualifying coverage.</p>
+      <p>Weighted fit is the MoSCoW-weighted average of capability coverage. A <strong>Must</strong> capability with zero coverage is a knockout — it flags the platform rather than merely costing points. The <strong>Coverage by use case</strong> section below re-cuts the same data around the outcomes captured on the Use Cases tab, and names the platform best positioned to deliver them. Profiles at the bottom are written against <em>your</em> priorities: strengths are the priorities a platform fully meets, and gaps call out partial or disqualifying coverage.</p>
     </div>
     <div class="results-actions"><button class="btn" id="btnPrint">Print / PDF</button></div>
     <h3 class="sec-h">Weighted fit &amp; recommended stack</h3>
@@ -62,11 +62,13 @@
       <div id="rankList" class="rank-list"></div>
       <div id="stackCard" class="stack-card"></div>
     </div>
+    <h3 class="sec-h" id="ucSecHead" hidden>Coverage by use case</h3>
+    <div id="ucCoverage" class="uc-coverage-wrap" hidden></div>
     <h3 class="sec-h">Coverage by pillar</h3>
     <div class="pill-grid"><table class="agg" id="aggTable"></table></div>
     <h3 class="sec-h">Platform profiles</h3>
     <div id="profiles" class="profiles"></div>
-    <p class="footnote">Methodology: coverage = supported ÷ in-scope sub-capabilities per capability; weighted fit averages those by MoSCoW weight (Must 3 · Should 2 · Could 1). Ratings reflect documented platform capability and Merkle SME judgement, not vendor marketing.</p>
+    <p class="footnote">Methodology: capability coverage = supported ÷ in-scope sub-capabilities per capability; weighted fit averages those by MoSCoW weight (Must 3 · Should 2 · Could 1). Use case coverage aggregates the same sub-capability support across the capabilities each use case is mapped to, respecting scope (Won't capabilities are excluded). Best-for-use-cases ranks by number of use cases fully delivered, then average coverage. Ratings reflect documented platform capability and Merkle SME judgement, not vendor marketing.</p>
   </section>
 </div>
 <footer class="site-foot">

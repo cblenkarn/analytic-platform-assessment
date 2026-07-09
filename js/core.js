@@ -271,6 +271,55 @@ function toggleUCCap(ucId, capId){
   _markChanged();
 }
 
+// ============ USE CASE COVERAGE (Results tab) ============
+// For a single use case × platform: coverage = supported sub-caps / in-scope sub-caps,
+// aggregated across the use case's mapped capabilities. Capabilities set to Won't are
+// excluded from the calc (they're not in the client's scope for anything, not just this UC).
+function useCaseCoverage(uc, plId){
+  const capIds = uc.capIds || [];
+  let sup=0, total=0, capsScoped=0, capsFullyMet=0;
+  capIds.forEach(cid=>{
+    const c = findCap(cid);
+    if(!c) return;              // capability was deleted from rubric
+    if(!capInScope(c)) return;  // MoSCoW = Won't
+    const on = onSubs(c);
+    if(!on.length) return;      // all sub-caps deselected
+    capsScoped++;
+    total += on.length;
+    const s = on.filter(x=>!!x.sup[plId]).length;
+    sup += s;
+    if(s === on.length) capsFullyMet++;
+  });
+  return { sup, total, capsScoped, capsFullyMet, cov: total?sup/total:0, scoped: capsScoped>0 };
+}
+
+// Rank platforms by their ability to deliver the captured use cases.
+// Sort: most fully delivered → highest average coverage → weighted fit tie-break.
+function useCaseRanking(){
+  const useCases = S.useCases || [];
+  const fitRows = compute();
+  const fitMap = {}; fitRows.forEach(r=>fitMap[r.id]=r.fit);
+  return active().map(pl=>{
+    let full=0, part=0, none=0, sumCov=0, ucInScope=0;
+    useCases.forEach(uc=>{
+      const cv = useCaseCoverage(uc, pl.id);
+      if(!cv.scoped) return;
+      ucInScope++;
+      sumCov += cv.cov;
+      if(cv.cov >= 0.999) full++;
+      else if(cv.cov > 0) part++;
+      else none++;
+    });
+    return { ...pl, full, part, none, ucInScope,
+      avgCov: ucInScope ? sumCov/ucInScope : 0,
+      fit: fitMap[pl.id] || 0 };
+  }).sort((a,b)=> b.full - a.full || b.avgCov - a.avgCov || b.fit - a.fit );
+}
+
+function _capIdStrip(uc){
+  return (uc.capIds||[]).map(cid=>{const m=capMeta(cid); return m?m.c.id:null;}).filter(Boolean).join(' · ');
+}
+
 // ============ LIBRARY ADMIN (edits USE_CASE_LIBRARY on the /usecases page) ============
 let libCounter = 0;
 function _nextLibId(){
@@ -624,8 +673,102 @@ function renderRetired(){const bar=document.getElementById('retiredBar'); if(!ba
   bar.style.display='flex';
   bar.innerHTML='<span class="rb-label">Retired \u00b7 data kept, not scored</span>'+
     r.map(p=>`<span class="retired-chip"><b>${esc(p.name)}</b><button data-plrestore="${p.id}">Restore</button></span>`).join('');}
-function renderAll(){renderFramework();renderAgg();renderMatrix();renderScoreboard();renderProfiles();renderRetired();renderUseCases();}
-function renderLive(){syncFrameworkState();renderAgg();renderMatrix();renderScoreboard();renderProfiles();}
+
+function renderUseCaseCoverage(){
+  const head = document.getElementById('ucSecHead');
+  const wrap = document.getElementById('ucCoverage');
+  if(!wrap || !head) return;
+  const useCases = S.useCases || [];
+  const has = anyScope();
+  // Hide the section entirely when there's nothing to say — no use cases captured
+  // or no capabilities in scope means no meaningful coverage numbers.
+  if(!useCases.length || !has){
+    head.hidden = true; wrap.hidden = true; wrap.innerHTML = '';
+    return;
+  }
+  head.hidden = false; wrap.hidden = false;
+
+  const ranked = useCaseRanking();
+  const winner = ranked.find(r=>r.ucInScope>0);
+  let html = '';
+
+  // ---- Verdict card ----
+  if(winner){
+    const parts = [];
+    if(winner.full > 0) parts.push(`<b>${winner.full}</b> of ${winner.ucInScope} fully`);
+    if(winner.part > 0) parts.push(`<b>${winner.part}</b> partially`);
+    if(winner.none > 0) parts.push(`<b>${winner.none}</b> not covered`);
+    const covPct = Math.round(winner.avgCov*100);
+    const ucStr = winner.ucInScope === 1 ? '1 in-scope use case' : winner.ucInScope + ' in-scope use cases';
+    const runner = ranked.filter(r=>r.id!==winner.id && r.ucInScope>0)[0];
+    let runnerHtml = '';
+    if(runner){
+      const rPct = Math.round(runner.avgCov*100);
+      const rBits = [];
+      if(runner.full>0) rBits.push(`${runner.full} fully delivered`);
+      rBits.push(`${rPct}% average coverage`);
+      runnerHtml = `<div class="uv-runner">Runner-up: <b>${esc(runner.name)}</b> — ${rBits.join(', ')}.</div>`;
+    }
+    // Which specific use cases does the winner deliver fully? Show up to 3.
+    const winnerFullList = useCases
+      .map(uc=>({uc, cv:useCaseCoverage(uc, winner.id)}))
+      .filter(x=>x.cv.scoped && x.cv.cov>=0.999)
+      .map(x=>x.uc.title||'Untitled');
+    let fullListHtml = '';
+    if(winnerFullList.length){
+      const shown = winnerFullList.slice(0,3).map(t=>esc(t)).join(', ');
+      const more = winnerFullList.length>3 ? ` (+${winnerFullList.length-3} more)` : '';
+      fullListHtml = `<div class="uv-detail">Fully delivers: <b>${shown}</b>${more}.</div>`;
+    }
+    html += `<div class="uc-verdict">
+      <div class="uv-eyebrow">Best platform for your use cases</div>
+      <div class="uv-title">${esc(winner.name)}</div>
+      <div class="uv-body">Delivers ${parts.join(', ')} \u00b7 <b>${covPct}%</b> average coverage across ${ucStr}.</div>
+      ${fullListHtml}
+      ${runnerHtml}
+    </div>`;
+  }
+
+  // ---- Use case × platform matrix ----
+  html += `<div class="pill-grid"><table class="agg">`;
+  html += '<thead><tr><th class="lbl">Use case</th>';
+  active().forEach(p=>html+=`<th>${esc(p.code)}</th>`);
+  html += '</tr></thead><tbody>';
+  useCases.forEach(uc=>{
+    const cells = active().map(pl=>({pl, cv:useCaseCoverage(uc, pl.id)}));
+    const capStrip = _capIdStrip(uc);
+    const capSub = capStrip ? `<div class="uc-caps-sub">${esc(capStrip)}</div>` : `<div class="uc-caps-sub" style="color:var(--gap);">no capabilities mapped</div>`;
+    const scoped = cells.some(c=>c.cv.scoped);
+    if(!scoped){
+      html += `<tr><td class="lbl"><b>${esc(uc.title||'Untitled')}</b>${capSub}</td>`;
+      active().forEach(()=>html+=`<td class="cov"><span class="cell-na">\u2014 out of scope</span></td>`);
+      html += '</tr>';
+      return;
+    }
+    let lead = -1;
+    cells.forEach(c=>{ if(c.cv.scoped && c.cv.cov > lead) lead = c.cv.cov; });
+    html += `<tr><td class="lbl"><b>${esc(uc.title||'Untitled')}</b>${capSub}</td>`;
+    cells.forEach(c=>{
+      const pct = Math.round(c.cv.cov*100);
+      const isLead = c.cv.scoped && c.cv.cov === lead && lead > 0;
+      html += `<td class="cov ${isLead?'leader':''}"><div class="cell-cov"><span class="n">${pct}%</span><span class="mini"><i style="width:${pct}%"></i></span></div></td>`;
+    });
+    html += '</tr>';
+  });
+  // Average use case coverage row
+  html += '<tr class="total"><td class="lbl">Avg. use case coverage</td>';
+  active().forEach(pl=>{
+    const r = ranked.find(x=>x.id===pl.id);
+    const pct = Math.round((r ? r.avgCov : 0) * 100);
+    html += `<td class="cov"><div class="cell-cov"><span class="n">${pct}%</span><span class="mini"><i style="width:${pct}%"></i></span></div></td>`;
+  });
+  html += '</tr></tbody></table></div>';
+
+  wrap.innerHTML = html;
+}
+
+function renderAll(){renderFramework();renderAgg();renderMatrix();renderScoreboard();renderProfiles();renderUseCaseCoverage();renderRetired();renderUseCases();}
+function renderLive(){syncFrameworkState();renderAgg();renderMatrix();renderScoreboard();renderProfiles();renderUseCaseCoverage();}
 
 // ============ RATIONALE POPOVER ============
 let ratPinned=null, currentRatCell=null, ratHideTimer=null;
@@ -664,16 +807,16 @@ document.addEventListener('click',e=>{
   const rf=e.target.closest('[data-refine]'); if(rf){rf.closest('.cap').classList.toggle('open');return;}
 
   // ----- Use case events -----
-  const libAdd=e.target.closest('[data-libadd]'); if(libAdd){ addUseCaseFromLibrary(libAdd.dataset.libadd); renderUseCases(); renderFramework(); return; }
-  if(e.target.id==='btnAddCustomUC'){ addCustomUseCase(); renderUCSelected();
+  const libAdd=e.target.closest('[data-libadd]'); if(libAdd){ addUseCaseFromLibrary(libAdd.dataset.libadd); renderUseCases(); renderFramework(); renderUseCaseCoverage(); return; }
+  if(e.target.id==='btnAddCustomUC'){ addCustomUseCase(); renderUCSelected(); renderUseCaseCoverage();
     requestAnimationFrame(()=>{ const cards=document.querySelectorAll('.uc-card'); const last=cards[cards.length-1]; const t=last&&last.querySelector('.uc-title'); if(t){t.focus();}});
     return; }
-  const ucDel=e.target.closest('[data-ucdel]'); if(ucDel){ deleteUseCase(ucDel.dataset.ucdel); renderUseCases(); renderFramework(); return; }
-  const capRem=e.target.closest('[data-uccap-remove]'); if(capRem){ toggleUCCap(capRem.dataset.uc, capRem.dataset.cap); renderUCSelected(); renderFramework(); return; }
+  const ucDel=e.target.closest('[data-ucdel]'); if(ucDel){ deleteUseCase(ucDel.dataset.ucdel); renderUseCases(); renderFramework(); renderUseCaseCoverage(); return; }
+  const capRem=e.target.closest('[data-uccap-remove]'); if(capRem){ toggleUCCap(capRem.dataset.uc, capRem.dataset.cap); renderUCSelected(); renderFramework(); renderUseCaseCoverage(); return; }
   const ucAddCap=e.target.closest('[data-ucaddcap]'); if(ucAddCap){ toggleUCCapPicker(ucAddCap); return; }
   const ucPick=e.target.closest('[data-ucpick]');
   if(ucPick){ toggleUCCap(ucPick.dataset.uc, ucPick.dataset.cap);
-    const ucId=ucPick.dataset.uc; renderUCSelected(); renderFramework();
+    const ucId=ucPick.dataset.uc; renderUCSelected(); renderFramework(); renderUseCaseCoverage();
     const btn=document.querySelector(`[data-ucaddcap="${ucId}"]`); if(btn) toggleUCCapPicker(btn);
     return; }
   if(e.target.closest('[data-ucpickclose]')){ closeUCCapPickers(); return; }
@@ -768,7 +911,7 @@ document.addEventListener('blur',e=>{
     if(it){ it.desc=e.target.textContent.trim(); _markLibChanged(); }
     return;}
   if(e.target.matches('[data-uctitle]')){const id=e.target.dataset.uctitle,uc=S.useCases.find(u=>u.id===id);
-    if(uc){ uc.title=e.target.textContent.trim(); _markChanged(); renderFramework(); }
+    if(uc){ uc.title=e.target.textContent.trim(); _markChanged(); renderFramework(); renderUseCaseCoverage(); }
     return;}
   if(e.target.matches('[data-ucdesc]')){const id=e.target.dataset.ucdesc,uc=S.useCases.find(u=>u.id===id);
     if(uc){ uc.desc=e.target.textContent.trim(); _markChanged(); }
