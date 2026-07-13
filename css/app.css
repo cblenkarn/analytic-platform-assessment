@@ -493,3 +493,35 @@
 
   /* Small pillar/cap breadcrumb under each use case row title */
   .uc-caps-sub{font-family:var(--mono);font-size:10px;letter-spacing:.03em;color:var(--ink-soft);margin-top:3px;text-transform:none;font-weight:500;}
+  /* ===== Retire / unretire (pillars, capabilities, sub-capabilities) =====
+     Retired items are preserved in place but greyed and excluded from scoring.
+     Same button toggles state; label switches between "Retire" and "Unretire". */
+  .retired-tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--wont);background:var(--wont-bg);padding:1px 6px;border-radius:4px;margin-left:8px;vertical-align:middle;}
+  .retired-tag.on-dark{background:#2a3744;color:#c2cdd1;}
+
+  /* Admin matrix — dim retired rows/sections (single opacity layer per element; a sub row inside
+     a retired pillar or capability is already covered by the ancestor rule, so it isn't re-dimmed). */
+  tr.pillar-band.retired td{opacity:.6;}
+  tr.cap-band.retired td{opacity:.6;}
+  .pillar-card.pillar-retired tr.cap-band td,
+  .pillar-card.pillar-retired td.sub-lbl,
+  .pillar-card.pillar-retired td.mk,
+  .pillar-card.pillar-retired td.act{opacity:.55;}
+  tr.sub-retired td.sub-lbl,
+  tr.sub-retired td.mk,
+  tr.sub-retired td.act{opacity:.55;}
+  tr.sub-retired td.sub-lbl .qtext{font-style:italic;}
+
+  /* Row-level retire / unretire button (wider than the old × delete button to fit the label) */
+  table.mtx thead th.actcol,table.mtx td.act{width:98px;}
+  .row-retire{border:1px solid var(--line);background:#fff;color:var(--ink-soft);font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;padding:3px 9px;border-radius:5px;cursor:pointer;line-height:1.4;}
+  .row-retire:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--yes-bg);}
+
+  /* Workshop (framework / prioritization) view — grey retired items so consultants see they're out of scope */
+  .pillar.pillar-retired > .pillar-head{opacity:.7;}
+  .pillar.pillar-retired > .pillar-body{opacity:.55;}
+  .cap.cap-retired{opacity:.55;}
+  .sub-row.sub-retired .sub-q{font-style:italic;color:var(--ink-soft);}
+
+  /* Pillar coverage table (results tab) — retired pillar rows are dimmed */
+  table.agg tr.row-retired td{opacity:.55;}

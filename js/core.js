@@ -184,15 +184,17 @@ const RAT = {
 };
 function cloneRat(sid){const src=RAT[sid];const out={};if(src)Object.keys(src).forEach(pl=>{out[pl]={note:src[pl].note||'',tone:src[pl].tone||'note',conf:src[pl].conf||''};});return out;}
 function buildRubric(){
-  return SEED.map((p,i)=>({key:String.fromCharCode(65+i), name:p.name, caps:p.caps.map(c=>({
-    id:c.id, title:c.title, def:c.def, subs:c.subs.map(s=>{
-      const sup={}; SEED_ORDER.forEach((pid,j)=>sup[pid]=!!(s.s&&s.s[j])); return {id:s.id, q:s.q, sup, rat:cloneRat(s.id)};
+  return SEED.map((p,i)=>({key:String.fromCharCode(65+i), name:p.name, retired:false, caps:p.caps.map(c=>({
+    id:c.id, title:c.title, def:c.def, retired:false, subs:c.subs.map(s=>{
+      const sup={}; SEED_ORDER.forEach((pid,j)=>sup[pid]=!!(s.s&&s.s[j])); return {id:s.id, q:s.q, sup, rat:cloneRat(s.id), retired:false};
     })
   }))}));
 }
 function normalizeRubric(){
   RUBRIC.forEach((p)=>{ if(!p.key)p.key='P'+(++pillarCounter); if(!p.caps)p.caps=[];
-    p.caps.forEach(c=>{ if(!c.subs)c.subs=[]; c.subs.forEach(s=>{ if(!s.sup)s.sup={}; PLATFORMS.forEach(pl=>{if(typeof s.sup[pl.id]!=='boolean')s.sup[pl.id]=false;}); if(!s.rat)s.rat={}; }); });
+    if(typeof p.retired!=='boolean')p.retired=false;
+    p.caps.forEach(c=>{ if(!c.subs)c.subs=[]; if(typeof c.retired!=='boolean')c.retired=false;
+      c.subs.forEach(s=>{ if(!s.sup)s.sup={}; PLATFORMS.forEach(pl=>{if(typeof s.sup[pl.id]!=='boolean')s.sup[pl.id]=false;}); if(!s.rat)s.rat={}; if(typeof s.retired!=='boolean')s.retired=false; }); });
   });
 }
 function reindex(){ SUBIDX={};
@@ -210,8 +212,13 @@ function _markChanged(){ document.dispatchEvent(new Event('pet-selections-change
 function active(){return PLATFORMS.filter(p=>!p.retired);}
 function sup(subId,plId){return !!(SUBIDX[subId] && SUBIDX[subId].sub.sup[plId]);}
 function supportCount(subId){return active().filter(pl=>sup(subId,pl.id)).length;}
-function capInScope(c){return S.moscow[c.id]!=='wont';}
-function onSubs(c){return c.subs.filter(s=>S.needs[s.id]);}
+function capPillar(c){return RUBRIC.find(p=>p.caps.some(x=>x.id===c.id));}
+function capInScope(c){
+  if(c.retired) return false;
+  const p=capPillar(c); if(p&&p.retired) return false;
+  return S.moscow[c.id]!=='wont';
+}
+function onSubs(c){return c.subs.filter(s=>!s.retired && S.needs[s.id]);}
 function scopedCaps(){const out=[];RUBRIC.forEach(p=>p.caps.forEach(c=>{if(capInScope(c)){const on=onSubs(c);if(on.length)out.push({c,p,on,w:MOSCOW_W[S.moscow[c.id]]});}}));return out;}
 function anyScope(){return scopedCaps().length>0;}
 function coverage(plId,c,on){on=on||onSubs(c);if(!on.length)return {sup:0,on:0,cov:0};const s=on.filter(x=>!!x.sup[plId]).length;return {sup:s,on:on.length,cov:s/on.length};}
@@ -225,7 +232,7 @@ function compute(){
 }
 function pillarAgg(){const out={};
   RUBRIC.forEach(p=>{const caps=p.caps.filter(c=>capInScope(c)&&onSubs(c).length);const wsum=caps.reduce((a,c)=>a+MOSCOW_W[S.moscow[c.id]],0);
-    out[p.key]={inScope:caps.length>0};
+    out[p.key]={inScope:caps.length>0,retired:!!p.retired};
     active().forEach(pl=>{ if(!caps.length){out[p.key][pl.id]=null;return;}
       let acc=0;caps.forEach(c=>{acc+=MOSCOW_W[S.moscow[c.id]]*coverage(pl.id,c).cov;});
       out[p.key][pl.id]=wsum?Math.round(100*acc/wsum):0; }); });
@@ -435,8 +442,9 @@ function renderAgg(){const agg=pillarAgg(),rows=compute(),has=anyScope();
   let body='<tbody>';
   RUBRIC.forEach(p=>{const row=agg[p.key];let lead=-1;
     if(row.inScope)active().forEach(pl=>{if(row[pl.id]>lead)lead=row[pl.id];});
-    body+=`<tr><td class="lbl"><span class="pl-letter">${pLetter(p.key)}</span><b>${esc(p.name)}</b></td>`;
-    active().forEach(pl=>{ if(!row.inScope){body+=`<td class="cov"><span class="cell-na">— out of scope</span></td>`;}
+    const nameHtml=`<span class="pl-letter">${pLetter(p.key)}</span><b>${esc(p.name)}</b>${p.retired?' <span class="retired-tag">retired</span>':''}`;
+    body+=`<tr class="${p.retired?'row-retired':''}"><td class="lbl">${nameHtml}</td>`;
+    active().forEach(pl=>{ if(!row.inScope){body+=`<td class="cov"><span class="cell-na">${p.retired?'— retired':'— out of scope'}</span></td>`;}
       else{const v=row[pl.id];const isLead=v===lead&&lead>0;
         body+=`<td class="cov ${isLead?'leader':''}"><div class="cell-cov"><span class="n">${v}%</span><span class="mini"><i style="width:${v}%"></i></span></div></td>`;}});
     body+='</tr>';});
@@ -448,13 +456,13 @@ function renderAgg(){const agg=pillarAgg(),rows=compute(),has=anyScope();
 
 function renderFramework(){const f=document.getElementById('framework'); if(!f)return; f.innerHTML='';
   RUBRIC.forEach(p=>{const collapsed=collapsedPillars.has(p.key);
-    const pil=el(`<div class="pillar ${collapsed?'collapsed':''}"><div class="pillar-head" data-pillar="${p.key}">
-      <span class="pl-letter">${pLetter(p.key)}</span><h3>Pillar ${pLetter(p.key)} — ${esc(p.name)}</h3>
+    const pil=el(`<div class="pillar ${collapsed?'collapsed':''} ${p.retired?'pillar-retired':''}"><div class="pillar-head" data-pillar="${p.key}">
+      <span class="pl-letter">${pLetter(p.key)}</span><h3>Pillar ${pLetter(p.key)} — ${esc(p.name)}${p.retired?' <span class="retired-tag">retired</span>':''}</h3>
       <span class="pl-count" data-plcount="${p.key}"></span><span class="caret">▼</span></div><div class="pillar-body"></div></div>`);
     const body=pil.querySelector('.pillar-body');
     p.caps.forEach(c=>{
-      const cap=el(`<div class="cap"><div class="cap-top"><span class="cap-id">${c.id}</span>
-        <div class="cap-title-wrap"><div class="cap-title">${esc(c.title)}<span class="selcount" data-selcount="${c.id}"></span></div>
+      const cap=el(`<div class="cap ${c.retired?'cap-retired':''}"><div class="cap-top"><span class="cap-id">${c.id}</span>
+        <div class="cap-title-wrap"><div class="cap-title">${esc(c.title)}${c.retired?' <span class="retired-tag">retired</span>':''}<span class="selcount" data-selcount="${c.id}"></span></div>
           <div class="cap-def">${esc(c.def)}</div></div>
         <div class="moscow big" data-cap="${c.id}"><button data-on="must">Must</button><button data-on="should">Should</button>
           <button data-on="could">Could</button><button data-on="wont">Won't</button></div></div>`);
@@ -474,8 +482,8 @@ function renderFramework(){const f=document.getElementById('framework'); if(!f)r
       if(c.subs.length){
         cap.appendChild(el(`<button class="refine-toggle" data-refine="${c.id}">Refine sub-capabilities (${c.subs.length}) <span class="rc">▾</span></button>`));
         const subWrap=el(`<div class="sub-table"><div class="sub-caption">Sub-capabilities are on by default — uncheck any you don't need</div></div>`);
-        c.subs.forEach(s=>{subWrap.appendChild(el(`<div class="sub-row" data-subrow="${s.id}">
-          <label class="sub-q"><input type="checkbox" data-need="${s.id}"> <span>${esc(s.q)}</span></label></div>`));});
+        c.subs.forEach(s=>{subWrap.appendChild(el(`<div class="sub-row ${s.retired?'sub-retired':''}" data-subrow="${s.id}">
+          <label class="sub-q"><input type="checkbox" data-need="${s.id}"> <span>${esc(s.q)}${s.retired?' <span class="retired-tag">retired</span>':''}</span></label></div>`));});
         cap.appendChild(subWrap);
       } else { cap.appendChild(el(`<div class="cap-empty">No sub-capabilities yet — add them on the Rubric Admin tab.</div>`)); }
       body.appendChild(cap);
@@ -488,12 +496,17 @@ function syncFrameworkState(){
     m.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.on===S.moscow[cap]));
     const cc=m.closest('.cap'); if(cc)cc.classList.toggle('oos-cap',S.moscow[cap]==='wont');});
   document.querySelectorAll('[data-need]').forEach(cb=>{const sid=cb.dataset.need;cb.checked=S.needs[sid];
-    const info=SUBIDX[sid];const disabled=info&&S.moscow[info.cap.id]==='wont';
+    const info=SUBIDX[sid];
+    const capOOS = info && S.moscow[info.cap.id]==='wont';
+    const subRet = info && info.sub.retired;
+    const capRet = info && info.cap.retired;
+    const pilRet = info && (capPillar(info.cap)||{}).retired;
+    const disabled = capOOS || subRet || capRet || pilRet;
     cb.closest('.sub-row').classList.toggle('disabled',disabled);cb.disabled=disabled;});
   RUBRIC.forEach(p=>{let pc=0;
-    p.caps.forEach(c=>{const n=c.subs.filter(s=>S.needs[s.id]).length;if(capInScope(c))pc+=n;
+    p.caps.forEach(c=>{const n=c.subs.filter(s=>!s.retired && S.needs[s.id]).length;if(capInScope(c))pc+=n;
       const tag=document.querySelector(`[data-selcount="${c.id}"]`);
-      if(tag){ if(!capInScope(c)){tag.textContent='out of scope';tag.classList.remove('has');}
+      if(tag){ if(!capInScope(c)){tag.textContent=c.retired?'retired':'out of scope';tag.classList.remove('has');}
         else{tag.textContent=`${n}/${c.subs.length} in scope`;tag.classList.toggle('has',n>0);} }});
     const plc=document.querySelector(`[data-plcount="${p.key}"]`);if(plc)plc.textContent=pc?`${pc} in scope`:'';});}
 
@@ -587,20 +600,23 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
   RUBRIC.forEach(p=>{
     const pillarHasRows=p.caps.some(c=>c.subs.some(s=>!effNeededOnly||S.needs[s.id]));
     if(!pillarHasRows&&!editMode)return;
+    const pRetireLabel=p.retired?'Unretire pillar':'Retire pillar';
     const pedit=editMode?`<span class="pname" contenteditable="true" data-pname="${p.key}">${esc(p.name)}</span>
-      <button class="ed-btn" data-addcap="${p.key}">+ Capability</button><button class="ed-btn danger" data-delpillar="${p.key}">× Pillar</button>`:esc(p.name);
-    let body=`<tr class="pillar-band"><td colspan="${nCols}">Pillar ${pLetter(p.key)} — ${pedit}</td></tr>`;
+      <button class="ed-btn" data-addcap="${p.key}">+ Capability</button><button class="ed-btn" data-retirepillar="${p.key}">${pRetireLabel}</button>${p.retired?'<span class="retired-tag on-dark">retired</span>':''}`
+      :esc(p.name)+(p.retired?' <span class="retired-tag on-dark">retired</span>':'');
+    let body=`<tr class="pillar-band ${p.retired?'retired':''}"><td colspan="${nCols}">Pillar ${pLetter(p.key)} — ${pedit}</td></tr>`;
     p.caps.forEach(c=>{
       const subsShown=c.subs.filter(s=>!effNeededOnly||S.needs[s.id]);
       if(!subsShown.length&&!editMode)return;
       const pr=S.moscow[c.id]; const inScope=capInScope(c);
+      const cRetireLabel=c.retired?'Unretire capability':'Retire capability';
       const cedit=`<span contenteditable="true" data-ctitle="${c.id}">${esc(c.title)}</span>
-        <button class="ed-btn" data-addrow="${c.id}">+ Add</button><button class="ed-btn danger" data-delcap="${c.id}">× Cap</button>`;
-      body+=`<tr class="cap-band"><td colspan="${nCols}"><span class="cc">${c.id}</span>${cedit}</td></tr>`;
+        <button class="ed-btn" data-addrow="${c.id}">+ Add</button><button class="ed-btn" data-retirecap="${c.id}">${cRetireLabel}</button>${c.retired?'<span class="retired-tag">retired</span>':''}`;
+      body+=`<tr class="cap-band ${c.retired?'retired':''}"><td colspan="${nCols}"><span class="cc">${c.id}</span>${cedit}</td></tr>`;
       subsShown.forEach(s=>{
-        const needed=inScope&&S.needs[s.id];
-        body+=`<tr class="${needed?'needed':''} ${!inScope?'flat':''}">`;
-        body+=`<td class="sub-lbl ${!inScope?'oos':''}"><span class="qtext" data-sublbl="${s.id}" ${editMode?'contenteditable="true"':''}>${esc(s.q)}</span></td>`;
+        const needed=inScope&&S.needs[s.id]&&!s.retired;
+        body+=`<tr class="${needed?'needed':''} ${!inScope?'flat':''} ${s.retired?'sub-retired':''}">`;
+        body+=`<td class="sub-lbl ${!inScope?'oos':''}"><span class="qtext" data-sublbl="${s.id}" ${editMode?'contenteditable="true"':''}>${esc(s.q)}</span>${s.retired?' <span class="retired-tag">retired</span>':''}</td>`;
         active().forEach(pl=>{const yes=sup(s.id,pl.id);const note=hasNote(s,pl.id);
           const tone=note?((s.rat[pl.id].tone)||'note'):'';
           if(editMode){const mark=yes?`<span class="ck tog-on">✓</span>`:`<span class="ck tog-off">–</span>`;
@@ -609,11 +625,12 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
             else if(needed)mark=pr==='must'?`<span class="ck gap must">✕</span>`:`<span class="ck gap">✕</span>`;
             else mark=`<span class="ck off">–</span>`;
             body+=`<td class="mk ${note?'hasnote':''}" ${note?`data-rat="${s.id}" data-pl="${pl.id}"`:''}>${mark}</td>`;}});
-        if(editMode)body+=`<td class="act"><button class="row-del" data-delrow="${s.id}" title="Delete row">×</button></td>`;
+        if(editMode){const sRetireLabel=s.retired?'Unretire':'Retire';
+          body+=`<td class="act"><button class="row-retire" data-retirerow="${s.id}" title="${sRetireLabel} sub-capability">${sRetireLabel}</button></td>`;}
         body+='</tr>';
       });
     });
-    html+=`<section class="pillar-card"><table class="mtx"><thead>${headRow}</thead><tbody>${body}</tbody></table></section>`;
+    html+=`<section class="pillar-card ${p.retired?'pillar-retired':''}"><table class="mtx"><thead>${headRow}</thead><tbody>${body}</tbody></table></section>`;
   });
   if(!html)html=`<section class="pillar-card"><table class="mtx"><thead>${headRow}</thead><tbody><tr><td class="sub-lbl" colspan="${nCols}" style="padding:20px 16px;text-align:center;">No rows yet — add a pillar, capability or row.</td></tr></tbody></table></section>`;
   t.innerHTML=html;
@@ -859,24 +876,19 @@ document.addEventListener('click',e=>{
     SUBIDX[sid].sub.sup[pl]=!SUBIDX[sid].sub.sup[pl]; renderMatrix();renderAgg();renderScoreboard();renderProfiles();updateSupportLabels();return;}
   const addrow=e.target.closest('[data-addrow]'); if(addrow){const cap=findCap(addrow.dataset.addrow);
     const id='sx'+(++subCounter); const supObj={};PLATFORMS.forEach(pl=>supObj[pl.id]=false);
-    cap.subs.push({id,q:'New sub-capability — describe a distinguishing requirement',sup:supObj,rat:{}});
+    cap.subs.push({id,q:'New sub-capability — describe a distinguishing requirement',sup:supObj,rat:{},retired:false});
     S.needs[id]=true; reindex(); collapsedPillars.delete(SUBIDX[id].pkey);
     pendingFocus=`[data-sublbl="${id}"]`; renderAll(); return;}
-  const delrow=e.target.closest('[data-delrow]'); if(delrow){const sid=delrow.dataset.delrow;
-    RUBRIC.forEach(p=>p.caps.forEach(c=>{c.subs=c.subs.filter(s=>s.id!==sid);})); delete S.needs[sid]; reindex(); renderAll(); return;}
+  const retirerow=e.target.closest('[data-retirerow]'); if(retirerow){const sid=retirerow.dataset.retirerow;
+    const info=SUBIDX[sid]; if(info){info.sub.retired=!info.sub.retired;} renderAll(); return;}
   const addcap=e.target.closest('[data-addcap]'); if(addcap){const p=findPillar(addcap.dataset.addcap);
-    const id='C'+(++capCounter); p.caps.push({id,title:'New capability',def:'',subs:[]});
+    const id='C'+(++capCounter); p.caps.push({id,title:'New capability',def:'',subs:[],retired:false});
     S.moscow[id]='should'; reindex(); collapsedPillars.delete(p.key);
     pendingFocus=`[data-ctitle="${id}"]`; renderAll(); return;}
-  const delcap=e.target.closest('[data-delcap]'); if(delcap){const capId=delcap.dataset.delcap;const cap=findCap(capId);
-    if(confirm(`Delete capability "${cap.title}" and its ${cap.subs.length} sub-capabilities?`)){
-      cap.subs.forEach(s=>delete S.needs[s.id]); delete S.moscow[capId];
-      RUBRIC.forEach(p=>{p.caps=p.caps.filter(c=>c.id!==capId);}); reindex(); renderAll();} return;}
-  const delp=e.target.closest('[data-delpillar]'); if(delp){const p=findPillar(delp.dataset.delpillar);
-    const subN=p.caps.reduce((a,c)=>a+c.subs.length,0);
-    if(confirm(`Delete pillar "${p.name}" with ${p.caps.length} capabilities and ${subN} sub-capabilities?`)){
-      p.caps.forEach(c=>{c.subs.forEach(s=>delete S.needs[s.id]);delete S.moscow[c.id];});
-      RUBRIC=RUBRIC.filter(x=>x.key!==p.key); reindex(); renderAll();} return;}
+  const retirecap=e.target.closest('[data-retirecap]'); if(retirecap){const cap=findCap(retirecap.dataset.retirecap);
+    if(cap){cap.retired=!cap.retired;} renderAll(); return;}
+  const retirepil=e.target.closest('[data-retirepillar]'); if(retirepil){const p=findPillar(retirepil.dataset.retirepillar);
+    if(p){p.retired=!p.retired;} renderAll(); return;}
   const prt=e.target.closest('[data-plretire]'); if(prt){const p=PLATFORMS.find(x=>x.id===prt.dataset.plretire);
     if(active().length<=2){alert('Keep at least two active vendors to compare.');return;}
     if(p)p.retired=true; renderAll(); return;}
@@ -887,7 +899,7 @@ document.addEventListener('click',e=>{
     RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{s.sup[id]=false;})));
     reindex();renderAll();return;}
   if(e.target.id==='addPillarBtn'){const key='P'+(++pillarCounter);
-    RUBRIC.push({key,name:'New pillar',caps:[]}); reindex();
+    RUBRIC.push({key,name:'New pillar',caps:[],retired:false}); reindex();
     pendingFocus=`[data-pname="${key}"]`; renderAll(); return;}
 });
 document.addEventListener('click',e=>{ if(e.target.closest('#ratPop')||e.target.closest('[data-rat]')||e.target.closest('[data-note]'))return; if(ratPinned)hideRat(); });
@@ -949,7 +961,7 @@ const _rp=el('<div class="rat-pop" id="ratPop"></div>'); document.body.appendChi
 _rp.addEventListener('mouseenter',()=>clearTimeout(ratHideTimer));
 _rp.addEventListener('mouseleave',()=>{ if(ratPinned!=='edit')hideRat(); });
 window.addEventListener('scroll',()=>{ if(ratPinned!=='edit')hideRat(); },true);
-RUBRIC=buildRubric(); reindex(); S=defaultState();
+RUBRIC=buildRubric(); normalizeRubric(); reindex(); S=defaultState();
 renderAll();
 
 // ===== integration API for the persistence layer (js/db.js) =====

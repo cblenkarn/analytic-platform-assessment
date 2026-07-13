@@ -40,97 +40,30 @@ The content is organized as follows:
 </file_summary>
 
 <directory_structure>
+css/
+  app.css
+js/
+  core.js
+  db.js
+supabase/
+  schema.sql
 .gitignore
 admin.html
 assessment.html
 config.example.js
 config.js
-css/app.css
 dashboard.html
 index.html
-js/core.js
-js/db.js
 package.json
 README.md
 robots.txt
-supabase/schema.sql
+Updated_Rubric.json
+usecases.html
 vercel.json
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="assessment.html">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-<meta name="googlebot" content="noindex, nofollow">
-<title>Assessment · Merkle Analytic Platform Assessment</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css">
-<script src="config.js"></script>
-</head>
-<body data-page="assessment">
-<header class="brandbar"><div class="brandbar-inner">
-  <a href="/dashboard" class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></a>
-  <span class="mk-sep"></span><span class="mk-title">Analytic Platform Assessment</span>
-</div></header>
-<div class="subnav">
-  <a class="backlink" href="/dashboard">← Dashboard</a>
-  <span class="sn-title" id="snTitle">Assessment</span>
-  <span class="autosave" id="autosave"><span class="dot"></span><span id="autosaveText">—</span></span>
-</div>
-<div class="wrap">
-  <nav class="tabs">
-    <button class="tab active" data-tab="discovery">1 · Workshop</button>
-    <button class="tab" data-tab="results">2 · Results</button>
-  </nav>
-  <section class="panel active" data-panel="discovery">
-    <div class="readme">
-      <h4>Setting your priorities</h4>
-      <p>Apply a <strong>MoSCoW priority</strong> to each capability — <em>Must</em>, <em>Should</em>, <em>Could</em>, or <em>Won't</em> (out of scope). Priorities alone produce an immediate ranking. Open a capability to fine-tune which sub-capabilities are in play; everything is on by default, so you only adjust where scope is narrower than the standard.</p>
-    </div>
-    <div id="framework"></div>
-  </section>
-  <section class="panel" data-panel="results">
-    <div class="readme">
-      <h4>Reading your results</h4>
-      <p>Weighted fit is the MoSCoW-weighted average of capability coverage. A <strong>Must</strong> capability with zero coverage is a knockout — it flags the platform rather than merely costing points. Profiles below are written against <em>your</em> priorities: strengths are the priorities a platform fully meets, and gaps call out partial or disqualifying coverage.</p>
-    </div>
-    <div class="results-actions"><button class="btn" id="btnPrint">Print / PDF</button></div>
-    <h3 class="sec-h">Weighted fit &amp; recommended stack</h3>
-    <div class="scoreboard">
-      <div id="rankList" class="rank-list"></div>
-      <div id="stackCard" class="stack-card"></div>
-    </div>
-    <h3 class="sec-h">Coverage by pillar</h3>
-    <div class="pill-grid"><table class="agg" id="aggTable"></table></div>
-    <h3 class="sec-h">Platform profiles</h3>
-    <div id="profiles" class="profiles"></div>
-    <p class="footnote">Methodology: coverage = supported ÷ in-scope sub-capabilities per capability; weighted fit averages those by MoSCoW weight (Must 3 · Should 2 · Could 1). Ratings reflect documented platform capability and Merkle SME judgement, not vendor marketing.</p>
-  </section>
-</div>
-<footer class="site-foot">
-  <div class="foot-inner">
-    <div class="foot-brand"><span class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></span><div class="foot-tag">Analytic Platform Assessment</div></div>
-    <div class="foot-method">
-      <h3>About this assessment &amp; methodology</h3>
-      <p>This assessment reflects Merkle's analytics consulting practice &mdash; a structured, vendor-neutral way to match analytics needs to the platforms in market, refined across enterprise platform selections. It is not a feature checklist: every judgement in the underlying rubric encodes our consultants' hands-on experience of where each platform genuinely performs or falls short in production.</p>
-      <p>The method is deliberately simple and defensible. Capabilities are grouped into pillars. You assign a MoSCoW priority to each capability &mdash; <b>Must</b>, <b>Should</b>, <b>Could</b> or <b>Won't</b> &mdash; to express how important it is. Each platform's coverage of a capability is measured from a yes/no assessment of its sub-capabilities, maintained in our master rubric, and rolls up to a priority-weighted fit score (Must&nbsp;3, Should&nbsp;2, Could&nbsp;1). A Must a platform cannot meet at all is treated as a disqualifier rather than a deduction, so a strong all-rounder never outranks a platform that clears every non-negotiable. The output is a best-of-breed recommendation: a lead platform, plus any specialist platforms that close priority gaps.</p>
-      <p class="foot-fine">Assessments represent Merkle's point of view and are validated against current vendor releases at the time of engagement.</p>
-    </div>
-  </div>
-</footer>
-<script src="js/core.js"></script>
-<script type="module" src="js/db.js"></script>
-</body>
-</html>
-</file>
 
 <file path="config.example.js">
 // ── Supabase configuration ───────────────────────────────────────────────
@@ -144,6 +77,1016 @@ window.APP_CONFIG = {
 };
 </file>
 
+<file path="package.json">
+{
+  "name": "merkle-platform-assessment",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Merkle Analytic Platform Assessment — static front-end with Supabase persistence.",
+  "scripts": {
+    "dev": "npx --yes serve ."
+  }
+}
+</file>
+
+<file path="Updated_Rubric.json">
+{
+  "meta": {
+    "title": "Enterprise Analytics Platform Capability Rubric: GA4, Adobe Analytics, CJA, Amplitude",
+    "as_of": "2026-01",
+    "platforms": [
+      { "id": "ga4", "name": "Google Analytics 4", "notes": "GA4 free + GA4 360 treated as one platform. 360 adds unsampled explorations (only when a query would exceed ~1B events; standard Explorations sample above 10M events), higher BigQuery export limits (standard is capped at 1M events/day daily export), subproperties & roll-up properties, Fresh Daily BigQuery export, higher cardinality limits, and SLAs. 360 retail starts at $50,000/year for 25M events/month, scaling toward ~$150,000/yr at high volume." },
+      { "id": "aa", "name": "Adobe Analytics", "notes": "Select/Prime/Ultimate treated as one platform. Analysis Workspace, Attribution IQ, Anomaly Detection, Contribution Analysis. Contribution Analysis and hourly/weekly/monthly anomaly detection are gated above Select/Foundation tiers." },
+      { "id": "cja", "name": "Customer Journey Analytics", "notes": "Adobe Experience Platform-based. Report-time processing, field-based (Select+) and graph-based (Prime+) stitching, AI Assistant, Data Insights Agent, Content Analytics add-on, Forecasting (Select+). HIPAA-ready." },
+      { "id": "amp", "name": "Amplitude", "notes": "Starter(free)/Plus/Growth/Enterprise treated as one platform. Analytics, Experiment (Amplitude took over Statsig's brand/customers May 2026 after OpenAI's $1.1B acquisition — code without the founding team), CDP/Data, Session Replay, Amplitude AI (Ask Amplitude, Global Agent). Billed on MTUs + event volume with 1.2x overage." }
+    ],
+    "methodology": "Built from vendor documentation (support.google.com, experienceleague.adobe.com, amplitude.com/docs), vendor release notes, and reputable independent comparisons (Vendr, Cardinal Path, InfoTrust), cross-referenced against help/docs rather than marketing pages. Support ratings reflect consultant judgment about real-world behavior including tier gating, add-ons, and implementation gotchas. Confidence reflects source strength and recency as of Jan 2026."
+  },
+  "pillars": [
+    {
+      "id": "P1",
+      "name": "Data Collection & Ingestion",
+      "description": "How each platform captures data across web, mobile, server, and offline sources, and how much taxonomy control it imposes.",
+      "capabilities": [
+        {
+          "id": "C1",
+          "name": "Web & Mobile SDK Coverage",
+          "description": "Breadth of first-party collection libraries determines implementation flexibility.",
+          "sub_capabilities": [
+            {
+              "id": "C1a",
+              "question": "Provides a first-party web JavaScript SDK/tag for browser tracking",
+              "support": {
+                "ga4": { "supported": true, "rationale": "gtag.js and Google Tag Manager; also Firebase for apps.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "AppMeasurement.js (legacy) and Web SDK (alloy.js) via Edge Network; Web SDK is the recommended path for new customers.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Uses Experience Platform Web SDK (alloy.js) sending to Edge Network / AEP datasets; can also reuse Adobe Analytics source connector.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Browser SDK 2.x with built-in autocapture; also GTM/Segment integrations.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C1b",
+              "question": "Offers native mobile SDKs for iOS, Android, and cross-platform frameworks (React Native, Flutter)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Firebase SDKs cover iOS, Android, Flutter, React Native, Unity.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Adobe Experience Platform Mobile SDK (iOS, Android; React Native and Flutter wrappers).", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same AEP Mobile SDK feeding Edge Network/AEP; React Native and Flutter extensions available.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "iOS-Swift, Android-Kotlin, React Native, Flutter SDKs, all with autocapture support.",  "confidence": "high" }
+              }
+            },
+            {
+              "id": "C1c",
+              "question": "Auto-captures clicks, page views, and form interactions without upfront per-event tagging",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Enhanced Measurement auto-collects page views, scrolls, outbound clicks, site search, form interactions, video engagement out of the box.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Activity Map captures click data; but Adobe's model is fundamentally tag-and-map (eVars/props/events), so true codeless autocapture is limited vs GA4/Amplitude.", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "CJA analyzes whatever is ingested into AEP; it has no independent autocapture layer — collection depends on Web SDK/other sources you configure.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Autocapture (Browser SDK 2.10+) captures sessions, page views, clicks, form interactions, file downloads, attribution; element interactions require elementInteractions:true. Visual labeling works retroactively.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C1d",
+              "question": "Supports server-side collection (Measurement Protocol, server-side tag manager, Edge Network, or HTTP API)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Measurement Protocol and server-side Google Tag Manager containers.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Bulk Data Insertion API and Data Insertion API for server-side; Edge Network server-side forwarding.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Edge Network server-side; AEP streaming/batch ingestion APIs and source connectors.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "HTTP V2 API, Batch API, and server-side SDKs (Node, Python, Java, Go, etc.).", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C1e",
+              "question": "Supports connected-TV/OTT and streaming-media measurement",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No dedicated OTT/CTV SDK; video engagement events on web only. CTV must be piped via Measurement Protocol with custom work.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Streaming Media Collection with OTT SDKs (Roku, tvOS, etc.).", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Streaming Media Collection now documented for CJA/Edge implementations.", "confidence": "med" },
+                "amp": { "supported": false, "rationale": "No dedicated OTT SDK; would require custom HTTP API integration.", "confidence": "med" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C2",
+          "name": "Data Sources, Offline & Warehouse Ingestion",
+          "description": "Ability to bring in CRM, offline, file, and warehouse data broadens analysis beyond digital.",
+          "sub_capabilities": [
+            {
+              "id": "C2a",
+              "question": "Ingests offline/CRM/POS data via file upload or data import",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Data Import (cost, item, user, offline event data) via CSV/SFTP; offline conversions via Measurement Protocol. Join keys limited.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Data Sources and classifications/SAINT for offline enrichment; Customer Attributes for CRM traits.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Core strength: ingests any online/offline dataset into AEP data lake (call-center, POS, CRM) and blends at person level.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "CSV import, HTTP API, and warehouse imports; profile/group properties.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C2b",
+              "question": "Ingests data directly from cloud data warehouses (Snowflake, BigQuery, Databricks)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No warehouse-to-GA4 ingestion; GA4 is one-directional out to BigQuery. Data Import is file/API only.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "Adobe Analytics report suites cannot ingest from warehouses directly; you'd route via AEP/CJA instead.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "AEP source connectors for cloud storage/warehouses; Data Mirror (with CDC) for Snowflake/BigQuery/Databricks is rolling out.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Warehouse-native import from Snowflake, BigQuery, Databricks, Redshift with append-only or CDC mirror sync;  Snowflake Native Amplitude queries data in place.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C2c",
+              "question": "Enforces data governance at collection (validation, tracking plans, blocking bad data)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Minimal collection-time validation; no native tracking-plan enforcement. Bad events land as-is.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Processing rules, VISTA rules, marketing-channel rules at collection time; report-suite governance.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "AEP schema enforcement (XDM), Data Prep validation, data governance labels/policies.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Amplitude Data: tracking plans, taxonomy validation, observability, AI Data Assistant suggestions.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C2d",
+              "question": "Uses an open/flexible event schema rather than a fixed taxonomy",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Event + parameter model, open; but hard limits on custom dimensions/registered params.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "Fixed taxonomy of eVars, props, and success events that must be pre-allocated and mapped; the defining constraint of the classic model.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Open XDM schema in AEP; eVars/props concept dropped in favor of arbitrary dimensions and report-time derived fields.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Open event + property model with arbitrary user/event/group properties.", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "Identity & Profile Management",
+      "description": "How platforms resolve users across devices/channels — the biggest architectural differentiator between web analytics and journey analytics.",
+      "capabilities": [
+        {
+          "id": "C3",
+          "name": "Cross-Device & Cross-Channel Identity",
+          "description": "Deterministic and graph-based stitching quality determines journey accuracy.",
+          "sub_capabilities": [
+            {
+              "id": "C3a",
+              "question": "Provides deterministic cross-device stitching via a logged-in user ID",
+              "support": {
+                "ga4": { "supported": true, "rationale": "User-ID feature plus Google Signals; reporting identity blends User-ID, device, and modeled data.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Cross-Device Analytics (CDA) with field-based stitching via the Experience Cloud ID and a declared person ID.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Field-based stitching (Select+) rekeys events to a person ID across authenticated/unauthenticated events within a dataset.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Amplitude ID merges anonymous device IDs to user IDs deterministically on login, including retroactive merge.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C3b",
+              "question": "Offers identity-graph resolution across multiple identifiers/namespaces",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No true identity graph; relies on User-ID + Google Signals modeling, not a configurable multi-namespace graph.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "Classic Adobe Analytics has no configurable identity graph; CDA stitching is single-key field-based.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Graph-based stitching (Prime+) uses the AEP Identity Service graph to resolve a person ID across namespaces (email, phone, ECID); shares the graph with RTCDP/AJO.", "confidence": "high" },
+                "amp": { "supported": false, "rationale": "Amplitude resolves anonymous-to-known via merge but is not a multi-namespace identity graph like AEP's.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C3c",
+              "question": "Binds anonymous history to a user retroactively on login (backfill)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "User-ID associates future sessions; retroactive stitching of prior anonymous events is not reliably supported in the UI.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "Stitching happens going forward; classic AA does not retroactively rewrite historical anonymous hits at person level.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Replay stitching reprocesses historical data to bind anonymous events to a person ID (lookback window/backfill per package).", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "On merge, prior anonymous events are attributed to the resolved user; visual-labeled and autocaptured events also apply retroactively.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C3d",
+              "question": "Supports account/household-level (B2B) identity analysis",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No account/group entity; user- and session-scoped only.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No native account-level roll-up of individuals; visitor-centric.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "CJA B2B Edition connects individuals to buying groups, accounts, and opportunities.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Accounts add-on enables group/organization-level bucketing and analysis.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C3e",
+              "question": "Works with first-party cookieless / consent-degraded environments via modeling",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Consent Mode v2 with behavioral & conversion modeling to fill gaps when consent is denied.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "First-party server-side (CNAME) collection; but no equivalent to Google's conversion modeling.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Edge Network first-party collection and AEP consent handling; person-based model less cookie-dependent.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "First-party SDK with server-side options; less reliant on third-party cookies but no ML consent modeling.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "Data Modeling & Schema Flexibility",
+      "description": "How dimensions, metrics, and transformations are defined — and whether changes apply retroactively.",
+      "capabilities": [
+        {
+          "id": "C4",
+          "name": "Custom Dimensions, Metrics & Transformations",
+          "description": "Governs analytical flexibility and how easily the model adapts after launch.",
+          "sub_capabilities": [
+            {
+              "id": "C4a",
+              "question": "Supports calculated/derived metrics defined in-platform",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Calculated metrics available (limited number per property); custom metrics via parameters.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Calculated Metrics builder with segments, functions, containers — very mature.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Calculated metrics plus report-time derived fields that transform data on the fly.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Custom/computed metrics and formulas; derived properties.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C4b",
+              "question": "Applies data transformations retroactively to historical data without reprocessing pipelines",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Most config changes (custom dimensions, channel groups partially) are not fully retroactive; historical data largely fixed.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "Collection-time processing (processing rules, VISTA) is not retroactive; classifications and some report-time attribution are exceptions.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Signature strength: report-time processing and derived fields transform data retroactively across all reporting without re-ingesting.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Visual labeling and many transformations apply retroactively; data is event-stored and re-queried.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C4c",
+              "question": "Supports lookups/classifications (SAINT-style enrichment) of dimension values",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No SAINT equivalent; limited to data import joins on keys.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Classifications / SAINT and Classification Rule Builder are core AA features.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Lookup datasets and classifications supported via AEP + Analysis Workspace joins.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Lookup tables and property enrichment supported.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C4d",
+              "question": "Provides virtual report views/data views to reshape data per audience without new collection",
+              "support": {
+                "ga4": { "supported": true, "rationale": "360 subproperties and roll-up properties act as filtered/aggregated views (at additional 50% event cost).", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Virtual Report Suites reshape and segment data without new collection.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Data Views are the core reshaping layer — per-view components, attribution, session definitions, all report-time.", "confidence": "high" },
+                "amp": { "supported": false, "rationale": "Projects segment access but there's no equivalent report-time 'data view' reshaping layer per audience.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C4e",
+              "question": "Handles high-cardinality dimensions without heavy sampling or '(other)' bucketing",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Standard properties bucket high-cardinality values into '(other)'; 360 enables automatic custom tables to reduce this.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Handles high-cardinality eVars well; unsampled by design.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Processes full datasets without sampling in most workflows.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Handles high-cardinality properties; some UI limits on group-by breadth.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P4",
+      "name": "Core Analytics & Exploration",
+      "description": "Depth of self-serve analysis: segmentation, funnels, pathing, retention, and freeform exploration.",
+      "capabilities": [
+        {
+          "id": "C5",
+          "name": "Segmentation & Ad-hoc Exploration",
+          "description": "The workhorse of analysis — flexibility of segments and free-form workspace.",
+          "sub_capabilities": [
+            {
+              "id": "C5a",
+              "question": "Provides a free-form drag-and-drop exploration workspace",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Explorations module (free-form, funnel, path, cohort, segment overlap). Less powerful than Workspace/Amplitude.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Analysis Workspace is the industry benchmark for free-form analysis.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same Analysis Workspace, extended to cross-channel data.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Highly self-serve chart builder (Event Segmentation, funnels, etc.).", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C5b",
+              "question": "Supports sequential segmentation (event order, then/before/after logic)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Sequence segments in Explorations with step ordering and time constraints.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Sequential segments with then/within logic, hit/visit/visitor containers.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same segmentation engine, person-scoped.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Behavioral cohorts with sequence, order, and time-window conditions.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C5c",
+              "question": "Runs unsampled analysis on large datasets in the UI",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Standard Explorations sample above 10M events; 360 raises to ~1B and offers unsampled explorations only when a query would exceed 1B events. True unsampled requires BigQuery.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Analysis Workspace is unsampled by default.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Processes full datasets without sampling in standard workflows.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Core analyses run on full data; some very large queries may use approximation but not GA-style sampling.", "confidence": "med" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C6",
+          "name": "Funnels, Pathing, Retention & Flow",
+          "description": "Behavioral analysis techniques where product-analytics tools historically lead.",
+          "sub_capabilities": [
+            {
+              "id": "C6a",
+              "question": "Supports ordered and unordered funnel analysis with conversion windows",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Funnel exploration with open/closed funnels and step ordering.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Fallout visualization with flexible step logic.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same fallout/flow tooling, cross-channel.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Best-in-class funnels with ordered/unordered/any-order, conversion windows, and micro-segmentation.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C6b",
+              "question": "Provides open-ended path/journey analysis (next/previous step, Sankey/flow)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Path exploration (forward and backward from a node).", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Flow visualization with next/previous nodes.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Flow plus Journey Canvas for cross-channel journeys.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Pathfinder and Journeys for open-ended path discovery.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C6c",
+              "question": "Offers advanced retention/cohort analysis (N-day, unbounded, rolling, bracket)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Cohort exploration with limited retention criteria.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Cohort tables in Workspace with rolling/retention/churn options.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same cohort tables, cross-channel.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Deepest retention analysis: N-day, unbounded, bracketed, rolling; retention drivers.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C6d",
+              "question": "Retroactively analyzes funnels/segments defined after data was collected",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Explorations query historical events retroactively within retention limits.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Segments/fallout apply retroactively to collected data.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Report-time model is inherently retroactive.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "All events retained and re-queryable; funnels/cohorts fully retroactive.", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P5",
+      "name": "Attribution & Marketing Analytics",
+      "description": "Multi-touch attribution, channel modeling, and statistical diagnostics — where Adobe and GA4 lead over product-analytics tools.",
+      "capabilities": [
+        {
+          "id": "C7",
+          "name": "Attribution Modeling",
+          "description": "Rule-based and algorithmic attribution for marketing measurement.",
+          "sub_capabilities": [
+            {
+              "id": "C7a",
+              "question": "Offers data-driven/algorithmic attribution beyond simple rules",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Data-Driven Attribution is the default model, using ML across paths; also last-click and Google Ads-preferred.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Attribution IQ algorithmic model uses the Harsanyi Dividend from cooperative game theory, a generalization of the Shapley value solution.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same Attribution IQ models plus cross-channel attribution and incrementality.", "confidence": "high" },
+                "amp": { "supported": false, "rationale": "Amplitude does multi-touch and first/last-touch attribution but lacks a mature algorithmic marketing-attribution model comparable to DDA/Attribution IQ.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C7b",
+              "question": "Provides a broad set of rule-based multi-touch models (linear, U-shaped, time-decay, custom, comparable in one view)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "GA4 deprecated most rule-based models; effectively DDA + last-click (paid/organic) remain.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Ten models incl. custom, side-by-side in the Attribution IQ panel; any metric, any lookback.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same Attribution IQ model set, applied cross-channel.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "First/last/linear multi-touch available but marketing-channel focus is shallower than Adobe.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C7c",
+              "question": "Includes marketing-channel attribution with configurable channel rules",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Default and custom channel groups; deep Google Ads/DV360/SA360 linking.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Marketing Channel processing rules (collection-time).", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Marketing channels via source connector or report-time derived fields.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Channel/attribution via UTM and marketing analytics module, less rich than Adobe.", "confidence": "med" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C8",
+          "name": "Statistical Diagnostics",
+          "description": "Anomaly detection, contribution/root-cause, and forecasting for proactive insight.",
+          "sub_capabilities": [
+            {
+              "id": "C8a",
+              "question": "Provides automated anomaly detection with statistical confidence bands",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Insights anomaly detection in reports; less configurable.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Anomaly Detection with hourly/daily/weekly/monthly granularity and seasonality; hourly+ gated above Select/Foundation.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same anomaly detection engine cross-channel.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Anomaly detection and automated monitors/alerts.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C8b",
+              "question": "Offers contribution/root-cause analysis to explain an anomaly",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No dedicated contribution-analysis engine; manual investigation.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Contribution Analysis (Cramér's V + Pearson residuals) on top 50,000 items/dimension; token-limited and excludes Select/Foundation tiers.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Contribution Analysis available; Data Insights Agent adds AI-assisted root-cause.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Root Cause / anomaly explanation via AI Agents and impact analysis.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C8c",
+              "question": "Includes native time-series forecasting inside dashboards",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No native forecasting in UI beyond predictive metrics; forecasting done in BigQuery/BQML.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "No general-purpose time-series forecasting in Analysis Workspace (predictive is limited).", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Forecasting (Select+) uses Meta's open-source Prophet model for time-series prediction with a 95% prediction interval inside freeform tables/line charts.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Forecasting on metrics and predictive charts.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P6",
+      "name": "AI & Machine Learning",
+      "description": "Predictive metrics, predictive audiences, and natural-language/generative AI assistants.",
+      "capabilities": [
+        {
+          "id": "C9",
+          "name": "Predictive Metrics & Audiences",
+          "description": "Native churn/purchase/LTV prediction and predictive segment creation.",
+          "sub_capabilities": [
+            {
+              "id": "C9a",
+              "question": "Ships native predictive metrics (churn, purchase probability, predicted revenue)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Purchase probability, churn probability, predicted revenue — but require, in the last 28 days over a seven-day period, at least 1,000 returning users who triggered the condition and at least 1,000 who did not, plus purchase events, to stay eligible.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No native churn/purchase-probability scoring in classic AA.", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "No native GA propensity metric; churn/conversion scoring comes from AEP Customer AI (separate) ingested into CJA.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Predictive cohorts/scores (e.g., likelihood to convert/churn) available on higher tiers.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C9b",
+              "question": "Builds predictive audiences that can be activated downstream",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Predictive audiences (e.g., 'Likely 7-day purchasers') auto-shared to Google Ads/DV360/SA360.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "Not natively; requires Adobe Audience Manager/RTCDP.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Behavioral/predictive audiences (with AEP Customer AI scores) activatable via RTCDP.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Predictive cohorts sync to destinations via Amplitude CDP.", "confidence": "med" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C10",
+          "name": "Generative & Natural-Language AI",
+          "description": "Conversational querying, AI-generated insights, and content AI.",
+          "sub_capabilities": [
+            {
+              "id": "C10a",
+              "question": "Offers a natural-language / conversational query assistant",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Gemini-powered insights in GA4 and via Gemini Enterprise connectors for NL querying.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "AI Assistant available for Adobe Analytics (NL product knowledge + some analysis).", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "AI Assistant (all tiers) plus Data Insights Agent (generative NL, builds Workspace visualizations); Data Insights Agent free for a limited time then needs Agent Orchestrator license.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Ask Amplitude and Global Agent (via Amazon Bedrock LLM) create charts and answer questions in NL.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C10b",
+              "question": "Auto-generates written insights/summaries of report data",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Automated & custom Insights narratives.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Intelligent Alerts and generated insights/captions.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Intelligent Captions translate visualizations to NL summaries; auto-generated insights.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "AI-generated summaries/insights and notebooks.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C10c",
+              "question": "Provides content-performance AI (attribute-level content analytics)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No content-attribute AI; page/content reports only.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "No content-featurization AI in classic AA.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Content Analytics uses AI featurization to break assets into attributes and measure impact; add-on (rollout Mar 2025), English-only, and no longer licensable as a CJA add-on as of Feb 2026 (standalone purchase required).", "confidence": "high" },
+                "amp": { "supported": false, "rationale": "No content-attribute AI equivalent.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P7",
+      "name": "Experimentation & Personalization",
+      "description": "Native A/B testing, feature flags, and personalization — a decisive Amplitude advantage.",
+      "capabilities": [
+        {
+          "id": "C11",
+          "name": "Native Experimentation",
+          "description": "Whether the platform can run and analyze experiments itself.",
+          "sub_capabilities": [
+            {
+              "id": "C11a",
+              "question": "Includes a native A/B testing engine with a statistics engine",
+              "support": {
+                "ga4": { "supported": false, "rationale": "GA4 has no native A/B engine; Google Optimize was sunset in 2023. Relies on third-party tools.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "Adobe's testing lives in Adobe Target (A4T integration), a separate product; AA only analyzes results.", "confidence": "high" },
+                "cja": { "supported": false, "rationale": "CJA can evaluate lift/confidence of experiments from any connected data source but doesn't run tests itself.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Amplitude Experiment: full A/B engine with sequential testing, T-tests, CUPED, multi-armed bandits, mutual exclusion groups. Note: Amplitude took over Statsig's brand/customers in May 2026 (code without the founding engineering team), a support-continuity risk to monitor.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C11b",
+              "question": "Provides native feature flags / feature management",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No feature-flag capability.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No feature-flag capability.", "confidence": "high" },
+                "cja": { "supported": false, "rationale": "No feature-flag capability.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Enterprise-grade feature flags, client/server-side, local/remote evaluation, payloads; unlimited flags even on free tier.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C11c",
+              "question": "Analyzes experiment results using the platform's own behavioral metrics/segments",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No native experiment analysis.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Analytics for Target (A4T) analyzes Target tests with AA metrics/segments.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Can evaluate experiment lift/confidence from any connected dataset.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Experiment Results ties test analysis to full behavioral data; can bring your own flags.", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P8",
+      "name": "Qualitative & Experience Analytics",
+      "description": "Session replay, heatmaps, and frustration signals that explain the 'why' behind metrics.",
+      "capabilities": [
+        {
+          "id": "C12",
+          "name": "Session Replay & Heatmaps",
+          "description": "Visual behavioral analytics — historically a gap for analytics suites.",
+          "sub_capabilities": [
+            {
+              "id": "C12a",
+              "question": "Offers native session replay for web and mobile",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No native session replay.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No native session replay (Adobe positions this via partners).", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "No native session replay.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Native Session Replay for web and mobile, integrated with charts/funnels; sampling & targeted capture.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C12b",
+              "question": "Provides heatmaps / zone/click analysis",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No native heatmaps.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Activity Map provides click/link overlays (a limited heatmap).", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "No native heatmaps.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Heatmaps and Zoning insights (click, selector, scroll).", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C12c",
+              "question": "Detects frustration signals (rage clicks, dead clicks, errors)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No frustration-signal detection.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No frustration-signal detection.", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "No frustration-signal detection.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Session Replay Agent surfaces rage clicks, dead clicks, form abandonment, console/network errors.", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P9",
+      "name": "Activation & Ecosystem",
+      "description": "Ad-platform integrations, native CDP, and audience activation to downstream systems.",
+      "capabilities": [
+        {
+          "id": "C13",
+          "name": "Ad Platform & Ecosystem Integrations",
+          "description": "Depth of native connections to ad and marketing platforms.",
+          "sub_capabilities": [
+            {
+              "id": "C13a",
+              "question": "Has deep native integrations with major ad platforms",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Best-in-class for Google stack: Google Ads, DV360, SA360; audience sharing built in. Non-Google (Meta/TikTok) requires third-party.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Integrations via Adobe Advertising and Experience Cloud; not as turnkey for non-Adobe ad platforms.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Activation via RTCDP to many ad/marketing destinations.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "65+ turnkey integrations incl. Google Ads, Meta, TikTok via Amplitude CDP.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C13b",
+              "question": "Includes native CDP capabilities (audience building + activation)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Audiences exist but no true CDP; activation limited to Google ecosystem.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "CDP is a separate product (Adobe RTCDP), not part of AA.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Built on AEP; tightly integrated with RTCDP for profiles and activation (though RTCDP is a distinct license).", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Amplitude CDP built in: identity resolution, governance, audience syncing without a separate tool.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C13c",
+              "question": "Supports reverse-ETL / audience activation to CRM, email, push",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No general reverse-ETL; activation confined to Google destinations.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "Not natively; via RTCDP/Audience Manager.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "RTCDP destinations catalog + Journey Optimizer/Campaign for activation.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Amplitude Activation syncs cohorts to email/push/ads; supports reverse-ETL patterns with Hightouch etc.", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P10",
+      "name": "Data Export & Warehousing",
+      "description": "Raw event export, BI connectivity, and warehouse interoperability — critical for enterprise data teams.",
+      "capabilities": [
+        {
+          "id": "C14",
+          "name": "Raw Event Export & Warehouse Interop",
+          "description": "Whether you own and can export raw, unsampled event data.",
+          "sub_capabilities": [
+            {
+              "id": "C14a",
+              "question": "Exports raw, event-level data to a cloud data warehouse",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Free native BigQuery export — the platform's standout feature. Standard daily export capped at 1M events/day; exceed it consistently and the daily export pauses without backfill. 360 removes the cap and adds Fresh Daily.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Data Feeds deliver raw, unsampled, hit-level clickstream to cloud storage; Data Warehouse for aggregated exports.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "AEP Data Access API and Destinations export raw event/row-level data; Full Table Export is the evolution of Data Warehouse.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Recurring event + merged-ID export to Snowflake, BigQuery, Redshift, S3, Kinesis; also raw Export API.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C14b",
+              "question": "Delivers raw export without punitive row/event caps on the base license",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Standard tier's 1M-events/day daily-export cap is a hard gotcha for high-traffic sites; streaming export is uncapped but best-effort with incomplete attribution intraday.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Data Feeds process unlimited rows per request.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Row-level export of all ingested data; subject to AEP guardrails not punitive caps.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Export scales with your contracted volume; no artificial daily cap like GA4 free.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C14c",
+              "question": "Connects natively to major BI tools (Looker, Tableau, Power BI)",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Looker Studio native; Tableau/Power BI via BigQuery or connectors.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Report Builder (Excel) and API; BI via data feeds.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "BI via AEP Query Service (PSQL interface) and exports.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Warehouse exports feed any BI; dashboards native.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C14d",
+              "question": "Provides SQL access to the underlying event data",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Full SQL via BigQuery (nested/UNNEST schema learning curve).", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No SQL over AA data directly; must export to a warehouse first.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "AEP Query Service offers SQL access to the data lake (Data Distiller for advanced).", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "Snowflake Native Amplitude and warehouse exports enable SQL; no in-product SQL editor for core analysis.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P11",
+      "name": "Privacy, Consent & Governance",
+      "description": "Compliance posture: consent, residency, certifications, HIPAA/BAA, retention, and access control.",
+      "capabilities": [
+        {
+          "id": "C15",
+          "name": "Compliance & Certifications",
+          "description": "Regulatory readiness that gates use in healthcare, government, and the EU.",
+          "sub_capabilities": [
+            {
+              "id": "C15a",
+              "question": "Integrates with consent management and honors consent signals",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Consent Mode v2, integrations with OneTrust/Cookiebot; models conversions when consent denied.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Consent handling via Edge/AEP and tag-based CMP integrations.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "AEP consent policies and data governance labels enforce consent.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Consent controls in SDK/replay; CMP integrations.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C15b",
+              "question": "Supports HIPAA compliance with a signed BAA",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Google does not sign a BAA for GA; not usable with PHI. Server-side stripping only mitigates risk.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "Adobe Analytics is NOT HIPAA-ready per Adobe.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "CJA is HIPAA-ready; AEP/CJA covered under Adobe's SOC 2 + HIPAA scope, with BAA and Healthcare Shield options.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "HIPAA compliance and BAA available on Enterprise plan.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C15c",
+              "question": "Holds FedRAMP authorization for government use",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Google Cloud/Gemini via Vertex hold FedRAMP High; GA4 itself is not the typical FedRAMP vehicle — validate scope.", "confidence": "low" },
+                "aa": { "supported": false, "rationale": "Adobe Analytics is not FedRAMP-authorized (FedRAMP applies to specific Adobe gov products).", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "CJA/AEP not FedRAMP-authorized as of early 2026 (holds SOC 2, ISO, HIPAA, IRAP for some regions).", "confidence": "med" },
+                "amp": { "supported": false, "rationale": "No FedRAMP authorization.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C15d",
+              "question": "Offers regional data residency (EU/US/APAC)",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Limited residency control; data processed in Google's global infrastructure — a repeated EU DPA concern.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Report-suite data center selection (Americas/EU/APAC).", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "AEP sandbox/region selection for residency.", "confidence": "med" },
+                "amp": { "supported": true, "rationale": "EU and US data residency; residency options on Enterprise.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C15e",
+              "question": "Automates right-to-be-forgotten / DSAR deletion requests",
+              "support": {
+                "ga4": { "supported": true, "rationale": "User Deletion API; retention controls (2–14 months standard).", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Adobe Privacy Service handles access/deletion requests.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "AEP Privacy Service; GDPR deletions propagate to data lake, typically within 7 days.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Privacy/deletion API and DSAR handling; profile deletion via privacy@amplitude.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C15f",
+              "question": "Provides granular per-dataset/per-property data retention controls",
+              "support": {
+                "ga4": { "supported": false, "rationale": "Only 2 or 14 months for standard; 360 adds up to 50 months. Coarse controls.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Configurable retention per contract/report suite.", "confidence": "med" },
+                "cja": { "supported": true, "rationale": "Rolling data window per connection; dataset-level TTL in AEP.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Retention by tier (1yr Starter/Plus, 2yr Growth, unlimited Enterprise); custom on Enterprise.", "confidence": "med" }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P12",
+      "name": "Administration, Developer Experience & Commercial",
+      "description": "Enterprise operations, APIs, access control, and licensing economics.",
+      "capabilities": [
+        {
+          "id": "C16",
+          "name": "Enterprise Administration & Access",
+          "description": "Multi-tenant structure, RBAC, SSO/SCIM, and audit.",
+          "sub_capabilities": [
+            {
+              "id": "C16a",
+              "question": "Supports roll-up / cross-property reporting across business units",
+              "support": {
+                "ga4": { "supported": true, "rationale": "360 roll-up properties (up to 200 source properties) and subproperties; both at additional 50% event cost.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Global/rollup report suites.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Connections combine multiple datasets across BUs at person level.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Portfolio analysis (higher tiers) and multi-project structure.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C16b",
+              "question": "Provides SSO/SAML and SCIM user provisioning",
+              "support": {
+                "ga4": { "supported": true, "rationale": "SSO via Google identity; enterprise SSO through Google Workspace/Cloud Identity.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Adobe Admin Console SSO/SAML and user sync.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Same Adobe Admin Console SSO/SAML/user sync.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "SSO on Growth+; SCIM provisioning on Growth/Enterprise (SSO prerequisite). Gated behind higher tiers.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C16c",
+              "question": "Provides fine-grained role-based access control and audit logs",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Property/account roles; 360 subproperties enable data-level access separation. Audit via change history.", "confidence": "med" },
+                "aa": { "supported": true, "rationale": "Admin Console RBAC, component/segment governance, audit logs.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "AEP attribute-based access control, object-level permissions, and audit.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Org/project permissions; full custom RBAC only on Enterprise; no native idle-user report.", "confidence": "med" }
+              }
+            },
+            {
+              "id": "C16d",
+              "question": "Offers a contractual uptime SLA and enterprise support/TAM",
+              "support": {
+                "ga4": { "supported": true, "rationale": "SLAs and support only on GA4 360; free tier has no SLA or dedicated support.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Enterprise SLAs and support/TAM standard.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "Enterprise SLAs and support standard.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Dedicated support, CSM, and custom SLAs on Enterprise only.", "confidence": "high" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C17",
+          "name": "Developer Experience & APIs",
+          "description": "Programmatic access and infrastructure-as-code.",
+          "sub_capabilities": [
+            {
+              "id": "C17a",
+              "question": "Exposes public reporting, admin, and data-import APIs",
+              "support": {
+                "ga4": { "supported": true, "rationale": "Data API, Admin API, Measurement Protocol, Data Import.", "confidence": "high" },
+                "aa": { "supported": true, "rationale": "Analytics 2.0 Reporting API, admin APIs, ingestion APIs.", "confidence": "high" },
+                "cja": { "supported": true, "rationale": "CJA APIs plus full AEP API surface (ingestion, query, privacy).", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Export, Dashboard REST, Taxonomy, Behavioral Cohort, Identify APIs.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C17b",
+              "question": "Provides Terraform / infrastructure-as-code provisioning",
+              "support": {
+                "ga4": { "supported": false, "rationale": "No official Terraform provider for GA4 config (some community modules).", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "No official Terraform provider.", "confidence": "med" },
+                "cja": { "supported": false, "rationale": "No official Terraform provider; API-driven config.", "confidence": "low" },
+                "amp": { "supported": false, "rationale": "No official Terraform provider; API/SDK-driven.", "confidence": "med" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "C18",
+          "name": "Commercial & Licensing",
+          "description": "Pricing model, free tier, and cost predictability.",
+          "sub_capabilities": [
+            {
+              "id": "C18a",
+              "question": "Offers a genuinely usable free tier",
+              "support": {
+                "ga4": { "supported": true, "rationale": "GA4 free is fully featured for most SMBs; the primary reason for its ubiquity.", "confidence": "high" },
+                "aa": { "supported": false, "rationale": "No free tier; enterprise contract only.", "confidence": "high" },
+                "cja": { "supported": false, "rationale": "No free tier; enterprise AEP-based contract.", "confidence": "high" },
+                "amp": { "supported": true, "rationale": "Starter free plan: 10K MTUs / ~2M events, session replay, unlimited feature flags, web experimentation, and AI — unusually generous.", "confidence": "high" }
+              }
+            },
+            {
+              "id": "C18b",
+              "question": "Has predictable, transparent pricing",
+              "support": {
+                "ga4": { "supported": false, "rationale": "360 moved to usage-based pricing with a retail start of $50,000/year for 25M events/month, scaling toward ~$150,000/yr at high volume; quotes are otherwise opaque and volume-driven.", "confidence": "med" },
+                "aa": { "supported": false, "rationale": "Custom enterprise pricing; opaque and negotiation-driven.", "confidence": "high" },
+                "cja": { "supported": false, "rationale": "AEP + CJA licensing is complex and opaque, with add-ons (Content Analytics, Agent Orchestrator).", "confidence": "high" },
+                "amp": { "supported": false, "rationale": "MTU + event dual billing with 1.2x overage; Plus is public ($49/mo billed annually, scaling to 300K MTUs) but Growth/Enterprise opaque; median annual contract ~$63,720 (Vendr, n=358).", "confidence": "high" }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+</file>
+
+<file path="usecases.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<title>Use Case Library · Merkle Analytic Platform Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<script src="config.js"></script>
+</head>
+<body data-page="usecases">
+<header class="brandbar"><div class="brandbar-inner">
+  <a href="/dashboard" class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></a>
+  <span class="mk-sep"></span><span class="mk-title">Analytic Platform Assessment</span>
+</div></header>
+<div class="subnav">
+  <a class="backlink" href="/dashboard">← Dashboard</a>
+  <span class="sn-title">Use case library · master</span>
+  <span class="autosave" id="autosave"><span class="dot"></span><span id="autosaveText">—</span></span>
+</div>
+<div id="syncBanner" class="sync-banner">
+  <span>This library was updated by another editor. Reload to pull their changes (your unsaved edits would otherwise overwrite theirs).</span>
+  <button class="btn" id="btnSyncReload" style="margin-left:auto;">Reload</button>
+</div>
+<div class="wrap">
+  <div class="readme collapsible" id="libReadme">
+    <div class="rm-head" data-seccollapse>
+      <span class="rm-title">Managing the common use case library — how this works</span>
+      <span class="seccaret">▼</span>
+    </div>
+    <div class="sec-body">
+      <p>This is the <strong>master library</strong> of common analytical use cases consultants can drop into any client assessment. Edits here appear as the picker chips on <em>every</em> new assessment's Use Cases tab, and refresh live on any open assessment.</p>
+      <ul class="rm-list">
+        <li><strong>Edit in place</strong> — click a title or description to rewrite it. Changes autosave.</li>
+        <li><strong>Map capabilities</strong> — <em>+ Capability</em> opens a picker grouped by pillar. These pre-selections seed each use case when a consultant adds it to an assessment; the consultant can still refine per client.</li>
+        <li><strong>Add or remove</strong> — <em>+ Add use case</em> creates a blank entry; the <em>×</em> on a card removes it. Removing a library entry does <em>not</em> touch use cases already captured in existing assessments.</li>
+        <li><strong>Seed items</strong> are labelled <span class="lib-seed-tag" style="position:static;vertical-align:middle;">seed</span>; feel free to edit or delete them.</li>
+        <li><strong>Saving</strong> — every change autosaves alongside the rubric and syncs live to anyone else editing.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel-actions">
+    <button class="btn btn-primary" id="btnAddLibItem">+ Add use case</button>
+    <span class="spacer"></span>
+    <span class="autosave" style="margin-left:0;"><span id="libCount" style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);">0 use cases</span></span>
+  </div>
+  <div id="libEditor" class="uc-selected lib-editor"></div>
+</div>
+<footer class="site-foot">
+  <div class="foot-inner">
+    <div class="foot-brand"><span class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></span><div class="foot-tag">Analytic Platform Assessment</div></div>
+    <div class="foot-method">
+      <h3>About the use case library</h3>
+      <p>The library is a shortlist of the analytical outcomes clients most often ask for — cross-channel attribution, retention analysis, consent-compliant measurement and so on — pre-mapped to the capabilities that typically deliver them. Consultants use it as a scaffolding: drop the relevant items into the assessment, rewrite them for the client's specific situation, and use the pre-mapped capabilities as a starting point for the prioritization conversation.</p>
+      <p class="foot-fine">The library is stored alongside the master rubric. Edits here apply to every future assessment and refresh live on any open assessment. Existing use cases already captured in assessments are independent copies and are not modified retroactively.</p>
+    </div>
+  </div>
+</footer>
+<script src="js/core.js"></script>
+<script type="module" src="js/db.js"></script>
+</body>
+</html>
+</file>
+
+<file path="supabase/schema.sql">
+-- ===================================================================
+-- Merkle Analytic Platform Assessment - Supabase schema
+-- Run once in the Supabase SQL Editor (SQL Editor > New query > Run).
+-- ===================================================================
+
+-- Single master rubric. One row, id = 'master'.
+--   data = { platforms:[...], rubric:{...}, _rev:"clientId:ts" }
+create table if not exists public.rubrics (
+  id          text primary key,
+  data        jsonb not null default '{}'::jsonb,
+  updated_at  timestamptz not null default now()
+);
+
+-- Assessments store ONLY the client selections; the rubric is shared.
+--   data = { moscow:{capId:priority}, needs:{subId:bool} }
+create table if not exists public.assessments (
+  id          uuid primary key default gen_random_uuid(),
+  name        text not null,
+  client      text,
+  data        jsonb not null default '{}'::jsonb,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+-- Live sync for the rubric editor (multiple editors see each other's saves).
+do $$ begin
+  alter publication supabase_realtime add table public.rubrics;
+exception when duplicate_object then null; end $$;
+
+-- ------------------------------------------------------------------
+-- Row Level Security.
+-- The policies below are OPEN (anon can read/write) so the static site
+-- works with only the publishable key. This is fine for an internal,
+-- unlisted, noindex tool. For real production, turn on Supabase Auth and
+-- replace `to anon` with `to authenticated` on every policy below.
+-- ------------------------------------------------------------------
+alter table public.rubrics      enable row level security;
+alter table public.assessments  enable row level security;
+
+drop policy if exists rubrics_all on public.rubrics;
+create policy rubrics_all on public.rubrics
+  for all to anon using (true) with check (true);
+
+drop policy if exists assessments_all on public.assessments;
+create policy assessments_all on public.assessments
+  for all to anon using (true) with check (true);
+</file>
+
+<file path="config.js">
+// ── Supabase configuration ───────────────────────────────────────────────
+// Fill these with your project's values: Supabase dashboard → Project Settings → API.
+// The anon key is a PUBLIC (publishable) key — it is safe to ship in client code.
+// Access is enforced by Row Level Security policies (see supabase/schema.sql).
+// Leave blank to run fully offline (Export/Import JSON still works).
+window.APP_CONFIG = {
+  SUPABASE_URL: "https://abpbtrnkyluzhfsoloan.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_V2O43JUAsoQUONdZhP6UOA_kkHIemv1"
+};
+</file>
+
 <file path="dashboard.html">
 <!DOCTYPE html>
 <html lang="en">
@@ -152,7 +1095,7 @@ window.APP_CONFIG = {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <meta name="googlebot" content="noindex, nofollow">
-<title>Assessments · Merkle Analytic Platform Assessment</title>
+<title>Dashboard · Merkle Analytic Platform Assessment</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -166,30 +1109,501 @@ window.APP_CONFIG = {
 </div></header>
 <div class="dash-wrap">
   <div id="dashMsg" class="dash-msg" hidden></div>
-  <div class="dash-head">
-    <h1>Assessments</h1>
-    <span class="spacer"></span>
-    <a class="btn" href="/admin">Manage rubric</a>
-    <button class="btn btn-primary" id="btnNew">+ New assessment</button>
+
+  <!-- Metrics -->
+  <div class="metrics-row">
+    <div class="metric-tile">
+      <div class="metric-value" id="mUseCases">—</div>
+      <div class="metric-label">Use cases in library</div>
+    </div>
+    <div class="metric-tile">
+      <div class="metric-value" id="mAssessments">—</div>
+      <div class="metric-label">Active assessments</div>
+    </div>
+    <div class="metric-tile">
+      <div class="metric-value" id="mPillars">—</div>
+      <div class="metric-label">Pillars</div>
+    </div>
+    <div class="metric-tile">
+      <div class="metric-value" id="mSubs">—</div>
+      <div class="metric-label">Sub-capabilities</div>
+    </div>
   </div>
-  <div id="assessGrid" class="assess-grid"></div>
-  <div id="dashEmpty" class="dash-empty" hidden>No assessments yet — create your first one to begin matching client needs to platforms.</div>
+
+  <!-- Platform administration -->
+  <section class="dash-section">
+    <div class="dash-sec-head">
+      <h2 class="dash-sec-title">Platform administration</h2>
+      <span class="dash-sec-hint">The shared foundation every client assessment draws from</span>
+    </div>
+    <div class="admin-tiles">
+      <a class="admin-tile" href="/admin">
+        <div class="at-eyebrow">Master rubric</div>
+        <div class="at-title">Pillars, capabilities &amp; vendors</div>
+        <div class="at-desc">The single source of truth used by every assessment. Add or refine pillars, capabilities, sub-capabilities, vendor coverage and SME rationale.</div>
+        <div class="at-meta"><span id="mtPillars">—</span> pillars · <span id="mtCaps">—</span> capabilities · <span id="mtSubs">—</span> sub-capabilities · <span id="mtVendors">—</span> vendors</div>
+        <div class="at-cta">Manage rubric →</div>
+      </a>
+      <a class="admin-tile" href="/usecases">
+        <div class="at-eyebrow">Use case library</div>
+        <div class="at-title">Common analytical outcomes</div>
+        <div class="at-desc">A pre-mapped shortlist of the analytical outcomes clients most often ask for. Consultants drop these into assessments and refine per client.</div>
+        <div class="at-meta"><span id="mtUC">—</span> use cases in library</div>
+        <div class="at-cta">Manage use cases →</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Assessments -->
+  <section class="dash-section">
+    <div class="dash-sec-head">
+      <h2 class="dash-sec-title">Client assessments</h2>
+      <span class="dash-sec-hint">One workspace per RFP or platform selection</span>
+      <span class="spacer"></span>
+      <button class="btn btn-primary" id="btnNew">+ New assessment</button>
+    </div>
+    <div id="assessGrid" class="assess-grid"></div>
+    <div id="dashEmpty" class="dash-empty" hidden>No assessments yet — create your first one to begin matching client needs to platforms.</div>
+  </section>
 </div>
 <script type="module" src="js/db.js"></script>
 </body>
 </html>
 </file>
 
-<file path="package.json">
-{
-  "name": "merkle-platform-assessment",
-  "version": "1.0.0",
-  "private": true,
-  "description": "Merkle Analytic Platform Assessment — static front-end with Supabase persistence.",
-  "scripts": {
-    "dev": "npx --yes serve ."
-  }
+<file path="README.md">
+# Merkle Analytic Platform Assessment
+
+A consultant tool that matches a client's analytics needs (MoSCoW priorities) to
+platforms — GA4, Adobe Analytics, CJA, Amplitude, Contentsquare, Piano — and
+produces a weighted-fit ranking plus a best-of-breed stack recommendation.
+
+Static multi-page site on **Vercel** with a **Supabase** (Postgres) backend.
+
+## Pages
+
+| Path           | File             | Purpose |
+|----------------|------------------|---------|
+| `/dashboard`   | `dashboard.html` | Lists every assessment; create / open / delete from here. Landing page (`/` redirects here). |
+| `/assessment?id=…` | `assessment.html` | The workspace: **Needs discovery** (MoSCoW + sub-capabilities) and **Results** (ranking, stack, pillar coverage, profiles). Selections autosave. Links back to the dashboard. |
+| `/admin`       | `admin.html`     | The **single master rubric** editor. Every edit autosaves to the database and applies to all assessments, including new ones. |
+
+Shared assets: `css/app.css`, `js/core.js` (rubric model, scoring, rendering),
+`js/db.js` (Supabase + page routing + autosave + realtime).
+
+## Single rubric
+
+There is **one** rubric, stored in the `rubrics` table as the row `id='master'`.
+Assessments store **only** the client's selections (`{moscow, needs}`), not a
+copy of the rubric. Opening an assessment loads the current master rubric and
+overlays that assessment's selections — so a rubric change in `/admin` reaches
+every assessment immediately. Import and "reset to defaults" have been removed:
+the master rubric in the database is the single source of truth.
+
+## Autosave
+
+- **Rubric** (`/admin`): any edit autosaves ~0.8s after you stop. No save button.
+- **Selections** (`/assessment`): MoSCoW and sub-capability changes autosave ~0.7s after you stop.
+
+The dot next to the page title shows status (saving / saved / error).
+
+## Multiple editors
+
+Saves are **last-write-wins**, and the rubric is **live-synced** over Supabase
+Realtime:
+
+- When another editor saves, your `/admin` page is notified in real time.
+- If you have **no unsaved edits**, the change is applied silently.
+- If you are **mid-edit**, a banner appears ("updated by another editor — Reload")
+  rather than clobbering your work. Reloading pulls their version; ignoring it and
+  continuing means your next save overwrites theirs.
+- Two people editing the **same field** at the same instant resolve last-write-wins
+  (no field-level merge).
+
+This is appropriate for a small consulting team coordinating edits. For stricter
+control, enable Supabase Auth and tighten the RLS policies (see `supabase/schema.sql`).
+
+## Deploy
+
+1. **Supabase** → create a project → SQL Editor → paste & run `supabase/schema.sql`.
+   Then Settings → API Keys → copy the **Project URL** and the **publishable key**
+   (`sb_publishable_…`).
+2. **config.js** → paste the URL and publishable key. `config.js` **must be committed**
+   — the publishable key is public-safe. Never put a secret/service-role key in client code.
+3. **GitHub** → commit and push the repo.
+4. **Vercel** → Import the repo → Framework preset **Other** → no build command → Deploy.
+
+The site is `noindex` (meta tag + `X-Robots-Tag` header + `robots.txt`).
+
+## Local dev
+
+```bash
+npm run dev   # npx serve .
+```
+</file>
+
+<file path="robots.txt">
+# This tool is private. Do not crawl or index.
+User-agent: *
+Disallow: /
+</file>
+
+<file path="js/db.js">
+// ===================================================================
+// db.js — Supabase data layer (single master rubric + assessments)
+// Page-routed by <body data-page="dashboard|assessment|admin">.
+//   rubrics     : one row id='master', data jsonb = {platforms, rubric, _rev}
+//   assessments : id, name, client, data jsonb = {moscow, needs, useCases}
+// Rubric edits autosave (last-write-wins) and live-sync across editors.
+// ===================================================================
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const cfg  = window.APP_CONFIG || {};
+const page = document.body.dataset.page;
+const $    = id => document.getElementById(id);
+const esc  = s => (s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const RUBRIC_ID = 'master';
+
+// per-tab identity so we can ignore the realtime echo of our own writes
+const clientId = Math.random().toString(36).slice(2);
+let myRev = null;
+
+let sb = null;
+if (cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) {
+  try { sb = createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); }
+  catch (e) { console.error('Supabase init failed', e); }
 }
+
+function setAuto(state, text) {
+  const a = $('autosave'); if (!a) return;
+  a.className = 'autosave ' + state;
+  const t = $('autosaveText'); if (t) t.textContent = text;
+}
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+function ready() {
+  return new Promise(res => {
+    if (window.PET) return res(true);
+    let n = 0; const i = setInterval(() => {
+      if (window.PET || ++n > 60) { clearInterval(i); res(!!window.PET); }
+    }, 50);
+  });
+}
+
+// ---------------- data access ----------------
+async function getRubric() {
+  const { data, error } = await sb.from('rubrics').select('data').eq('id', RUBRIC_ID).maybeSingle();
+  // maybeSingle should return {data:null, error:null} when no row matches, but some
+  // client versions surface PGRST116 ("no rows") as an error — treat that as "not seeded yet".
+  if (error && error.code !== 'PGRST116') throw error;
+  return data ? data.data : null;
+}
+async function putRubric(d) {
+  const rev = clientId + ':' + Date.now(); myRev = rev;
+  const { error } = await sb.from('rubrics')
+    .upsert({ id: RUBRIC_ID, data: { ...d, _rev: rev }, updated_at: new Date().toISOString() });
+  if (error) throw error;
+}
+async function listAssessments() {
+  const { data, error } = await sb.from('assessments')
+    .select('id,name,client,updated_at').order('updated_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+async function createAssessment(name, client) {
+  const { data, error } = await sb.from('assessments')
+    .insert({ name, client, data: { moscow: {}, needs: {}, useCases: [] } }).select('id').single();
+  if (error) throw error;
+  return data.id;
+}
+async function getAssessment(id) {
+  const { data, error } = await sb.from('assessments').select('name,client,data').eq('id', id).single();
+  if (error) throw error;
+  return data;
+}
+async function putSelections(id, sel) {
+  const { error } = await sb.from('assessments')
+    .update({ data: sel, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) throw error;
+}
+async function delAssessment(id) {
+  const { error } = await sb.from('assessments').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// ---------------- route ----------------
+if (!sb) {
+  if (page === 'dashboard') {
+    const m = $('dashMsg');
+    if (m) { m.hidden = false; m.classList.add('err');
+      m.textContent = 'Supabase is not configured. Add your project URL and publishable key in config.js to load and save assessments.'; }
+  } else { setAuto('err', 'offline - set Supabase keys in config.js'); }
+} else if (page === 'dashboard') {
+  initDashboard();
+} else if (page === 'assessment') {
+  initAssessment();
+} else if (page === 'admin') {
+  initAdmin();
+} else if (page === 'usecases') {
+  initUsecasesAdmin();
+}
+
+// ================= DASHBOARD =================
+async function initDashboard() {
+  await renderDash();
+  $('btnNew')?.addEventListener('click', async () => {
+    const name = (prompt('Name this assessment (e.g., "Hobby Lobby - Analytics RFP"):') || '').trim();
+    if (!name) return;
+    const client = (prompt('Client / brand (optional):') || '').trim() || null;
+    try { const id = await createAssessment(name, client); location.href = '/assessment?id=' + id; }
+    catch (e) { alert('Could not create assessment: ' + e.message); }
+  });
+}
+async function renderDash() {
+  const grid = $('assessGrid'), empty = $('dashEmpty'), msg = $('dashMsg');
+  if (!grid) return;
+
+  // Fetch each independently — a rubric fetch failure must not blank the assessments list,
+  // and vice versa. Log any errors so they show in DevTools console for diagnosis.
+  let list = [], rubric = null;
+  let listErr = null, rubricErr = null;
+  try { list = await listAssessments(); }
+  catch (e) { listErr = e; console.error('[dashboard] listAssessments failed:', e); }
+  try { rubric = await getRubric(); }
+  catch (e) { rubricErr = e; console.error('[dashboard] getRubric failed:', e); }
+
+  // ---- Metrics ----
+  let nPillars = 0, nCaps = 0, nSubs = 0, nUseCases = 0, nVendors = 0;
+  if (rubric && typeof rubric === 'object') {
+    const r = Array.isArray(rubric.rubric) ? rubric.rubric : [];
+    nPillars = r.length;
+    r.forEach(p => (p.caps || []).forEach(c => { nCaps++; nSubs += (c.subs || []).length; }));
+    nUseCases = Array.isArray(rubric.useCases) ? rubric.useCases.length : 0;
+    // "Active" vendors = not retired (retired ones are kept for history)
+    nVendors = Array.isArray(rubric.platforms) ? rubric.platforms.filter(p => !p.retired).length : 0;
+  }
+  const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+  // Top row
+  set('mUseCases', nUseCases);
+  set('mAssessments', list.length);
+  set('mPillars', nPillars);
+  set('mSubs', nSubs);
+  // Admin tile metadata rows
+  set('mtPillars', nPillars);
+  set('mtCaps', nCaps);
+  set('mtSubs', nSubs);
+  set('mtVendors', nVendors);
+  set('mtUC', nUseCases);
+
+  // Banner — errors first, then first-run hint if applicable
+  if (msg) {
+    if (listErr || rubricErr) {
+      const parts = [];
+      if (listErr) parts.push('assessments (' + listErr.message + ')');
+      if (rubricErr) parts.push('rubric (' + rubricErr.message + ')');
+      msg.hidden = false;
+      msg.classList.add('err');
+      msg.textContent = 'Could not load ' + parts.join(' and ') + '. See browser console for details.';
+    } else if (!rubric && !list.length) {
+      msg.hidden = false;
+      msg.classList.remove('err');
+      msg.textContent = 'The master rubric hasn\u2019t been initialized yet. Open Manage rubric or Manage use cases once to seed it, then come back to see the metrics populate.';
+    } else {
+      msg.hidden = true;
+    }
+  }
+
+  // ---- Assessments grid ----
+  grid.innerHTML = '';
+  if (!list.length) { if (empty) empty.hidden = false; return; }
+  if (empty) empty.hidden = true;
+  list.forEach(a => {
+    const card = document.createElement('a');
+    card.className = 'assess-card'; card.href = '/assessment?id=' + a.id;
+    const when = new Date(a.updated_at).toLocaleString();
+    card.innerHTML =
+      '<button class="ac-del" title="Delete" data-del="' + a.id + '">\u2715</button>' +
+      '<h3>' + esc(a.name) + '</h3>' +
+      (a.client ? '<div class="ac-client">' + esc(a.client) + '</div>' : '') +
+      '<div class="ac-meta">Updated ' + esc(when) + '</div>';
+    grid.appendChild(card);
+  });
+  grid.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async e => {
+    e.preventDefault(); e.stopPropagation();
+    if (!confirm('Delete this assessment? This cannot be undone.')) return;
+    try { await delAssessment(b.dataset.del); await renderDash(); }
+    catch (err) { alert('Delete failed: ' + err.message); }
+  }));
+}
+
+// ================= ASSESSMENT =================
+async function initAssessment() {
+  if (!await ready()) return;
+  const id = new URLSearchParams(location.search).get('id');
+  if (!id) { location.replace('/dashboard'); return; }
+  setAuto('saving', 'loading...');
+  try {
+    const r = await getRubric();
+    if (r) window.PET.loadRubricData(r);
+    const a = await getAssessment(id);
+    const t = $('snTitle'); if (t) t.textContent = a.name + (a.client ? ' \u00b7 ' + a.client : '');
+    window.PET.applySelections(a.data || {});
+    setAuto('saved', 'saved');
+  } catch (e) {
+    setAuto('err', 'load failed'); console.error(e);
+    const t = $('snTitle'); if (t) t.textContent = 'Assessment not found';
+    return;
+  }
+  const save = debounce(async () => {
+    setAuto('saving', 'saving...');
+    try { await putSelections(id, window.PET.getSelections()); setAuto('saved', 'saved ' + new Date().toLocaleTimeString()); }
+    catch (e) { setAuto('err', 'save failed'); }
+  }, 700);
+  // Primary trigger: any state mutation in core.js dispatches this custom event
+  // (covers MoSCoW, sub-capability needs, use case add/edit/delete/capability-mapping).
+  document.addEventListener('pet-selections-changed', save);
+  // Belt-and-braces: keep the original click/change listener in case any code path forgets to dispatch.
+  ['click', 'change'].forEach(ev => document.addEventListener(ev, e => {
+    if (e.target.closest('.moscow') || e.target.matches('[data-need]')) save();
+  }, true));
+  sb.channel('rub-view').on('postgres_changes',
+    { event: '*', schema: 'public', table: 'rubrics', filter: 'id=eq.' + RUBRIC_ID },
+    payload => {
+      const d = payload.new && payload.new.data;
+      if (!d || d._rev === myRev) return;
+      const sel = window.PET.getSelections();
+      window.PET.loadRubricData(d);
+      window.PET.applySelections(sel);
+    }).subscribe();
+}
+
+// ================= ADMIN =================
+async function initAdmin() {
+  if (!await ready()) return;
+  window.PET.setEditMode(true);
+  setAuto('saving', 'loading...');
+  let lastSaved = null;
+  try {
+    let r = await getRubric();
+    if (!r) { r = window.PET.exportRubric(); await putRubric(r); }
+    else { window.PET.loadRubricData(r); }
+    lastSaved = JSON.stringify(window.PET.exportRubric());
+    setAuto('saved', 'all changes saved');
+  } catch (e) { setAuto('err', 'load failed'); console.error(e); }
+
+  const doSave = debounce(async () => {
+    const cur = JSON.stringify(window.PET.exportRubric());
+    if (cur === lastSaved) return;
+    setAuto('saving', 'saving...');
+    try { await putRubric(window.PET.exportRubric()); lastSaved = cur; setAuto('saved', 'all changes saved \u00b7 ' + new Date().toLocaleTimeString()); }
+    catch (e) { setAuto('err', 'save failed - retry an edit'); }
+  }, 800);
+  ['click', 'input', 'change', 'blur', 'drop'].forEach(ev => document.addEventListener(ev, () => doSave(), true));
+
+  let pendingRemote = null;
+  sb.channel('rub-admin').on('postgres_changes',
+    { event: '*', schema: 'public', table: 'rubrics', filter: 'id=eq.' + RUBRIC_ID },
+    payload => {
+      const d = payload.new && payload.new.data;
+      if (!d || d._rev === myRev) return;
+      const cur = JSON.stringify(window.PET.exportRubric());
+      if (cur === lastSaved) {
+        window.PET.loadRubricData(d);
+        lastSaved = JSON.stringify(window.PET.exportRubric());
+        setAuto('saved', 'updated by another editor');
+      } else {
+        pendingRemote = d;
+        $('syncBanner')?.classList.add('show');
+      }
+    }).subscribe();
+  $('btnSyncReload')?.addEventListener('click', () => {
+    if (!pendingRemote) return;
+    window.PET.loadRubricData(pendingRemote);
+    lastSaved = JSON.stringify(window.PET.exportRubric());
+    pendingRemote = null;
+    $('syncBanner')?.classList.remove('show');
+    setAuto('saved', 'reloaded');
+  });
+}
+
+// ================= USE CASE LIBRARY ADMIN =================
+// Edits USE_CASE_LIBRARY, persisted alongside the rubric in rubrics.master.
+async function initUsecasesAdmin() {
+  if (!await ready()) return;
+  setAuto('saving', 'loading...');
+  let lastSaved = null;
+  try {
+    let r = await getRubric();
+    if (!r) { r = window.PET.exportRubric(); await putRubric(r); }
+    else { window.PET.loadRubricData(r); }
+    // Render into #libEditor now that the rubric (capabilities) is loaded
+    window.PET.renderLibraryEditor();
+    lastSaved = JSON.stringify(window.PET.exportRubric());
+    setAuto('saved', 'all changes saved');
+  } catch (e) { setAuto('err', 'load failed'); console.error(e); }
+
+  const doSave = debounce(async () => {
+    const cur = JSON.stringify(window.PET.exportRubric());
+    if (cur === lastSaved) return;
+    setAuto('saving', 'saving...');
+    try { await putRubric(window.PET.exportRubric()); lastSaved = cur; setAuto('saved', 'all changes saved \u00b7 ' + new Date().toLocaleTimeString()); }
+    catch (e) { setAuto('err', 'save failed - retry an edit'); }
+  }, 800);
+  // Any interaction on the page triggers a save-check; doSave no-ops when nothing changed.
+  ['click', 'input', 'change', 'blur'].forEach(ev => document.addEventListener(ev, () => doSave(), true));
+  // Belt-and-braces: also react to our explicit library-changed event.
+  document.addEventListener('pet-library-changed', doSave);
+
+  let pendingRemote = null;
+  sb.channel('rub-uc').on('postgres_changes',
+    { event: '*', schema: 'public', table: 'rubrics', filter: 'id=eq.' + RUBRIC_ID },
+    payload => {
+      const d = payload.new && payload.new.data;
+      if (!d || d._rev === myRev) return;
+      const cur = JSON.stringify(window.PET.exportRubric());
+      if (cur === lastSaved) {
+        window.PET.loadRubricData(d);
+        window.PET.renderLibraryEditor();
+        lastSaved = JSON.stringify(window.PET.exportRubric());
+        setAuto('saved', 'updated by another editor');
+      } else {
+        pendingRemote = d;
+        $('syncBanner')?.classList.add('show');
+      }
+    }).subscribe();
+  $('btnSyncReload')?.addEventListener('click', () => {
+    if (!pendingRemote) return;
+    window.PET.loadRubricData(pendingRemote);
+    window.PET.renderLibraryEditor();
+    lastSaved = JSON.stringify(window.PET.exportRubric());
+    pendingRemote = null;
+    $('syncBanner')?.classList.remove('show');
+    setAuto('saved', 'reloaded');
+  });
+}
+</file>
+
+<file path=".gitignore">
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# dependencies & logs
+node_modules/
+*.log
+npm-debug.log*
+
+# Vercel
+.vercel
+
+# secrets / env (only if you add a build step that uses them)
+.env
+.env.local
+.env*.local
+
+# NOTE: do NOT ignore config.js — a static deploy needs it at runtime,
+# and the Supabase publishable key is safe to commit. Never put a
+# secret key (sb_secret_... / service_role) in committed files.
 </file>
 
 <file path="admin.html">
@@ -231,7 +1645,8 @@ window.APP_CONFIG = {
       <p>One rubric powers <strong>every assessment, new and existing</strong>. Edits here apply everywhere; there is no separate save, import, or reset.</p>
       <ul class="rm-list">
         <li><strong>Set support</strong> — click any platform cell to toggle whether that vendor supports the sub-capability (✓ / –).</li>
-        <li><strong>Rename &amp; restructure</strong> — click a pillar name, capability title, or sub-capability text to edit it; use <em>+ Pillar</em>, <em>+ Capability</em>, and <em>+ Add</em> to extend, and <em>×</em> to remove.</li>
+        <li><strong>Rename &amp; extend</strong> — click a pillar name, capability title, or sub-capability text to edit it; use <em>+ Pillar</em>, <em>+ Capability</em>, and <em>+ Add</em> to extend.</li>
+        <li><strong>Retire, don't delete</strong> — pillars, capabilities and sub-capabilities are never deleted. Use <em>Retire</em> to grey out an item so it stops counting in scoring; its data (including SME rationale) is preserved. The same button becomes <em>Unretire</em> to bring it back.</li>
         <li><strong>SME rationale</strong> — click the <span class="pencil">✎</span> on a cell to capture a note, its tone (pro / caveat / note), and your confidence. The ✎ takes on the tone colour once a note is saved.</li>
         <li><strong>Vendors</strong> — <em>+ Add vendor</em> to add a column, drag <span class="drag-handle">⠿</span> to reorder, <em>Retire</em> to archive one (its data is preserved and can be restored).</li>
         <li><strong>Saving</strong> — every change autosaves to the database and syncs live to anyone else editing.</li>
@@ -271,16 +1686,130 @@ window.APP_CONFIG = {
 </html>
 </file>
 
-<file path="config.js">
-// ── Supabase configuration ───────────────────────────────────────────────
-// Fill these with your project's values: Supabase dashboard → Project Settings → API.
-// The anon key is a PUBLIC (publishable) key — it is safe to ship in client code.
-// Access is enforced by Row Level Security policies (see supabase/schema.sql).
-// Leave blank to run fully offline (Export/Import JSON still works).
-window.APP_CONFIG = {
-  SUPABASE_URL: "https://abpbtrnkyluzhfsoloan.supabase.co",
-  SUPABASE_ANON_KEY: "sb_publishable_V2O43JUAsoQUONdZhP6UOA_kkHIemv1"
-};
+<file path="assessment.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<title>Assessment · Merkle Analytic Platform Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<script src="config.js"></script>
+</head>
+<body data-page="assessment">
+<header class="brandbar"><div class="brandbar-inner">
+  <a href="/dashboard" class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></a>
+  <span class="mk-sep"></span><span class="mk-title">Analytic Platform Assessment</span>
+</div></header>
+<div class="subnav">
+  <a class="backlink" href="/dashboard">← Dashboard</a>
+  <span class="sn-title" id="snTitle">Assessment</span>
+  <span class="autosave" id="autosave"><span class="dot"></span><span id="autosaveText">—</span></span>
+</div>
+<div class="wrap">
+  <nav class="tabs">
+    <button class="tab active" data-tab="usecases">1 · Use Cases</button>
+    <button class="tab" data-tab="discovery">2 · Prioritization</button>
+    <button class="tab" data-tab="results">3 · Results</button>
+  </nav>
+  <section class="panel active" data-panel="usecases">
+    <div class="readme">
+      <h4>Capturing analytical use cases</h4>
+      <p>Use cases are the <strong>business outcomes</strong> the client wants analytics to deliver — populated ahead of the workshop from what you already know, then refined live with the client. Pick from the common library, edit any use case to match the client's exact situation, and map each to the capabilities that would deliver it. <strong>Capabilities without any linked use case have no client demand behind them</strong>, and are candidates to downgrade in the next tab.</p>
+    </div>
+    <div class="uc-library-block">
+      <div class="uc-block-head"><span class="uc-block-title">Common use cases</span><span class="uc-block-hint">Click to add — you can edit anything after</span></div>
+      <div id="ucLibrary" class="uc-library"></div>
+      <div class="uc-custom-row"><button class="btn" id="btnAddCustomUC">+ Add custom use case</button></div>
+    </div>
+    <div class="uc-selected-block">
+      <div class="uc-block-head"><span class="uc-block-title">In scope for this client</span><span class="uc-block-hint" id="ucCount">0 use cases</span></div>
+      <div id="ucSelected" class="uc-selected"></div>
+      <div id="ucEmpty" class="uc-empty">No use cases captured yet. Add one from the library above, or draft a custom one for this client.</div>
+    </div>
+  </section>
+  <section class="panel" data-panel="discovery">
+    <div class="readme">
+      <h4>Setting your priorities</h4>
+      <p>Apply a <strong>MoSCoW priority</strong> to each capability — <em>Must</em>, <em>Should</em>, <em>Could</em>, or <em>Won't</em> (out of scope). The use cases you captured on the previous tab appear under each capability as a working prompt: <strong>a capability with no linked use case has nothing on the client's list riding on it</strong> and is a candidate for <em>Should</em>, <em>Could</em>, or <em>Won't</em>. Open a capability to fine-tune which sub-capabilities are in play.</p>
+    </div>
+    <div id="framework"></div>
+  </section>
+  <section class="panel" data-panel="results">
+    <div class="readme">
+      <h4>Reading your results</h4>
+      <p>Weighted fit is the MoSCoW-weighted average of capability coverage. A <strong>Must</strong> capability with zero coverage is a knockout — it flags the platform rather than merely costing points. The <strong>Coverage by use case</strong> section below re-cuts the same data around the outcomes captured on the Use Cases tab, and names the platform best positioned to deliver them. Profiles at the bottom are written against <em>your</em> priorities: strengths are the priorities a platform fully meets, and gaps call out partial or disqualifying coverage.</p>
+    </div>
+    <div class="results-actions"><button class="btn" id="btnPrint">Print / PDF</button></div>
+    <h3 class="sec-h">Weighted fit &amp; recommended stack</h3>
+    <div class="scoreboard">
+      <div id="rankList" class="rank-list"></div>
+      <div id="stackCard" class="stack-card"></div>
+    </div>
+    <h3 class="sec-h" id="ucSecHead" hidden>Coverage by use case</h3>
+    <div id="ucCoverage" class="uc-coverage-wrap" hidden></div>
+    <h3 class="sec-h">Coverage by pillar</h3>
+    <div class="pill-grid"><table class="agg" id="aggTable"></table></div>
+    <h3 class="sec-h">Platform profiles</h3>
+    <div id="profiles" class="profiles"></div>
+    <p class="footnote">Methodology: capability coverage = supported ÷ in-scope sub-capabilities per capability; weighted fit averages those by MoSCoW weight (Must 3 · Should 2 · Could 1). Use case coverage aggregates the same sub-capability support across the capabilities each use case is mapped to, respecting scope (Won't capabilities are excluded). Best-for-use-cases ranks by number of use cases fully delivered, then average coverage. Ratings reflect documented platform capability and Merkle SME judgement, not vendor marketing.</p>
+  </section>
+</div>
+<footer class="site-foot">
+  <div class="foot-inner">
+    <div class="foot-brand"><span class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></span><div class="foot-tag">Analytic Platform Assessment</div></div>
+    <div class="foot-method">
+      <h3>About this assessment &amp; methodology</h3>
+      <p>This assessment reflects Merkle's analytics consulting practice &mdash; a structured, vendor-neutral way to match analytics needs to the platforms in market, refined across enterprise platform selections. It is not a feature checklist: every judgement in the underlying rubric encodes our consultants' hands-on experience of where each platform genuinely performs or falls short in production.</p>
+      <p>The method is deliberately simple and defensible. Capabilities are grouped into pillars. You assign a MoSCoW priority to each capability &mdash; <b>Must</b>, <b>Should</b>, <b>Could</b> or <b>Won't</b> &mdash; to express how important it is. Each platform's coverage of a capability is measured from a yes/no assessment of its sub-capabilities, maintained in our master rubric, and rolls up to a priority-weighted fit score (Must&nbsp;3, Should&nbsp;2, Could&nbsp;1). A Must a platform cannot meet at all is treated as a disqualifier rather than a deduction, so a strong all-rounder never outranks a platform that clears every non-negotiable. The output is a best-of-breed recommendation: a lead platform, plus any specialist platforms that close priority gaps.</p>
+      <p class="foot-fine">Assessments represent Merkle's point of view and are validated against current vendor releases at the time of engagement.</p>
+    </div>
+  </div>
+</footer>
+<script src="js/core.js"></script>
+<script type="module" src="js/db.js"></script>
+</body>
+</html>
+</file>
+
+<file path="index.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="refresh" content="0; url=/dashboard">
+<title>Merkle Analytic Platform Assessment</title>
+<script>location.replace('/dashboard');</script>
+</head>
+<body><p style="font-family:sans-serif;padding:24px">Redirecting to <a href="/dashboard">the dashboard</a>…</p></body>
+</html>
+</file>
+
+<file path="vercel.json">
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/", "destination": "/dashboard", "permanent": false }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}
 </file>
 
 <file path="css/app.css">
@@ -306,7 +1835,7 @@ window.APP_CONFIG = {
   header.brandbar{background:#0B0B0C;padding:0;margin:0;}
   .brandbar-inner{max-width:1260px;margin:0 auto;padding:19px 24px;display:flex;align-items:center;gap:15px;}
   .mk-logo{display:inline-flex;align-items:center;line-height:1;text-decoration:none;color:inherit;}
-  .mk-logo-img{height:26px;width:210px;display:inline-block;background:url(data:image/png;base64,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) left center/contain no-repeat;}
+  .mk-logo-img{height:26px;width:210px;display:inline-block;background:url(data:image/png;base64,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) left center/contain no-repeat;}
   .foot-brand .mk-logo-img{height:24px;width:190px;}
   .mk-print-word{display:none;font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em;}
   .mk-logo .mk-dot{color:var(--accent);} 
@@ -638,6 +2167,147 @@ window.APP_CONFIG = {
   .pillar-card:last-child{margin-bottom:0;}
   .pillar-card table.mtx{table-layout:fixed;width:100%;}
   .pillar-card table.mtx thead th{z-index:6;box-shadow:0 1px 0 var(--line);}
+
+  /* ================================================================ */
+  /* ===== USE CASES TAB ============================================= */
+  /* ================================================================ */
+
+  .uc-library-block, .uc-selected-block{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:20px;}
+  .uc-block-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line-soft);}
+  .uc-block-title{font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:-.005em;}
+  .uc-block-hint{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-left:auto;font-weight:600;}
+
+  /* library chips (available templates) */
+  .uc-library{display:flex;flex-wrap:wrap;gap:8px;}
+  .uc-lib-chip{position:relative;border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 13px 7px 13px;font-size:12.5px;font-weight:500;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.12s;font-family:var(--body);}
+  .uc-lib-chip:hover{border-color:var(--accent);background:var(--yes-bg);color:var(--accent-deep);}
+  .uc-lib-chip::before{content:"+";font-family:var(--mono);color:var(--accent);font-weight:700;font-size:14px;line-height:1;}
+  .uc-lib-chip.used{opacity:.42;cursor:default;pointer-events:none;background:var(--line-soft);}
+  .uc-lib-chip.used::before{content:"✓";color:var(--could);}
+  .uc-custom-row{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line-soft);}
+
+  /* selected use case cards */
+  .uc-selected{display:flex;flex-direction:column;gap:12px;}
+  .uc-empty{color:var(--ink-soft);font-size:13px;padding:18px 4px;font-style:italic;text-align:center;}
+  .uc-card{border:1px solid var(--line);border-radius:9px;padding:14px 16px;background:#fff;position:relative;transition:border-color .12s;}
+  .uc-card:hover{border-color:#CBD3E0;}
+  .uc-card .uc-head{display:flex;align-items:flex-start;gap:10px;}
+  .uc-card .uc-title{flex:1;font-family:var(--display);font-weight:700;font-size:14.5px;letter-spacing:-.005em;color:var(--ink);min-height:20px;line-height:1.35;}
+  .uc-card .uc-title[contenteditable="true"]:empty::before{content:"Untitled use case";color:var(--ink-soft);font-style:italic;}
+  .uc-card .uc-del{border:none;background:none;color:var(--no);font-size:15px;cursor:pointer;padding:2px 7px;line-height:1;border-radius:5px;flex:none;}
+  .uc-card .uc-del:hover{color:var(--gap);background:var(--gap-bg);}
+  .uc-card .uc-desc{margin-top:6px;color:var(--ink-soft);font-size:12.8px;line-height:1.5;min-height:18px;}
+  .uc-card .uc-desc[contenteditable="true"]:empty::before{content:"Describe the client's specific situation — what outcome, what data, what audience…";color:#B7C0C2;font-style:italic;}
+  [contenteditable="true"].uc-title:focus, [contenteditable="true"].uc-desc:focus{box-shadow:inset 0 0 0 2px var(--accent);background:#F7FBFB;}
+
+  .uc-caps-wrap{margin-top:12px;padding-top:11px;border-top:1px solid var(--line-soft);}
+  .uc-caps-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:7px;display:flex;align-items:center;gap:8px;}
+  .uc-caps-label .uc-caps-count{color:var(--accent-deep);}
+  .uc-caps{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .uc-cap-chip{display:inline-flex;align-items:center;gap:6px;background:var(--yes-bg);color:var(--accent-deep);border:1px solid #D5DCFB;border-radius:14px;padding:3px 4px 3px 9px;font-size:11.5px;font-weight:500;line-height:1;}
+  .uc-cap-chip .uc-cap-code{font-family:var(--mono);font-weight:600;font-size:10.5px;background:var(--accent-deep);color:#fff;padding:2px 5px;border-radius:3px;letter-spacing:.02em;}
+  .uc-cap-chip .uc-cap-title{font-size:11.5px;padding-right:2px;}
+  .uc-cap-chip .uc-cap-x{border:none;background:none;color:var(--accent-deep);font-size:13px;padding:2px 5px;border-radius:8px;cursor:pointer;line-height:1;}
+  .uc-cap-chip .uc-cap-x:hover{background:#D5DCFB;color:var(--gap);}
+  .uc-cap-none{color:var(--ink-soft);font-style:italic;font-size:12px;}
+
+  /* + add capability picker */
+  .uc-add-cap{position:relative;display:inline-block;}
+  .uc-add-cap-btn{border:1px dashed var(--accent);background:#fff;color:var(--accent-deep);padding:4px 10px;font-size:11.5px;font-weight:600;border-radius:14px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--body);}
+  .uc-add-cap-btn:hover{background:var(--yes-bg);}
+  .uc-cap-pop{position:absolute;top:calc(100% + 6px);left:0;z-index:40;background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:0 10px 34px rgba(11,11,12,.18);padding:8px;min-width:340px;max-width:400px;max-height:360px;overflow-y:auto;display:none;}
+  .uc-cap-pop.show{display:block;}
+  .uc-cap-pop .ucp-pillar{margin-top:8px;}
+  .uc-cap-pop .ucp-pillar:first-child{margin-top:0;}
+  .uc-cap-pop .ucp-plname{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;padding:3px 6px;background:var(--line-soft);border-radius:4px;margin-bottom:4px;}
+  .uc-cap-pop .ucp-opt{display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12.5px;line-height:1.35;}
+  .uc-cap-pop .ucp-opt:hover{background:var(--yes-bg);}
+  .uc-cap-pop .ucp-opt input{margin-top:2px;accent-color:var(--accent);flex:none;}
+  .uc-cap-pop .ucp-opt .ucp-code{font-family:var(--mono);font-size:10.5px;color:var(--accent);font-weight:600;flex:none;padding-top:1px;}
+  .uc-cap-pop .ucp-opt.checked{background:var(--yes-bg);}
+  .uc-cap-pop .ucp-close{margin-top:8px;padding-top:8px;border-top:1px solid var(--line-soft);display:flex;justify-content:flex-end;}
+  .uc-cap-pop .ucp-close button{border:none;background:none;color:var(--accent);font-size:11.5px;font-weight:600;cursor:pointer;padding:4px 8px;font-family:var(--mono);}
+
+  /* ================================================================ */
+  /* ===== USE-CASE FOOTNOTE UNDER EACH CAPABILITY ON PRIORITIZATION == */
+  /* ================================================================ */
+  .cap-usecases{margin-top:10px;padding:8px 10px;background:#F9FAFC;border:1px solid var(--line-soft);border-left:2px solid var(--accent);border-radius:6px;font-size:12px;color:var(--ink-soft);line-height:1.5;display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+  .cap-usecases .cu-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--accent-deep);flex:none;padding-top:2px;}
+  .cap-usecases .cu-list{flex:1;min-width:200px;display:flex;flex-wrap:wrap;gap:5px 4px;}
+  .cap-usecases .cu-uc{display:inline-flex;align-items:center;background:#fff;border:1px solid #D5DCFB;color:var(--accent-deep);padding:2px 8px;border-radius:11px;font-size:11.5px;font-weight:500;}
+  .cap-nouse{margin-top:10px;padding:8px 10px;background:var(--wont-bg);border:1px solid #DDE0E4;border-left:2px solid var(--wont);border-radius:6px;font-size:12px;color:var(--ink-soft);line-height:1.5;display:flex;align-items:flex-start;gap:8px;}
+  .cap-nouse .cu-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--wont);flex:none;padding-top:2px;}
+  .cap-nouse .cu-hint{flex:1;font-style:italic;}
+  .cap.oos-cap .cap-usecases, .cap.oos-cap .cap-nouse{display:none;}
+
+  /* ================================================================ */
+  /* ===== USE CASE LIBRARY ADMIN PAGE =============================== */
+  /* ================================================================ */
+  .lib-editor{gap:14px;}
+  .lib-editor .uc-card{position:relative;}
+  .lib-seed-tag{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--accent-deep);background:var(--yes-bg);border:1px solid #D5DCFB;padding:2px 7px;border-radius:4px;line-height:1;flex:none;align-self:center;}
+  .uc-cap-chip.missing{background:var(--gap-bg);border-color:#E2B6BC;color:var(--gap);}
+  .uc-cap-chip.missing .uc-cap-code{background:var(--gap);}
+  .uc-cap-chip.missing .uc-cap-x{color:var(--gap);}
+  body[data-page="usecases"] .panel-actions{margin-top:6px;}
+
+  /* ================================================================ */
+  /* ===== DASHBOARD — restructured (metrics + sections) ============= */
+  /* ================================================================ */
+  body[data-page="dashboard"] .dash-wrap{padding-top:26px;}
+
+  /* Metrics row */
+  .metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:2px 0 32px;}
+  .metric-tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);position:relative;}
+  .metric-tile::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;background:var(--accent);border-radius:0 2px 2px 0;}
+  .metric-value{font-family:var(--display);font-size:32px;font-weight:700;line-height:1;letter-spacing:-.02em;color:var(--ink);margin-bottom:9px;font-variant-numeric:tabular-nums;}
+  .metric-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;color:var(--ink-soft);}
+
+  /* Section chrome */
+  .dash-section{margin-top:34px;}
+  .dash-sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--line);flex-wrap:wrap;}
+  .dash-sec-head .spacer{flex:1;}
+  .dash-sec-title{font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:-.005em;color:var(--ink);margin:0;}
+  .dash-sec-hint{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--ink-soft);}
+
+  /* Platform admin tiles */
+  .admin-tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .admin-tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px 24px;box-shadow:var(--shadow);text-decoration:none;color:inherit;transition:.14s;display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden;}
+  .admin-tile::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent-deep);opacity:0;transition:opacity .14s;}
+  .admin-tile:hover{border-color:var(--accent);transform:translateY(-1px);}
+  .admin-tile:hover::after{opacity:1;}
+  .at-eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent-deep);}
+  .at-title{font-family:var(--display);font-size:18px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-top:1px;}
+  .at-desc{font-size:13px;line-height:1.55;color:var(--ink-soft);flex:1;margin-top:2px;}
+  .at-meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);padding:10px 0 0;border-top:1px solid var(--line-soft);margin-top:6px;line-height:1.6;}
+  .at-meta span{color:var(--ink);font-weight:600;}
+  .at-cta{font-size:13px;font-weight:600;color:var(--accent);margin-top:4px;font-family:var(--display);}
+
+  @media(max-width:820px){
+    .metrics-row{grid-template-columns:repeat(2,1fr);}
+    .admin-tiles{grid-template-columns:1fr;}
+  }
+  @media(max-width:480px){
+    .metric-value{font-size:26px;}
+  }
+
+  /* ================================================================ */
+  /* ===== RESULTS TAB — Coverage by use case ======================= */
+  /* ================================================================ */
+  .uc-coverage-wrap{display:block;margin-bottom:6px;}
+  .uc-coverage-wrap[hidden]{display:none;}
+  .uc-verdict{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:var(--r);padding:18px 22px;margin-bottom:18px;box-shadow:var(--shadow);}
+  .uc-verdict .uv-eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent-deep);margin-bottom:4px;}
+  .uc-verdict .uv-title{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:8px;line-height:1.15;}
+  .uc-verdict .uv-body{font-size:13.5px;line-height:1.55;color:var(--ink-soft);}
+  .uc-verdict .uv-body b{color:var(--ink);font-weight:600;}
+  .uc-verdict .uv-detail{font-size:12.8px;line-height:1.55;color:var(--ink-soft);margin-top:8px;}
+  .uc-verdict .uv-detail b{color:var(--ink);font-weight:600;}
+  .uc-verdict .uv-runner{margin-top:12px;padding-top:11px;border-top:1px solid var(--line-soft);font-size:12.5px;color:var(--ink-soft);line-height:1.5;}
+  .uc-verdict .uv-runner b{color:var(--ink);font-weight:600;}
+
+  /* Small pillar/cap breadcrumb under each use case row title */
+  .uc-caps-sub{font-family:var(--mono);font-size:10px;letter-spacing:.03em;color:var(--ink-soft);margin-top:3px;text-transform:none;font-weight:500;}
 </file>
 
 <file path="js/core.js">
@@ -651,12 +2321,9 @@ const _DEFAULT_PLATFORMS = [
   {id:'piano',name:'Piano Analytics',code:'PIANO'},
 ];
 let PLATFORMS = _DEFAULT_PLATFORMS.map(p=>({...p}));
-// the order the seed support arrays (s:[...]) below were authored in — keeps seeding correct no matter the display order
 const SEED_ORDER = ['ga4','aa','piano','cja','amp','cs'];
 const MOSCOW_W = {must:3, should:2, could:1, wont:0};
 
-// Opinionated rubric. Each sub-capability is a specific, discriminating claim; s = our POV per
-// platform in the order [ga4, aa, piano, cja, amp, cs]. Seeded from the engagement assessments.
 const SEED = [
   {letter:'A', name:'Data Collection Architecture & Engineering', caps:[
     {id:'C1', title:'Cross-platform Collection & Schema Control', def:'Captures web, app and server-side under one flexible, governed schema rather than a rigid predefined taxonomy.', subs:[
@@ -752,12 +2419,68 @@ const CONS = {
   cs:['Weak cross-device identity and attribution','No raw warehouse export pipeline','Screen recording raises privacy questions'],
 };
 
+// ============ USE CASE LIBRARY ============
+// Common analytical use cases a consultant can drop in and refine per client.
+// Each is pre-mapped to the capabilities that typically deliver it.
+// This is the default seed — it can be edited on /usecases and is persisted
+// alongside the rubric in the master 'rubrics' row (data.useCases).
+let USE_CASE_LIBRARY = [
+  { id:'lib-attribution', title:'Cross-channel marketing attribution',
+    desc:'Understand how paid, owned and earned channels contribute to conversion so spend can be reallocated to real incremental value.',
+    caps:['C1','C9','C10','C12'] },
+  { id:'lib-journey', title:'Cross-device customer journey',
+    desc:'Follow prospects from anonymous to known across devices and sessions to see the real path to conversion, not one-session snapshots.',
+    caps:['C1','C3','C6'] },
+  { id:'lib-funnel', title:'Funnel drop-off diagnosis',
+    desc:'Locate where users abandon a critical flow (checkout, signup, application) and understand qualitatively what they do instead.',
+    caps:['C6','C2'] },
+  { id:'lib-adoption', title:'Product feature adoption',
+    desc:'Measure how quickly and deeply new features are adopted, and how usage changes core outcomes (activation, revenue, retention).',
+    caps:['C2','C5','C7'] },
+  { id:'lib-retention', title:'Retention & churn analysis',
+    desc:'Track how well cohorts stick, identify leading indicators of churn and quantify the impact of interventions.',
+    caps:['C7','C8'] },
+  { id:'lib-predictive', title:'Predictive audiences (churn / propensity / LTV)',
+    desc:'Score users on likelihood to churn, convert or spend so marketing can act upstream of the outcome, not after it.',
+    caps:['C8','C10','C12'] },
+  { id:'lib-experimentation', title:'A/B testing & personalization',
+    desc:'Run controlled experiments and target variants to the behavioural cohorts most likely to respond.',
+    caps:['C11','C7'] },
+  { id:'lib-activation', title:'Audience activation to paid media',
+    desc:'Push behavioural segments to Google, Meta, CRM and CDP for suppression, retargeting and lookalike modelling.',
+    caps:['C9','C10','C3'] },
+  { id:'lib-friction', title:'UX friction & rage-click diagnosis',
+    desc:'Identify pages and interactions where users struggle, and understand qualitatively what breaks the experience.',
+    caps:['C6','C2'] },
+  { id:'lib-selfserve', title:'Ad-hoc analyst self-serve',
+    desc:'Enable senior analysts to answer new questions directly in the platform without engineering or warehouse export.',
+    caps:['C5'] },
+  { id:'lib-bi', title:'Executive KPI dashboards in BI',
+    desc:'Deliver a single, trusted view of business KPIs to leadership in the enterprise BI tool (Tableau, Power BI, Looker).',
+    caps:['C12'] },
+  { id:'lib-privacy', title:'Consent-compliant measurement',
+    desc:'Maintain durable measurement under GDPR / CCPA consent flows and Consent Mode v2 without losing signal to opt-outs.',
+    caps:['C13','C1'] },
+  { id:'lib-phi', title:'HIPAA / PHI-safe measurement',
+    desc:'Collect and analyse behavioural data on regulated properties where the vendor must sign a BAA and PHI is possible.',
+    caps:['C13'] },
+  { id:'lib-firstparty', title:'First-party data foundation',
+    desc:'Establish a governed first-party event schema and identity spine that feeds CDP, activation and warehouse downstream.',
+    caps:['C1','C3','C12','C10'] },
+  { id:'lib-content', title:'Content & landing page performance',
+    desc:'Measure engagement and conversion contribution of content and campaign landing pages by cohort.',
+    caps:['C5','C6'] },
+  { id:'lib-onboarding', title:'Onboarding funnel optimization',
+    desc:'Measure and improve first-time user activation from signup through the "aha moment" and habit-forming actions.',
+    caps:['C6','C7','C11'] },
+];
+
 // ============ MUTABLE RUBRIC + STATE ============
 let RUBRIC, S, SUBIDX={}, subCounter=0, capCounter=15, pillarCounter=0, vendorCounter=0, dragId=null;
+let useCaseCounter=0;
 let editMode=true, viewNeededOnly=false, pendingFocus=null;
 const collapsedPillars=new Set();
 
-// --- seeded SME rationale: subId -> { platformId: {note, tone(pro|con|note), conf(low|med|high)} } ---
 const RAT = {
   C1a:{aa:{note:'Historically rigid eVar/prop model constrains free-form schema design.',tone:'con',conf:'med'}},
   C2a:{cs:{note:'Auto-capture removes the tagging backlog entirely.',tone:'pro',conf:'high'},amp:{note:'Autocapture plus the ability to define events retroactively.',tone:'pro'}},
@@ -788,13 +2511,15 @@ function normalizeRubric(){
 function reindex(){ SUBIDX={};
   RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{SUBIDX[s.id]={sub:s,cap:c,pkey:p.key};}))); }
 function defaultState(){ const moscow={}, needs={};
-  RUBRIC.forEach(p=>p.caps.forEach(c=>{moscow[c.id]='should';c.subs.forEach(s=>needs[s.id]=true);})); return {moscow,needs}; }
+  RUBRIC.forEach(p=>p.caps.forEach(c=>{moscow[c.id]='should';c.subs.forEach(s=>needs[s.id]=true);})); return {moscow,needs,useCases:[]}; }
 function findCap(id){let r=null;RUBRIC.forEach(p=>p.caps.forEach(c=>{if(c.id===id)r=c;}));return r;}
 function findPillar(key){return RUBRIC.find(p=>p.key===key);}
 function pIndex(key){return RUBRIC.findIndex(p=>p.key===key);}
 function pLetter(key){const i=pIndex(key);return i>=0?String.fromCharCode(65+i):'?';}
+function capMeta(capId){ for(const p of RUBRIC){ for(const c of p.caps){ if(c.id===capId) return {c,p,letter:pLetter(p.key)}; } } return null; }
+function _markChanged(){ document.dispatchEvent(new Event('pet-selections-changed')); }
 
-// ============ COMPUTE (coverage model) ============
+// ============ COMPUTE ============
 function active(){return PLATFORMS.filter(p=>!p.retired);}
 function sup(subId,plId){return !!(SUBIDX[subId] && SUBIDX[subId].sub.sup[plId]);}
 function supportCount(subId){return active().filter(pl=>sup(subId,pl.id)).length;}
@@ -833,6 +2558,164 @@ function recommendStack(rows){
   return {primary,augments};
 }
 
+// ============ USE CASE HELPERS ============
+function useCasesForCap(capId){ return (S.useCases||[]).filter(u=>u.capIds&&u.capIds.includes(capId)); }
+function libraryUsedIds(){ const set=new Set(); (S.useCases||[]).forEach(u=>{ if(u.sourceLibId) set.add(u.sourceLibId); }); return set; }
+function _nextUCId(){ return 'uc'+(++useCaseCounter); }
+function addUseCaseFromLibrary(libId){
+  const lib=USE_CASE_LIBRARY.find(l=>l.id===libId); if(!lib) return;
+  if(libraryUsedIds().has(libId)) return;
+  S.useCases.push({ id:_nextUCId(), title:lib.title, desc:lib.desc, capIds:[...(lib.caps||[])], sourceLibId:libId });
+  _markChanged();
+}
+function addCustomUseCase(){
+  S.useCases.push({ id:_nextUCId(), title:'', desc:'', capIds:[], sourceLibId:null });
+  _markChanged();
+}
+function deleteUseCase(id){
+  S.useCases = S.useCases.filter(u=>u.id!==id);
+  _markChanged();
+}
+function toggleUCCap(ucId, capId){
+  const uc=S.useCases.find(u=>u.id===ucId); if(!uc) return;
+  if(!uc.capIds) uc.capIds=[];
+  const i=uc.capIds.indexOf(capId);
+  if(i>=0) uc.capIds.splice(i,1); else uc.capIds.push(capId);
+  _markChanged();
+}
+
+// ============ USE CASE COVERAGE (Results tab) ============
+// For a single use case × platform: coverage = supported sub-caps / in-scope sub-caps,
+// aggregated across the use case's mapped capabilities. Capabilities set to Won't are
+// excluded from the calc (they're not in the client's scope for anything, not just this UC).
+function useCaseCoverage(uc, plId){
+  const capIds = uc.capIds || [];
+  let sup=0, total=0, capsScoped=0, capsFullyMet=0;
+  capIds.forEach(cid=>{
+    const c = findCap(cid);
+    if(!c) return;              // capability was deleted from rubric
+    if(!capInScope(c)) return;  // MoSCoW = Won't
+    const on = onSubs(c);
+    if(!on.length) return;      // all sub-caps deselected
+    capsScoped++;
+    total += on.length;
+    const s = on.filter(x=>!!x.sup[plId]).length;
+    sup += s;
+    if(s === on.length) capsFullyMet++;
+  });
+  return { sup, total, capsScoped, capsFullyMet, cov: total?sup/total:0, scoped: capsScoped>0 };
+}
+
+// Rank platforms by their ability to deliver the captured use cases.
+// Sort: most fully delivered → highest average coverage → weighted fit tie-break.
+function useCaseRanking(){
+  const useCases = S.useCases || [];
+  const fitRows = compute();
+  const fitMap = {}; fitRows.forEach(r=>fitMap[r.id]=r.fit);
+  return active().map(pl=>{
+    let full=0, part=0, none=0, sumCov=0, ucInScope=0;
+    useCases.forEach(uc=>{
+      const cv = useCaseCoverage(uc, pl.id);
+      if(!cv.scoped) return;
+      ucInScope++;
+      sumCov += cv.cov;
+      if(cv.cov >= 0.999) full++;
+      else if(cv.cov > 0) part++;
+      else none++;
+    });
+    return { ...pl, full, part, none, ucInScope,
+      avgCov: ucInScope ? sumCov/ucInScope : 0,
+      fit: fitMap[pl.id] || 0 };
+  }).sort((a,b)=> b.full - a.full || b.avgCov - a.avgCov || b.fit - a.fit );
+}
+
+function _capIdStrip(uc){
+  return (uc.capIds||[]).map(cid=>{const m=capMeta(cid); return m?m.c.id:null;}).filter(Boolean).join(' · ');
+}
+
+// ============ LIBRARY ADMIN (edits USE_CASE_LIBRARY on the /usecases page) ============
+let libCounter = 0;
+function _nextLibId(){
+  // never reuse an existing id (including built-in lib-* seed ids)
+  let n = libCounter;
+  const taken = new Set(USE_CASE_LIBRARY.map(x=>x.id));
+  do { n++; } while(taken.has('lib-custom-'+n));
+  libCounter = n;
+  return 'lib-custom-'+n;
+}
+function _markLibChanged(){ document.dispatchEvent(new Event('pet-library-changed')); }
+function libAddItem(){
+  USE_CASE_LIBRARY.push({ id:_nextLibId(), title:'', desc:'', caps:[] });
+  _markLibChanged();
+}
+function libDeleteItem(id){
+  USE_CASE_LIBRARY = USE_CASE_LIBRARY.filter(x=>x.id!==id);
+  _markLibChanged();
+}
+function libToggleCap(libId, capId){
+  const it = USE_CASE_LIBRARY.find(x=>x.id===libId); if(!it) return;
+  if(!it.caps) it.caps = [];
+  const i = it.caps.indexOf(capId);
+  if(i>=0) it.caps.splice(i,1); else it.caps.push(capId);
+  _markLibChanged();
+}
+function renderLibraryEditor(){
+  const wrap = document.getElementById('libEditor'); if(!wrap) return;
+  const count = document.getElementById('libCount');
+  if(count) count.textContent = USE_CASE_LIBRARY.length === 1 ? '1 use case' : (USE_CASE_LIBRARY.length + ' use cases');
+  wrap.innerHTML = '';
+  if(!USE_CASE_LIBRARY.length){
+    wrap.appendChild(el(`<div class="uc-empty">No use cases in the library yet. Click <b>+ Add use case</b> above to create one.</div>`));
+    return;
+  }
+  USE_CASE_LIBRARY.forEach(item=>{
+    const capChips = (item.caps||[]).map(cid=>{
+      const meta = capMeta(cid);
+      if(!meta) return `<span class="uc-cap-chip missing" title="This capability no longer exists in the rubric"><span class="uc-cap-code">?? · ${esc(cid)}</span><span class="uc-cap-title">Missing capability</span><button class="uc-cap-x" data-libeditremcap data-lib="${item.id}" data-cap="${cid}" title="Remove">×</button></span>`;
+      return `<span class="uc-cap-chip" title="Pillar ${meta.letter} · ${esc(meta.c.title)}"><span class="uc-cap-code">${meta.letter} · ${meta.c.id}</span><span class="uc-cap-title">${esc(meta.c.title)}</span><button class="uc-cap-x" data-libeditremcap data-lib="${item.id}" data-cap="${cid}" title="Remove capability">×</button></span>`;
+    }).join('');
+    const capsBody = capChips || '<span class="uc-cap-none">No capabilities mapped yet — click <b>+ Capability</b> to map one.</span>';
+    const seedTag = !/^lib-custom-/.test(item.id) ? '<span class="lib-seed-tag" title="Part of the seed library — safe to edit or delete">seed</span>' : '';
+    const card = el(`<div class="uc-card" data-lib="${item.id}">
+      <div class="uc-head">
+        <div class="uc-title" contenteditable="true" data-libedittitle="${item.id}">${esc(item.title||'')}</div>
+        ${seedTag}
+        <button class="uc-del" data-libeditdel="${item.id}" title="Remove from library">×</button>
+      </div>
+      <div class="uc-desc" contenteditable="true" data-libeditdesc="${item.id}">${esc(item.desc||'')}</div>
+      <div class="uc-caps-wrap">
+        <div class="uc-caps-label">Maps to capabilities <span class="uc-caps-count">${(item.caps||[]).length}</span></div>
+        <div class="uc-caps">${capsBody}<span class="uc-add-cap"><button class="uc-add-cap-btn" data-libeditaddcap="${item.id}">+ Capability</button></span></div>
+      </div>
+    </div>`);
+    wrap.appendChild(card);
+  });
+}
+function toggleLibCapPicker(btn){
+  const already = btn.parentElement.querySelector('.uc-cap-pop');
+  document.querySelectorAll('.uc-cap-pop').forEach(p=>p.remove());
+  if(already) return; // second click closes
+  const libId = btn.dataset.libeditaddcap;
+  const item = USE_CASE_LIBRARY.find(x=>x.id===libId); if(!item) return;
+  const holder = btn.parentElement;
+  const pop = document.createElement('div');
+  pop.className = 'uc-cap-pop show';
+  pop.dataset.lib = libId;
+  let html = '';
+  RUBRIC.forEach(p=>{
+    if(!p.caps.length) return;
+    html += `<div class="ucp-pillar"><div class="ucp-plname">Pillar ${pLetter(p.key)} — ${esc(p.name)}</div>`;
+    p.caps.forEach(c=>{
+      const checked = (item.caps||[]).includes(c.id);
+      html += `<label class="ucp-opt ${checked?'checked':''}"><input type="checkbox" data-libeditpick data-lib="${libId}" data-cap="${c.id}" ${checked?'checked':''}><span class="ucp-code">${c.id}</span><span>${esc(c.title)}</span></label>`;
+    });
+    html += '</div>';
+  });
+  html += '<div class="ucp-close"><button data-libeditpickclose>Done</button></div>';
+  pop.innerHTML = html;
+  holder.appendChild(pop);
+}
+
 // ============ RENDER ============
 function el(html){const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstChild;}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -850,7 +2733,7 @@ function renderScoreboard(){const rows=compute(),has=anyScope();
   renderStack(rows,has); }
 function renderStack(rows,has){const card=document.getElementById('stackCard'); if(!card)return;
   if(!has){card.innerHTML=`<h3>Recommended stack</h3><div class="lead-sub">No capabilities in scope</div>
-    <div class="stack-empty">Set at least one capability to Must, Should or Could in section 04 — sub-capabilities are on by default — to generate a fit score and a best-of-breed recommendation.</div>`;return;}
+    <div class="stack-empty">Set at least one capability to Must, Should or Could on the Prioritization tab — sub-capabilities are on by default — to generate a fit score and a best-of-breed recommendation.</div>`;return;}
   const {primary,augments}=recommendStack(rows);
   let html=`<h3>Recommended stack</h3><div class="lead-sub">Best-of-breed, not binary</div>`;
   html+=`<div class="stack-row"><div class="stack-role">Lead platform</div><div class="stack-name">${primary.name}</div>
@@ -875,6 +2758,7 @@ function renderAgg(){const agg=pillarAgg(),rows=compute(),has=anyScope();
   active().forEach(pl=>{const r=rows.find(x=>x.id===pl.id);
     foot+= has?`<td class="cov"><div class="cell-cov"><span class="n">${r.dq?'✕ ':''}${r.fit}%</span><span class="mini"><i style="width:${r.fit}%"></i></span></div></td>`:`<td class="cov"><span class="cell-na">—</span></td>`;});
   foot+='</tr></tbody>'; t.innerHTML=head+body+foot; }
+
 function renderFramework(){const f=document.getElementById('framework'); if(!f)return; f.innerHTML='';
   RUBRIC.forEach(p=>{const collapsed=collapsedPillars.has(p.key);
     const pil=el(`<div class="pillar ${collapsed?'collapsed':''}"><div class="pillar-head" data-pillar="${p.key}">
@@ -887,6 +2771,19 @@ function renderFramework(){const f=document.getElementById('framework'); if(!f)r
           <div class="cap-def">${esc(c.def)}</div></div>
         <div class="moscow big" data-cap="${c.id}"><button data-on="must">Must</button><button data-on="should">Should</button>
           <button data-on="could">Could</button><button data-on="wont">Won't</button></div></div>`);
+
+      // Use case footnote — driven by the Use Cases tab.
+      // We only surface the "no use case" hint once the consultant has actually
+      // populated some use cases; otherwise every capability would nag on a fresh assessment.
+      const ucs=useCasesForCap(c.id);
+      const anyUC=(S.useCases||[]).length>0;
+      if(ucs.length){
+        const chips=ucs.map(u=>`<span class="cu-uc">${esc((u.title||'Untitled use case'))}</span>`).join('');
+        cap.appendChild(el(`<div class="cap-usecases"><span class="cu-label">Use cases · ${ucs.length}</span><span class="cu-list">${chips}</span></div>`));
+      } else if(anyUC){
+        cap.appendChild(el(`<div class="cap-nouse"><span class="cu-label">No use case</span><span class="cu-hint">Nothing on the client's list rides on this capability — consider Should, Could, or Won't.</span></div>`));
+      }
+
       if(c.subs.length){
         cap.appendChild(el(`<button class="refine-toggle" data-refine="${c.id}">Refine sub-capabilities (${c.subs.length}) <span class="rc">▾</span></button>`));
         const subWrap=el(`<div class="sub-table"><div class="sub-caption">Sub-capabilities are on by default — uncheck any you don't need</div></div>`);
@@ -912,12 +2809,84 @@ function syncFrameworkState(){
       if(tag){ if(!capInScope(c)){tag.textContent='out of scope';tag.classList.remove('has');}
         else{tag.textContent=`${n}/${c.subs.length} in scope`;tag.classList.toggle('has',n>0);} }});
     const plc=document.querySelector(`[data-plcount="${p.key}"]`);if(plc)plc.textContent=pc?`${pc} in scope`:'';});}
+
+// ---------- USE CASES TAB ----------
+function renderUseCases(){
+  renderUCLibrary();
+  renderUCSelected();
+}
+function renderUCLibrary(){
+  const lib=document.getElementById('ucLibrary'); if(!lib)return;
+  const used=libraryUsedIds();
+  lib.innerHTML='';
+  USE_CASE_LIBRARY.forEach(item=>{
+    const isUsed=used.has(item.id);
+    const chip=el(`<button class="uc-lib-chip ${isUsed?'used':''}" data-libadd="${item.id}" title="${esc(item.desc)}">${esc(item.title)}</button>`);
+    lib.appendChild(chip);
+  });
+}
+function renderUCSelected(){
+  const wrap=document.getElementById('ucSelected'); if(!wrap)return;
+  const empty=document.getElementById('ucEmpty');
+  const count=document.getElementById('ucCount');
+  const list=S.useCases||[];
+  if(count) count.textContent = list.length===1 ? '1 use case' : (list.length+' use cases');
+  if(!list.length){ wrap.innerHTML=''; if(empty)empty.hidden=false; return; }
+  if(empty) empty.hidden=true;
+  wrap.innerHTML='';
+  list.forEach(uc=>{
+    const capChips = (uc.capIds||[]).map(cid=>{
+      const meta=capMeta(cid);
+      if(!meta) return '';
+      return `<span class="uc-cap-chip" title="Pillar ${meta.letter} · ${esc(meta.c.title)}"><span class="uc-cap-code">${meta.letter} · ${meta.c.id}</span><span class="uc-cap-title">${esc(meta.c.title)}</span><button class="uc-cap-x" data-uccap-remove data-uc="${uc.id}" data-cap="${cid}" title="Remove capability">×</button></span>`;
+    }).join('');
+    const capsBody = capChips || '<span class="uc-cap-none">No capabilities mapped yet — click <b>+ Capability</b> to map one.</span>';
+    const card=el(`<div class="uc-card" data-uc="${uc.id}">
+      <div class="uc-head">
+        <div class="uc-title" contenteditable="true" data-uctitle="${uc.id}">${esc(uc.title||'')}</div>
+        <button class="uc-del" data-ucdel="${uc.id}" title="Remove use case">×</button>
+      </div>
+      <div class="uc-desc" contenteditable="true" data-ucdesc="${uc.id}">${esc(uc.desc||'')}</div>
+      <div class="uc-caps-wrap">
+        <div class="uc-caps-label">Maps to capabilities <span class="uc-caps-count">${(uc.capIds||[]).length}</span></div>
+        <div class="uc-caps">${capsBody}<span class="uc-add-cap"><button class="uc-add-cap-btn" data-ucaddcap="${uc.id}">+ Capability</button></span></div>
+      </div>
+    </div>`);
+    wrap.appendChild(card);
+  });
+}
+function toggleUCCapPicker(btn){
+  const already=btn.parentElement.querySelector('.uc-cap-pop');
+  document.querySelectorAll('.uc-cap-pop').forEach(p=>p.remove());
+  if(already) return; // second click on same button closes
+  const ucId=btn.dataset.ucaddcap;
+  const uc=S.useCases.find(u=>u.id===ucId); if(!uc) return;
+  const holder=btn.parentElement;
+  const pop=document.createElement('div');
+  pop.className='uc-cap-pop show';
+  pop.dataset.uc=ucId;
+  let html='';
+  RUBRIC.forEach(p=>{
+    if(!p.caps.length) return;
+    html+=`<div class="ucp-pillar"><div class="ucp-plname">Pillar ${pLetter(p.key)} — ${esc(p.name)}</div>`;
+    p.caps.forEach(c=>{
+      const checked=(uc.capIds||[]).includes(c.id);
+      html+=`<label class="ucp-opt ${checked?'checked':''}"><input type="checkbox" data-ucpick data-uc="${ucId}" data-cap="${c.id}" ${checked?'checked':''}><span class="ucp-code">${c.id}</span><span>${esc(c.title)}</span></label>`;
+    });
+    html+='</div>';
+  });
+  html+='<div class="ucp-close"><button data-ucpickclose>Done</button></div>';
+  pop.innerHTML=html;
+  holder.appendChild(pop);
+}
+function closeUCCapPickers(){ document.querySelectorAll('.uc-cap-pop').forEach(p=>p.remove()); }
+
 function updateSupportLabels(){document.querySelectorAll('[data-suplbl]').forEach(e=>{e.textContent=`${supportCount(e.dataset.suplbl)}/${active().length} support`;});}
 function hasNote(s,pl){return !!(s.rat&&s.rat[pl]&&s.rat[pl].note&&s.rat[pl].note.trim());}
+
 function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)return;
   const effNeededOnly=viewNeededOnly&&!editMode;
   const nCols=1+active().length+(editMode?1:0);
-  // shared vendor header row, repeated (and pinned) per pillar section
   let headRow='<tr><th class="subhead">Platform Evaluation</th>';
   active().forEach((p)=>{ if(editMode){
       headRow+=`<th class="plhead" data-plid="${p.id}"><div class="plh">`+
@@ -1017,8 +2986,102 @@ function renderRetired(){const bar=document.getElementById('retiredBar'); if(!ba
   bar.style.display='flex';
   bar.innerHTML='<span class="rb-label">Retired \u00b7 data kept, not scored</span>'+
     r.map(p=>`<span class="retired-chip"><b>${esc(p.name)}</b><button data-plrestore="${p.id}">Restore</button></span>`).join('');}
-function renderAll(){renderFramework();renderAgg();renderMatrix();renderScoreboard();renderProfiles();renderRetired();}
-function renderLive(){syncFrameworkState();renderAgg();renderMatrix();renderScoreboard();renderProfiles();}
+
+function renderUseCaseCoverage(){
+  const head = document.getElementById('ucSecHead');
+  const wrap = document.getElementById('ucCoverage');
+  if(!wrap || !head) return;
+  const useCases = S.useCases || [];
+  const has = anyScope();
+  // Hide the section entirely when there's nothing to say — no use cases captured
+  // or no capabilities in scope means no meaningful coverage numbers.
+  if(!useCases.length || !has){
+    head.hidden = true; wrap.hidden = true; wrap.innerHTML = '';
+    return;
+  }
+  head.hidden = false; wrap.hidden = false;
+
+  const ranked = useCaseRanking();
+  const winner = ranked.find(r=>r.ucInScope>0);
+  let html = '';
+
+  // ---- Verdict card ----
+  if(winner){
+    const parts = [];
+    if(winner.full > 0) parts.push(`<b>${winner.full}</b> of ${winner.ucInScope} fully`);
+    if(winner.part > 0) parts.push(`<b>${winner.part}</b> partially`);
+    if(winner.none > 0) parts.push(`<b>${winner.none}</b> not covered`);
+    const covPct = Math.round(winner.avgCov*100);
+    const ucStr = winner.ucInScope === 1 ? '1 in-scope use case' : winner.ucInScope + ' in-scope use cases';
+    const runner = ranked.filter(r=>r.id!==winner.id && r.ucInScope>0)[0];
+    let runnerHtml = '';
+    if(runner){
+      const rPct = Math.round(runner.avgCov*100);
+      const rBits = [];
+      if(runner.full>0) rBits.push(`${runner.full} fully delivered`);
+      rBits.push(`${rPct}% average coverage`);
+      runnerHtml = `<div class="uv-runner">Runner-up: <b>${esc(runner.name)}</b> — ${rBits.join(', ')}.</div>`;
+    }
+    // Which specific use cases does the winner deliver fully? Show up to 3.
+    const winnerFullList = useCases
+      .map(uc=>({uc, cv:useCaseCoverage(uc, winner.id)}))
+      .filter(x=>x.cv.scoped && x.cv.cov>=0.999)
+      .map(x=>x.uc.title||'Untitled');
+    let fullListHtml = '';
+    if(winnerFullList.length){
+      const shown = winnerFullList.slice(0,3).map(t=>esc(t)).join(', ');
+      const more = winnerFullList.length>3 ? ` (+${winnerFullList.length-3} more)` : '';
+      fullListHtml = `<div class="uv-detail">Fully delivers: <b>${shown}</b>${more}.</div>`;
+    }
+    html += `<div class="uc-verdict">
+      <div class="uv-eyebrow">Best platform for your use cases</div>
+      <div class="uv-title">${esc(winner.name)}</div>
+      <div class="uv-body">Delivers ${parts.join(', ')} \u00b7 <b>${covPct}%</b> average coverage across ${ucStr}.</div>
+      ${fullListHtml}
+      ${runnerHtml}
+    </div>`;
+  }
+
+  // ---- Use case × platform matrix ----
+  html += `<div class="pill-grid"><table class="agg">`;
+  html += '<thead><tr><th class="lbl">Use case</th>';
+  active().forEach(p=>html+=`<th>${esc(p.code)}</th>`);
+  html += '</tr></thead><tbody>';
+  useCases.forEach(uc=>{
+    const cells = active().map(pl=>({pl, cv:useCaseCoverage(uc, pl.id)}));
+    const capStrip = _capIdStrip(uc);
+    const capSub = capStrip ? `<div class="uc-caps-sub">${esc(capStrip)}</div>` : `<div class="uc-caps-sub" style="color:var(--gap);">no capabilities mapped</div>`;
+    const scoped = cells.some(c=>c.cv.scoped);
+    if(!scoped){
+      html += `<tr><td class="lbl"><b>${esc(uc.title||'Untitled')}</b>${capSub}</td>`;
+      active().forEach(()=>html+=`<td class="cov"><span class="cell-na">\u2014 out of scope</span></td>`);
+      html += '</tr>';
+      return;
+    }
+    let lead = -1;
+    cells.forEach(c=>{ if(c.cv.scoped && c.cv.cov > lead) lead = c.cv.cov; });
+    html += `<tr><td class="lbl"><b>${esc(uc.title||'Untitled')}</b>${capSub}</td>`;
+    cells.forEach(c=>{
+      const pct = Math.round(c.cv.cov*100);
+      const isLead = c.cv.scoped && c.cv.cov === lead && lead > 0;
+      html += `<td class="cov ${isLead?'leader':''}"><div class="cell-cov"><span class="n">${pct}%</span><span class="mini"><i style="width:${pct}%"></i></span></div></td>`;
+    });
+    html += '</tr>';
+  });
+  // Average use case coverage row
+  html += '<tr class="total"><td class="lbl">Avg. use case coverage</td>';
+  active().forEach(pl=>{
+    const r = ranked.find(x=>x.id===pl.id);
+    const pct = Math.round((r ? r.avgCov : 0) * 100);
+    html += `<td class="cov"><div class="cell-cov"><span class="n">${pct}%</span><span class="mini"><i style="width:${pct}%"></i></span></div></td>`;
+  });
+  html += '</tr></tbody></table></div>';
+
+  wrap.innerHTML = html;
+}
+
+function renderAll(){renderFramework();renderAgg();renderMatrix();renderScoreboard();renderProfiles();renderUseCaseCoverage();renderRetired();renderUseCases();}
+function renderLive(){syncFrameworkState();renderAgg();renderMatrix();renderScoreboard();renderProfiles();renderUseCaseCoverage();}
 
 // ============ RATIONALE POPOVER ============
 let ratPinned=null, currentRatCell=null, ratHideTimer=null;
@@ -1055,13 +3118,56 @@ function showRatEdit(btn){const sid=btn.dataset.note,pl=btn.dataset.pl,info=SUBI
 document.addEventListener('click',e=>{
   const scl=e.target.closest('[data-seccollapse]'); if(scl){scl.closest('.collapsible').classList.toggle('collapsed');return;}
   const rf=e.target.closest('[data-refine]'); if(rf){rf.closest('.cap').classList.toggle('open');return;}
+
+  // ----- Use case events -----
+  const libAdd=e.target.closest('[data-libadd]'); if(libAdd){ addUseCaseFromLibrary(libAdd.dataset.libadd); renderUseCases(); renderFramework(); renderUseCaseCoverage(); return; }
+  if(e.target.id==='btnAddCustomUC'){ addCustomUseCase(); renderUCSelected(); renderUseCaseCoverage();
+    requestAnimationFrame(()=>{ const cards=document.querySelectorAll('.uc-card'); const last=cards[cards.length-1]; const t=last&&last.querySelector('.uc-title'); if(t){t.focus();}});
+    return; }
+  const ucDel=e.target.closest('[data-ucdel]'); if(ucDel){ deleteUseCase(ucDel.dataset.ucdel); renderUseCases(); renderFramework(); renderUseCaseCoverage(); return; }
+  const capRem=e.target.closest('[data-uccap-remove]'); if(capRem){ toggleUCCap(capRem.dataset.uc, capRem.dataset.cap); renderUCSelected(); renderFramework(); renderUseCaseCoverage(); return; }
+  const ucAddCap=e.target.closest('[data-ucaddcap]'); if(ucAddCap){ toggleUCCapPicker(ucAddCap); return; }
+  const ucPick=e.target.closest('[data-ucpick]');
+  if(ucPick){ toggleUCCap(ucPick.dataset.uc, ucPick.dataset.cap);
+    const ucId=ucPick.dataset.uc; renderUCSelected(); renderFramework(); renderUseCaseCoverage();
+    const btn=document.querySelector(`[data-ucaddcap="${ucId}"]`); if(btn) toggleUCCapPicker(btn);
+    return; }
+  if(e.target.closest('[data-ucpickclose]')){ closeUCCapPickers(); return; }
+  if(!e.target.closest('.uc-cap-pop') && !e.target.closest('[data-ucaddcap]') && !e.target.closest('[data-libeditaddcap]')) closeUCCapPickers();
+
+  // ----- Library editor events (/usecases page) -----
+  if(e.target.id==='btnAddLibItem'){ libAddItem(); renderLibraryEditor();
+    requestAnimationFrame(()=>{ const cards=document.querySelectorAll('#libEditor .uc-card'); const last=cards[cards.length-1]; const t=last&&last.querySelector('.uc-title'); if(t){t.focus();}});
+    return; }
+  const libDel=e.target.closest('[data-libeditdel]');
+  if(libDel){
+    const item = USE_CASE_LIBRARY.find(x=>x.id===libDel.dataset.libeditdel);
+    if(item && confirm(`Delete "${item.title||'this use case'}" from the library?\n\nExisting assessments that already added this use case keep their copies — only new assessments are affected.`)){
+      libDeleteItem(libDel.dataset.libeditdel); renderLibraryEditor();
+    }
+    return;
+  }
+  const libRem=e.target.closest('[data-libeditremcap]');
+  if(libRem){ libToggleCap(libRem.dataset.lib, libRem.dataset.cap); renderLibraryEditor(); return; }
+  const libAddCap=e.target.closest('[data-libeditaddcap]');
+  if(libAddCap){ toggleLibCapPicker(libAddCap); return; }
+  const libPick=e.target.closest('[data-libeditpick]');
+  if(libPick){
+    const libId=libPick.dataset.lib;
+    libToggleCap(libId, libPick.dataset.cap);
+    renderLibraryEditor();
+    const btn=document.querySelector(`[data-libeditaddcap="${libId}"]`); if(btn) toggleLibCapPicker(btn);
+    return;
+  }
+  if(e.target.closest('[data-libeditpickclose]')){ closeUCCapPickers(); return; }
+
   const noteBtn=e.target.closest('[data-note]'); if(noteBtn&&editMode){showRatEdit(noteBtn);return;}
   const ratCell=e.target.closest('[data-rat]'); if(ratCell&&!editMode){
     if(ratPinned==='cell'&&currentRatCell===ratCell){hideRat();} else {showRatView(ratCell);ratPinned='cell';currentRatCell=ratCell;} return;}
   const ph=e.target.closest('[data-pillar]'); if(ph){const k=ph.dataset.pillar;
     if(collapsedPillars.has(k))collapsedPillars.delete(k);else collapsedPillars.add(k);
     ph.parentElement.classList.toggle('collapsed');return;}
-  const mb=e.target.closest('.moscow button'); if(mb){S.moscow[mb.parentElement.dataset.cap]=mb.dataset.on;renderLive();return;}
+  const mb=e.target.closest('.moscow button'); if(mb){S.moscow[mb.parentElement.dataset.cap]=mb.dataset.on;renderLive();_markChanged();return;}
   const tog=e.target.closest('[data-tog]'); if(tog){const sid=tog.dataset.tog,pl=tog.dataset.pl;
     SUBIDX[sid].sub.sup[pl]=!SUBIDX[sid].sub.sup[pl]; renderMatrix();renderAgg();renderScoreboard();renderProfiles();updateSupportLabels();return;}
   const addrow=e.target.closest('[data-addrow]'); if(addrow){const cap=findCap(addrow.dataset.addrow);
@@ -1097,22 +3203,32 @@ document.addEventListener('click',e=>{
     RUBRIC.push({key,name:'New pillar',caps:[]}); reindex();
     pendingFocus=`[data-pname="${key}"]`; renderAll(); return;}
 });
-// dismiss pinned popover on outside click
 document.addEventListener('click',e=>{ if(e.target.closest('#ratPop')||e.target.closest('[data-rat]')||e.target.closest('[data-note]'))return; if(ratPinned)hideRat(); });
-// hover preview (view mode only, when not pinned)
 document.addEventListener('mouseover',e=>{ if(editMode||ratPinned)return; const c=e.target.closest('[data-rat]'); if(c){clearTimeout(ratHideTimer);showRatView(c);} });
 document.addEventListener('mouseout',e=>{ if(editMode||ratPinned)return; const c=e.target.closest('[data-rat]'); if(c){ratHideTimer=setTimeout(hideRat,140);} });
 
 document.addEventListener('change',e=>{
-  if(e.target.matches('[data-need]')){S.needs[e.target.dataset.need]=e.target.checked;renderLive();}
+  if(e.target.matches('[data-need]')){S.needs[e.target.dataset.need]=e.target.checked;renderLive();_markChanged();}
 });
 // ===== tab switching =====
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
   document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.dataset.panel===t.dataset.tab));
-  hideRat(); window.scrollTo({top:0,behavior:'smooth'});
+  hideRat(); closeUCCapPickers(); window.scrollTo({top:0,behavior:'smooth'});
 }));
 document.addEventListener('blur',e=>{
+  if(e.target.matches('[data-libedittitle]')){const id=e.target.dataset.libedittitle, it=USE_CASE_LIBRARY.find(x=>x.id===id);
+    if(it){ it.title=e.target.textContent.trim(); _markLibChanged(); }
+    return;}
+  if(e.target.matches('[data-libeditdesc]')){const id=e.target.dataset.libeditdesc, it=USE_CASE_LIBRARY.find(x=>x.id===id);
+    if(it){ it.desc=e.target.textContent.trim(); _markLibChanged(); }
+    return;}
+  if(e.target.matches('[data-uctitle]')){const id=e.target.dataset.uctitle,uc=S.useCases.find(u=>u.id===id);
+    if(uc){ uc.title=e.target.textContent.trim(); _markChanged(); renderFramework(); renderUseCaseCoverage(); }
+    return;}
+  if(e.target.matches('[data-ucdesc]')){const id=e.target.dataset.ucdesc,uc=S.useCases.find(u=>u.id===id);
+    if(uc){ uc.desc=e.target.textContent.trim(); _markChanged(); }
+    return;}
   if(e.target.matches('[data-sublbl]')){const sid=e.target.dataset.sublbl,info=SUBIDX[sid];
     if(info){const txt=e.target.textContent.trim();info.sub.q=txt||info.sub.q;}
     renderMatrix(); const span=document.querySelector(`[data-subrow="${sid}"] .sub-q span`); if(span&&info)span.textContent=info.sub.q; return;}
@@ -1151,426 +3267,36 @@ renderAll();
 
 // ===== integration API for the persistence layer (js/db.js) =====
 function _setVendorCounter(){vendorCounter=PLATFORMS.reduce((m,p)=>{const n=/^v(\d+)$/.exec(p.id);return n?Math.max(m,+n[1]):m;},0);}
+function _setUseCaseCounter(){useCaseCounter=(S.useCases||[]).reduce((m,u)=>{const n=/^uc(\d+)$/.exec(u.id||'');return n?Math.max(m,+n[1]):m;},0);}
 window.PET={
-  exportData:()=>({platforms:PLATFORMS,rubric:RUBRIC,selections:{moscow:S.moscow,needs:S.needs}}),
-  exportRubric:()=>({platforms:PLATFORMS,rubric:RUBRIC}),
+  exportData:()=>({platforms:PLATFORMS,rubric:RUBRIC,useCases:USE_CASE_LIBRARY,selections:{moscow:S.moscow,needs:S.needs,useCases:S.useCases}}),
+  exportRubric:()=>({platforms:PLATFORMS,rubric:RUBRIC,useCases:USE_CASE_LIBRARY}),
   importData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms; _setVendorCounter();
     RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex();
+    if(Array.isArray(d.useCases)) USE_CASE_LIBRARY = d.useCases;
     const base=defaultState(); const sel=d.selections||{};
-    S={moscow:{...base.moscow,...(sel.moscow||{})},needs:{...base.needs,...(sel.needs||{})}}; collapsedPillars.clear(); renderAll(); },
+    S={moscow:{...base.moscow,...(sel.moscow||{})},needs:{...base.needs,...(sel.needs||{})},useCases:Array.isArray(sel.useCases)?sel.useCases:[]};
+    _setUseCaseCounter(); collapsedPillars.clear(); renderAll(); },
   loadRubricData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms; _setVendorCounter();
-    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex(); S=defaultState(); collapsedPillars.clear(); renderAll(); }
+    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex();
+    if(Array.isArray(d.useCases)) USE_CASE_LIBRARY = d.useCases;
+    S=defaultState(); collapsedPillars.clear(); renderAll(); renderLibraryEditor(); }
 };
-window.PET.applySelections=(sel)=>{const base=defaultState();S={moscow:{...base.moscow,...((sel&&sel.moscow)||{})},needs:{...base.needs,...((sel&&sel.needs)||{})}};collapsedPillars.clear();renderAll();};
-window.PET.getSelections=()=>({moscow:S.moscow,needs:S.needs});
+window.PET.applySelections=(sel)=>{
+  const base=defaultState();
+  S={
+    moscow:{...base.moscow,...((sel&&sel.moscow)||{})},
+    needs:{...base.needs,...((sel&&sel.needs)||{})},
+    useCases:Array.isArray(sel&&sel.useCases)?sel.useCases:[]
+  };
+  _setUseCaseCounter();
+  collapsedPillars.clear();
+  renderAll();
+};
+window.PET.getSelections=()=>({moscow:S.moscow,needs:S.needs,useCases:S.useCases});
 window.PET.setEditMode=(b)=>{editMode=!!b;renderMatrix();};
+window.PET.renderLibraryEditor=()=>renderLibraryEditor();
 document.dispatchEvent(new Event('pet-ready'));
-</file>
-
-<file path="js/db.js">
-// ===================================================================
-// db.js — Supabase data layer (single master rubric + assessments)
-// Page-routed by <body data-page="dashboard|assessment|admin">.
-//   rubrics     : one row id='master', data jsonb = {platforms, rubric, _rev}
-//   assessments : id, name, client, data jsonb = {moscow, needs}
-// Rubric edits autosave (last-write-wins) and live-sync across editors.
-// ===================================================================
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const cfg  = window.APP_CONFIG || {};
-const page = document.body.dataset.page;
-const $    = id => document.getElementById(id);
-const esc  = s => (s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const RUBRIC_ID = 'master';
-
-// per-tab identity so we can ignore the realtime echo of our own writes
-const clientId = Math.random().toString(36).slice(2);
-let myRev = null;
-
-let sb = null;
-if (cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) {
-  try { sb = createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY); }
-  catch (e) { console.error('Supabase init failed', e); }
-}
-
-function setAuto(state, text) {
-  const a = $('autosave'); if (!a) return;
-  a.className = 'autosave ' + state;
-  const t = $('autosaveText'); if (t) t.textContent = text;
-}
-function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
-function ready() {
-  return new Promise(res => {
-    if (window.PET) return res(true);
-    let n = 0; const i = setInterval(() => {
-      if (window.PET || ++n > 60) { clearInterval(i); res(!!window.PET); }
-    }, 50);
-  });
-}
-
-// ---------------- data access ----------------
-async function getRubric() {
-  const { data, error } = await sb.from('rubrics').select('data').eq('id', RUBRIC_ID).maybeSingle();
-  if (error) throw error;
-  return data ? data.data : null;
-}
-async function putRubric(d) {
-  const rev = clientId + ':' + Date.now(); myRev = rev;
-  const { error } = await sb.from('rubrics')
-    .upsert({ id: RUBRIC_ID, data: { ...d, _rev: rev }, updated_at: new Date().toISOString() });
-  if (error) throw error;
-}
-async function listAssessments() {
-  const { data, error } = await sb.from('assessments')
-    .select('id,name,client,updated_at').order('updated_at', { ascending: false });
-  if (error) throw error;
-  return data || [];
-}
-async function createAssessment(name, client) {
-  const { data, error } = await sb.from('assessments')
-    .insert({ name, client, data: { moscow: {}, needs: {} } }).select('id').single();
-  if (error) throw error;
-  return data.id;
-}
-async function getAssessment(id) {
-  const { data, error } = await sb.from('assessments').select('name,client,data').eq('id', id).single();
-  if (error) throw error;
-  return data;
-}
-async function putSelections(id, sel) {
-  const { error } = await sb.from('assessments')
-    .update({ data: sel, updated_at: new Date().toISOString() }).eq('id', id);
-  if (error) throw error;
-}
-async function delAssessment(id) {
-  const { error } = await sb.from('assessments').delete().eq('id', id);
-  if (error) throw error;
-}
-
-// ---------------- route ----------------
-if (!sb) {
-  if (page === 'dashboard') {
-    const m = $('dashMsg');
-    if (m) { m.hidden = false; m.classList.add('err');
-      m.textContent = 'Supabase is not configured. Add your project URL and publishable key in config.js to load and save assessments.'; }
-  } else { setAuto('err', 'offline - set Supabase keys in config.js'); }
-} else if (page === 'dashboard') {
-  initDashboard();
-} else if (page === 'assessment') {
-  initAssessment();
-} else if (page === 'admin') {
-  initAdmin();
-}
-
-// ================= DASHBOARD =================
-async function initDashboard() {
-  await renderDash();
-  $('btnNew')?.addEventListener('click', async () => {
-    const name = (prompt('Name this assessment (e.g., "Hobby Lobby - Analytics RFP"):') || '').trim();
-    if (!name) return;
-    const client = (prompt('Client / brand (optional):') || '').trim() || null;
-    try { const id = await createAssessment(name, client); location.href = '/assessment?id=' + id; }
-    catch (e) { alert('Could not create assessment: ' + e.message); }
-  });
-}
-async function renderDash() {
-  const grid = $('assessGrid'), empty = $('dashEmpty'), msg = $('dashMsg');
-  if (!grid) return;
-  let list;
-  try { list = await listAssessments(); }
-  catch (e) { if (msg) { msg.hidden = false; msg.classList.add('err'); msg.textContent = 'Could not load assessments: ' + e.message; } return; }
-  grid.innerHTML = '';
-  if (!list.length) { if (empty) empty.hidden = false; return; }
-  if (empty) empty.hidden = true;
-  list.forEach(a => {
-    const card = document.createElement('a');
-    card.className = 'assess-card'; card.href = '/assessment?id=' + a.id;
-    const when = new Date(a.updated_at).toLocaleString();
-    card.innerHTML =
-      '<button class="ac-del" title="Delete" data-del="' + a.id + '">\u2715</button>' +
-      '<h3>' + esc(a.name) + '</h3>' +
-      (a.client ? '<div class="ac-client">' + esc(a.client) + '</div>' : '') +
-      '<div class="ac-meta">Updated ' + esc(when) + '</div>';
-    grid.appendChild(card);
-  });
-  grid.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async e => {
-    e.preventDefault(); e.stopPropagation();
-    if (!confirm('Delete this assessment? This cannot be undone.')) return;
-    try { await delAssessment(b.dataset.del); await renderDash(); }
-    catch (err) { alert('Delete failed: ' + err.message); }
-  }));
-}
-
-// ================= ASSESSMENT =================
-async function initAssessment() {
-  if (!await ready()) return;
-  const id = new URLSearchParams(location.search).get('id');
-  if (!id) { location.replace('/dashboard'); return; }
-  setAuto('saving', 'loading...');
-  try {
-    const r = await getRubric();
-    if (r) window.PET.loadRubricData(r);
-    const a = await getAssessment(id);
-    const t = $('snTitle'); if (t) t.textContent = a.name + (a.client ? ' \u00b7 ' + a.client : '');
-    window.PET.applySelections(a.data || {});
-    setAuto('saved', 'saved');
-  } catch (e) {
-    setAuto('err', 'load failed'); console.error(e);
-    const t = $('snTitle'); if (t) t.textContent = 'Assessment not found';
-    return;
-  }
-  const save = debounce(async () => {
-    setAuto('saving', 'saving...');
-    try { await putSelections(id, window.PET.getSelections()); setAuto('saved', 'saved ' + new Date().toLocaleTimeString()); }
-    catch (e) { setAuto('err', 'save failed'); }
-  }, 700);
-  ['click', 'change'].forEach(ev => document.addEventListener(ev, e => {
-    if (e.target.closest('.moscow') || e.target.matches('[data-need]')) save();
-  }, true));
-  sb.channel('rub-view').on('postgres_changes',
-    { event: '*', schema: 'public', table: 'rubrics', filter: 'id=eq.' + RUBRIC_ID },
-    payload => {
-      const d = payload.new && payload.new.data;
-      if (!d || d._rev === myRev) return;
-      const sel = window.PET.getSelections();
-      window.PET.loadRubricData(d);
-      window.PET.applySelections(sel);
-    }).subscribe();
-}
-
-// ================= ADMIN =================
-async function initAdmin() {
-  if (!await ready()) return;
-  window.PET.setEditMode(true);
-  setAuto('saving', 'loading...');
-  let lastSaved = null;
-  try {
-    let r = await getRubric();
-    if (!r) { r = window.PET.exportRubric(); await putRubric(r); }
-    else { window.PET.loadRubricData(r); }
-    lastSaved = JSON.stringify(window.PET.exportRubric());
-    setAuto('saved', 'all changes saved');
-  } catch (e) { setAuto('err', 'load failed'); console.error(e); }
-
-  const doSave = debounce(async () => {
-    const cur = JSON.stringify(window.PET.exportRubric());
-    if (cur === lastSaved) return;
-    setAuto('saving', 'saving...');
-    try { await putRubric(window.PET.exportRubric()); lastSaved = cur; setAuto('saved', 'all changes saved \u00b7 ' + new Date().toLocaleTimeString()); }
-    catch (e) { setAuto('err', 'save failed - retry an edit'); }
-  }, 800);
-  ['click', 'input', 'change', 'blur', 'drop'].forEach(ev => document.addEventListener(ev, () => doSave(), true));
-
-  let pendingRemote = null;
-  sb.channel('rub-admin').on('postgres_changes',
-    { event: '*', schema: 'public', table: 'rubrics', filter: 'id=eq.' + RUBRIC_ID },
-    payload => {
-      const d = payload.new && payload.new.data;
-      if (!d || d._rev === myRev) return;
-      const cur = JSON.stringify(window.PET.exportRubric());
-      if (cur === lastSaved) {
-        window.PET.loadRubricData(d);
-        lastSaved = JSON.stringify(window.PET.exportRubric());
-        setAuto('saved', 'updated by another editor');
-      } else {
-        pendingRemote = d;
-        $('syncBanner')?.classList.add('show');
-      }
-    }).subscribe();
-  $('btnSyncReload')?.addEventListener('click', () => {
-    if (!pendingRemote) return;
-    window.PET.loadRubricData(pendingRemote);
-    lastSaved = JSON.stringify(window.PET.exportRubric());
-    pendingRemote = null;
-    $('syncBanner')?.classList.remove('show');
-    setAuto('saved', 'reloaded');
-  });
-}
-</file>
-
-<file path="README.md">
-# Merkle Analytic Platform Assessment
-
-A consultant tool that matches a client's analytics needs (MoSCoW priorities) to
-platforms — GA4, Adobe Analytics, CJA, Amplitude, Contentsquare, Piano — and
-produces a weighted-fit ranking plus a best-of-breed stack recommendation.
-
-Static multi-page site on **Vercel** with a **Supabase** (Postgres) backend.
-
-## Pages
-
-| Path           | File             | Purpose |
-|----------------|------------------|---------|
-| `/dashboard`   | `dashboard.html` | Lists every assessment; create / open / delete from here. Landing page (`/` redirects here). |
-| `/assessment?id=…` | `assessment.html` | The workspace: **Needs discovery** (MoSCoW + sub-capabilities) and **Results** (ranking, stack, pillar coverage, profiles). Selections autosave. Links back to the dashboard. |
-| `/admin`       | `admin.html`     | The **single master rubric** editor. Every edit autosaves to the database and applies to all assessments, including new ones. |
-
-Shared assets: `css/app.css`, `js/core.js` (rubric model, scoring, rendering),
-`js/db.js` (Supabase + page routing + autosave + realtime).
-
-## Single rubric
-
-There is **one** rubric, stored in the `rubrics` table as the row `id='master'`.
-Assessments store **only** the client's selections (`{moscow, needs}`), not a
-copy of the rubric. Opening an assessment loads the current master rubric and
-overlays that assessment's selections — so a rubric change in `/admin` reaches
-every assessment immediately. Import and "reset to defaults" have been removed:
-the master rubric in the database is the single source of truth.
-
-## Autosave
-
-- **Rubric** (`/admin`): any edit autosaves ~0.8s after you stop. No save button.
-- **Selections** (`/assessment`): MoSCoW and sub-capability changes autosave ~0.7s after you stop.
-
-The dot next to the page title shows status (saving / saved / error).
-
-## Multiple editors
-
-Saves are **last-write-wins**, and the rubric is **live-synced** over Supabase
-Realtime:
-
-- When another editor saves, your `/admin` page is notified in real time.
-- If you have **no unsaved edits**, the change is applied silently.
-- If you are **mid-edit**, a banner appears ("updated by another editor — Reload")
-  rather than clobbering your work. Reloading pulls their version; ignoring it and
-  continuing means your next save overwrites theirs.
-- Two people editing the **same field** at the same instant resolve last-write-wins
-  (no field-level merge).
-
-This is appropriate for a small consulting team coordinating edits. For stricter
-control, enable Supabase Auth and tighten the RLS policies (see `supabase/schema.sql`).
-
-## Deploy
-
-1. **Supabase** → create a project → SQL Editor → paste & run `supabase/schema.sql`.
-   Then Settings → API Keys → copy the **Project URL** and the **publishable key**
-   (`sb_publishable_…`).
-2. **config.js** → paste the URL and publishable key. `config.js` **must be committed**
-   — the publishable key is public-safe. Never put a secret/service-role key in client code.
-3. **GitHub** → commit and push the repo.
-4. **Vercel** → Import the repo → Framework preset **Other** → no build command → Deploy.
-
-The site is `noindex` (meta tag + `X-Robots-Tag` header + `robots.txt`).
-
-## Local dev
-
-```bash
-npm run dev   # npx serve .
-```
-</file>
-
-<file path="robots.txt">
-# This tool is private. Do not crawl or index.
-User-agent: *
-Disallow: /
-</file>
-
-<file path="supabase/schema.sql">
--- ===================================================================
--- Merkle Analytic Platform Assessment - Supabase schema
--- Run once in the Supabase SQL Editor (SQL Editor > New query > Run).
--- ===================================================================
-
--- Single master rubric. One row, id = 'master'.
---   data = { platforms:[...], rubric:{...}, _rev:"clientId:ts" }
-create table if not exists public.rubrics (
-  id          text primary key,
-  data        jsonb not null default '{}'::jsonb,
-  updated_at  timestamptz not null default now()
-);
-
--- Assessments store ONLY the client selections; the rubric is shared.
---   data = { moscow:{capId:priority}, needs:{subId:bool} }
-create table if not exists public.assessments (
-  id          uuid primary key default gen_random_uuid(),
-  name        text not null,
-  client      text,
-  data        jsonb not null default '{}'::jsonb,
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
-);
-
--- Live sync for the rubric editor (multiple editors see each other's saves).
-do $$ begin
-  alter publication supabase_realtime add table public.rubrics;
-exception when duplicate_object then null; end $$;
-
--- ------------------------------------------------------------------
--- Row Level Security.
--- The policies below are OPEN (anon can read/write) so the static site
--- works with only the publishable key. This is fine for an internal,
--- unlisted, noindex tool. For real production, turn on Supabase Auth and
--- replace `to anon` with `to authenticated` on every policy below.
--- ------------------------------------------------------------------
-alter table public.rubrics      enable row level security;
-alter table public.assessments  enable row level security;
-
-drop policy if exists rubrics_all on public.rubrics;
-create policy rubrics_all on public.rubrics
-  for all to anon using (true) with check (true);
-
-drop policy if exists assessments_all on public.assessments;
-create policy assessments_all on public.assessments
-  for all to anon using (true) with check (true);
-</file>
-
-<file path=".gitignore">
-# OS / editor
-.DS_Store
-Thumbs.db
-.vscode/
-
-# dependencies & logs
-node_modules/
-*.log
-npm-debug.log*
-
-# Vercel
-.vercel
-
-# secrets / env (only if you add a build step that uses them)
-.env
-.env.local
-.env*.local
-
-# NOTE: do NOT ignore config.js — a static deploy needs it at runtime,
-# and the Supabase publishable key is safe to commit. Never put a
-# secret key (sb_secret_... / service_role) in committed files.
-</file>
-
-<file path="index.html">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="robots" content="noindex, nofollow">
-<meta http-equiv="refresh" content="0; url=/dashboard">
-<title>Merkle Analytic Platform Assessment</title>
-<script>location.replace('/dashboard');</script>
-</head>
-<body><p style="font-family:sans-serif;padding:24px">Redirecting to <a href="/dashboard">the dashboard</a>…</p></body>
-</html>
-</file>
-
-<file path="vercel.json">
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "redirects": [
-    { "source": "/", "destination": "/dashboard", "permanent": false }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-      ]
-    }
-  ]
-}
 </file>
 
 </files>
