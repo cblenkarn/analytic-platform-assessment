@@ -525,3 +525,28 @@
 
   /* Pillar coverage table (results tab) — retired pillar rows are dimmed */
   table.agg tr.row-retired td{opacity:.55;}
+
+  /* ================================================================ */
+  /* ===== Fixes: loading state, pillar drag, admin delete =========== */
+  /* ================================================================ */
+
+  /* Brief placeholder shown while db.js fetches the master rubric, so the
+     stale seed rubric no longer flashes before the real one paints. */
+  .rubric-loading{padding:44px 16px;text-align:center;color:var(--ink-soft);font-family:var(--mono);font-size:13px;letter-spacing:.02em;}
+
+  /* Drag-to-reorder pillars (admin matrix). The handle sits on the dark pillar
+     band, so it needs a lighter colour than the vendor-column handle. */
+  .drag-handle.pillar-drag{color:#cfe3e6;vertical-align:middle;margin-right:2px;}
+  .drag-handle.pillar-drag:hover{color:#fff;}
+  .pillar-card.pillar-dragging{opacity:.5;}
+  .pillar-card.pillar-drop{box-shadow:inset 0 3px 0 var(--accent),var(--shadow);}
+
+  /* Sub-capability action cell now stacks Retire + (admin) Delete. */
+  td.act .act-btns{display:flex;flex-direction:column;gap:4px;align-items:stretch;}
+  table.mtx thead th.actcol,table.mtx td.act{width:104px;}
+  .row-retire.danger{border-color:#E2B6BC;color:var(--gap);}
+  .row-retire.danger:hover{border-color:var(--gap);color:#fff;background:var(--gap);}
+
+  /* Admin-only Delete on the vendor column header (sits beside "retire"). */
+  .plretire.pldelete{color:var(--gap);}
+  .plretire.pldelete:hover{color:#fff;background:var(--gap);}

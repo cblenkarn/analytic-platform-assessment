@@ -234,8 +234,12 @@ async function initAdmin() {
   try {
     let r = await getRubric();
     if (!r) { r = window.PET.exportRubric(); await putRubric(r); }
-    else { window.PET.loadRubricData(r); }
+    // loadRubricData renders and returns true if it repaired duplicate/blank ids
+    // in already-saved data. When it does, persist the healed rubric once so the
+    // fix is permanent rather than re-applied every load.
+    const repaired = window.PET.loadRubricData(r);
     lastSaved = JSON.stringify(window.PET.exportRubric());
+    if (repaired) { await putRubric(window.PET.exportRubric()); lastSaved = JSON.stringify(window.PET.exportRubric()); }
     setAuto('saved', 'all changes saved');
   } catch (e) { setAuto('err', 'load failed'); console.error(e); }
 
@@ -283,10 +287,11 @@ async function initUsecasesAdmin() {
   try {
     let r = await getRubric();
     if (!r) { r = window.PET.exportRubric(); await putRubric(r); }
-    else { window.PET.loadRubricData(r); }
+    const repaired = window.PET.loadRubricData(r);
     // Render into #libEditor now that the rubric (capabilities) is loaded
     window.PET.renderLibraryEditor();
     lastSaved = JSON.stringify(window.PET.exportRubric());
+    if (repaired) { await putRubric(window.PET.exportRubric()); lastSaved = JSON.stringify(window.PET.exportRubric()); }
     setAuto('saved', 'all changes saved');
   } catch (e) { setAuto('err', 'load failed'); console.error(e); }
 

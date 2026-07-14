@@ -167,6 +167,16 @@ let RUBRIC, S, SUBIDX={}, subCounter=0, capCounter=15, pillarCounter=0, vendorCo
 let useCaseCounter=0;
 let editMode=true, viewNeededOnly=false, pendingFocus=null;
 const collapsedPillars=new Set();
+let pillarDragKey=null; // drag-to-reorder pillars (admin matrix only)
+
+// ── UI-level admin unlock ────────────────────────────────────────────────
+// NOT a security boundary — the token is visible in client code and RLS is
+// open. It only reveals irreversible Delete controls alongside Retire for
+// whoever holds the URL. Append ?admin=<ADMIN_DELETE_TOKEN> to the page URL.
+// Change this token to your own private value.
+const ADMIN_DELETE_TOKEN = 'merkle-delete-2026';
+let adminDelete = false;
+try { adminDelete = new URLSearchParams(location.search).get('admin') === ADMIN_DELETE_TOKEN; } catch(e){}
 
 const RAT = {
   C1a:{aa:{note:'Historically rigid eVar/prop model constrains free-form schema design.',tone:'con',conf:'med'}},
@@ -592,7 +602,9 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
       headRow+=`<th class="plhead" data-plid="${p.id}"><div class="plh">`+
         `<span class="drag-handle" draggable="true" data-drag="${p.id}" title="Drag to reorder">⠿</span>`+
         `<span contenteditable="true" data-plcode="${p.id}">${esc(p.code)}</span>`+
-        `<button class="plretire" data-plretire="${p.id}" title="Retire — keeps all data, removes from scoring">retire</button></div></th>`;
+        `<button class="plretire" data-plretire="${p.id}" title="Retire — keeps all data, removes from scoring">retire</button>`+
+        (adminDelete?`<button class="plretire pldelete" data-pldelete="${p.id}" title="Delete vendor permanently">delete</button>`:'')+
+        `</div></th>`;
     } else headRow+=`<th>${esc(p.code)}</th>`; });
   if(editMode)headRow+='<th class="actcol"></th>'; headRow+='</tr>';
 
@@ -601,17 +613,18 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
     const pillarHasRows=p.caps.some(c=>c.subs.some(s=>!effNeededOnly||S.needs[s.id]));
     if(!pillarHasRows&&!editMode)return;
     const pRetireLabel=p.retired?'Unretire pillar':'Retire pillar';
+    const pDragHandle=editMode?`<span class="drag-handle pillar-drag" draggable="true" data-pdrag="${p.key}" title="Drag to reorder this pillar">⠿</span> `:'';
     const pedit=editMode?`<span class="pname" contenteditable="true" data-pname="${p.key}">${esc(p.name)}</span>
-      <button class="ed-btn" data-addcap="${p.key}">+ Capability</button><button class="ed-btn" data-retirepillar="${p.key}">${pRetireLabel}</button>${p.retired?'<span class="retired-tag on-dark">retired</span>':''}`
+      <button class="ed-btn" data-addcap="${p.key}">+ Capability</button><button class="ed-btn" data-retirepillar="${p.key}">${pRetireLabel}</button>${adminDelete?`<button class="ed-btn danger" data-delpillar="${p.key}">Delete</button>`:''}${p.retired?'<span class="retired-tag on-dark">retired</span>':''}`
       :esc(p.name)+(p.retired?' <span class="retired-tag on-dark">retired</span>':'');
-    let body=`<tr class="pillar-band ${p.retired?'retired':''}"><td colspan="${nCols}">Pillar ${pLetter(p.key)} — ${pedit}</td></tr>`;
+    let body=`<tr class="pillar-band ${p.retired?'retired':''}"><td colspan="${nCols}">${pDragHandle}Pillar ${pLetter(p.key)} — ${pedit}</td></tr>`;
     p.caps.forEach(c=>{
       const subsShown=c.subs.filter(s=>!effNeededOnly||S.needs[s.id]);
       if(!subsShown.length&&!editMode)return;
       const pr=S.moscow[c.id]; const inScope=capInScope(c);
       const cRetireLabel=c.retired?'Unretire capability':'Retire capability';
       const cedit=`<span contenteditable="true" data-ctitle="${c.id}">${esc(c.title)}</span>
-        <button class="ed-btn" data-addrow="${c.id}">+ Add</button><button class="ed-btn" data-retirecap="${c.id}">${cRetireLabel}</button>${c.retired?'<span class="retired-tag">retired</span>':''}`;
+        <button class="ed-btn" data-addrow="${c.id}">+ Add</button><button class="ed-btn" data-retirecap="${c.id}">${cRetireLabel}</button>${adminDelete?`<button class="ed-btn danger" data-delcap="${c.id}">Delete</button>`:''}${c.retired?'<span class="retired-tag">retired</span>':''}`;
       body+=`<tr class="cap-band ${c.retired?'retired':''}"><td colspan="${nCols}"><span class="cc">${c.id}</span>${cedit}</td></tr>`;
       subsShown.forEach(s=>{
         const needed=inScope&&S.needs[s.id]&&!s.retired;
@@ -626,11 +639,11 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
             else mark=`<span class="ck off">–</span>`;
             body+=`<td class="mk ${note?'hasnote':''}" ${note?`data-rat="${s.id}" data-pl="${pl.id}"`:''}>${mark}</td>`;}});
         if(editMode){const sRetireLabel=s.retired?'Unretire':'Retire';
-          body+=`<td class="act"><button class="row-retire" data-retirerow="${s.id}" title="${sRetireLabel} sub-capability">${sRetireLabel}</button></td>`;}
+          body+=`<td class="act"><div class="act-btns"><button class="row-retire" data-retirerow="${s.id}" title="${sRetireLabel} sub-capability">${sRetireLabel}</button>${adminDelete?`<button class="row-retire danger" data-delrow="${s.id}" title="Delete sub-capability permanently">Delete</button>`:''}</div></td>`;}
         body+='</tr>';
       });
     });
-    html+=`<section class="pillar-card ${p.retired?'pillar-retired':''}"><table class="mtx"><thead>${headRow}</thead><tbody>${body}</tbody></table></section>`;
+    html+=`<section class="pillar-card ${p.retired?'pillar-retired':''}" data-pcard="${p.key}"><table class="mtx"><thead>${headRow}</thead><tbody>${body}</tbody></table></section>`;
   });
   if(!html)html=`<section class="pillar-card"><table class="mtx"><thead>${headRow}</thead><tbody><tr><td class="sub-lbl" colspan="${nCols}" style="padding:20px 16px;text-align:center;">No rows yet — add a pillar, capability or row.</td></tr></tbody></table></section>`;
   t.innerHTML=html;
@@ -893,6 +906,18 @@ document.addEventListener('click',e=>{
     if(active().length<=2){alert('Keep at least two active vendors to compare.');return;}
     if(p)p.retired=true; renderAll(); return;}
   const prs=e.target.closest('[data-plrestore]'); if(prs){const p=PLATFORMS.find(x=>x.id===prs.dataset.plrestore); if(p)p.retired=false; renderAll(); return;}
+  // ----- admin-only hard delete (only rendered when ?admin=<token> unlocks it) -----
+  if(adminDelete){
+    const dpil=e.target.closest('[data-delpillar]'); if(dpil){const p=findPillar(dpil.dataset.delpillar);
+      if(p&&confirm(`Permanently delete pillar “${p.name}” and all its capabilities and sub-capabilities?\n\nThis removes them from scoring in every assessment and cannot be undone. Use Retire instead to keep the data.`)){ deletePillar(dpil.dataset.delpillar); renderAll(); } return;}
+    const dcap=e.target.closest('[data-delcap]'); if(dcap){const cap=findCap(dcap.dataset.delcap);
+      if(cap&&confirm(`Permanently delete capability “${cap.title}” and its sub-capabilities?\n\nIt will also be unmapped from any use cases. This cannot be undone. Use Retire instead to keep the data.`)){ deleteCap(dcap.dataset.delcap); renderAll(); } return;}
+    const drow=e.target.closest('[data-delrow]'); if(drow){const info=SUBIDX[drow.dataset.delrow];
+      if(info&&confirm(`Permanently delete this sub-capability?\n\n“${info.sub.q}”\n\nThis cannot be undone. Use Retire instead to keep the data.`)){ deleteSub(drow.dataset.delrow); renderAll(); } return;}
+    const dven=e.target.closest('[data-pldelete]'); if(dven){const p=PLATFORMS.find(x=>x.id===dven.dataset.pldelete);
+      if(PLATFORMS.length<=2){alert('Keep at least two vendors to compare.');return;}
+      if(p&&confirm(`Permanently delete vendor “${p.name}” and all of its support ratings and SME notes?\n\nThis cannot be undone. Use Retire instead to keep the data.`)){ deleteVendor(dven.dataset.pldelete); renderAll(); } return;}
+  }
   if(e.target.id==='addVendorBtn'){const name=(prompt('New vendor name (e.g., Heap):')||'').trim(); if(!name)return;
     const id='v'+(++vendorCounter); const code=name.length<=12?name:name.slice(0,12);
     PLATFORMS.push({id,name,code,custom:true});
@@ -950,6 +975,20 @@ document.addEventListener('drop',e=>{ if(!dragId)return; const th=e.target.close
     const [m]=arr.splice(from,1); const to=arr.findIndex(p=>p.id===th.dataset.plid); arr.splice(to,0,m); PLATFORMS=arr;}
   dragId=null; renderAll();});
 document.addEventListener('dragend',()=>{dragId=null; document.querySelectorAll('.dragging,.drop-target').forEach(x=>x.classList.remove('dragging','drop-target'));});
+// ===== drag-to-reorder pillars (admin matrix only) =====
+// Reordering RUBRIC re-letters pillars by position (letters are positional), which
+// is intentional — it only affects display order and report labels, never ids.
+document.addEventListener('dragstart',e=>{const ph=e.target.closest('[data-pdrag]'); if(!ph||!editMode)return;
+  pillarDragKey=ph.dataset.pdrag; e.dataTransfer.effectAllowed='move'; const card=ph.closest('.pillar-card'); if(card)card.classList.add('pillar-dragging');});
+document.addEventListener('dragover',e=>{ if(!pillarDragKey)return; const card=e.target.closest('.pillar-card'); if(!card)return; e.preventDefault();
+  document.querySelectorAll('.pillar-card.pillar-drop').forEach(x=>{if(x!==card)x.classList.remove('pillar-drop');});
+  if(card.dataset.pcard!==pillarDragKey)card.classList.add('pillar-drop');});
+document.addEventListener('drop',e=>{ if(!pillarDragKey)return; const card=e.target.closest('.pillar-card'); e.preventDefault();
+  if(card&&card.dataset.pcard&&card.dataset.pcard!==pillarDragKey){
+    const from=RUBRIC.findIndex(p=>p.key===pillarDragKey);
+    if(from>=0){const [m]=RUBRIC.splice(from,1); const to=RUBRIC.findIndex(p=>p.key===card.dataset.pcard); RUBRIC.splice(to,0,m); reindex();}}
+  pillarDragKey=null; renderAll();});
+document.addEventListener('dragend',()=>{pillarDragKey=null; document.querySelectorAll('.pillar-dragging,.pillar-drop').forEach(x=>x.classList.remove('pillar-dragging','pillar-drop'));});
 document.getElementById('btnPrint')?.addEventListener('click',()=>window.print());
 document.getElementById('btnExport')?.addEventListener('click',()=>{const payload={platforms:PLATFORMS,rubric:RUBRIC};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -962,24 +1001,88 @@ _rp.addEventListener('mouseenter',()=>clearTimeout(ratHideTimer));
 _rp.addEventListener('mouseleave',()=>{ if(ratPinned!=='edit')hideRat(); });
 window.addEventListener('scroll',()=>{ if(ratPinned!=='edit')hideRat(); },true);
 RUBRIC=buildRubric(); normalizeRubric(); reindex(); S=defaultState();
-renderAll();
+// Issue: on a Supabase-backed page the seed rubric used to paint first and then
+// get replaced by the real rubric a moment later (a visible flash of stale data).
+// When Supabase is configured we now show a brief placeholder and let db.js own
+// the first paint via loadRubricData / applySelections. Offline: paint the seed now.
+function showRubricLoading(){
+  ['framework','mtxTable','libEditor'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML='<div class="rubric-loading">Loading rubric…</div>';});
+}
+(function _initialPaint(){
+  const cfg=window.APP_CONFIG||{};
+  if(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) showRubricLoading();
+  else renderAll();
+})();
 
 // ===== integration API for the persistence layer (js/db.js) =====
 function _setVendorCounter(){vendorCounter=PLATFORMS.reduce((m,p)=>{const n=/^v(\d+)$/.exec(p.id);return n?Math.max(m,+n[1]):m;},0);}
 function _setUseCaseCounter(){useCaseCounter=(S.useCases||[]).reduce((m,u)=>{const n=/^uc(\d+)$/.exec(u.id||'');return n?Math.max(m,+n[1]):m;},0);}
+// Re-derive the id counters from the loaded rubric so newly-added pillars,
+// capabilities and sub-capabilities never reuse an id that already exists in
+// the saved data. (Previously these reset to 0 / 15 every load, so each session
+// re-minted P1, C16, sx1… — colliding with whatever was already saved. That
+// single omission caused the duplicate pillar letters, the "+ Capability adds to
+// Pillar A" misrouting, and the sub-capability retire toggling the wrong row.)
+function _setPillarCounter(){ pillarCounter=RUBRIC.reduce((m,p)=>{const n=/^P(\d+)$/.exec(p.key||'');return n?Math.max(m,+n[1]):m;},0); }
+function _setCapCounter(){ let m=15; RUBRIC.forEach(p=>p.caps.forEach(c=>{const n=/^C(\d+)$/.exec(c.id||'');if(n)m=Math.max(m,+n[1]);})); capCounter=m; }
+function _setSubCounter(){ let m=0; RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{const n=/^sx(\d+)$/.exec(s.id||'');if(n)m=Math.max(m,+n[1]);}))); subCounter=m; }
+function _syncCounters(){ _setVendorCounter(); _setPillarCounter(); _setCapCounter(); _setSubCounter(); }
+
+// One-time repair for rubrics already saved with duplicate/blank ids. Runs on
+// every load; it only touches items whose id/key collides with one seen earlier,
+// so a healthy rubric is left untouched (returns false). Must run AFTER the
+// counters are synced so replacement ids sort above every existing one. The first
+// occurrence of a duplicate keeps its id (matching the bulk of existing
+// references); later occurrences are re-minted. Returns true if anything changed.
+function repairRubric(){
+  let changed=false;
+  const pKeys=new Set();
+  RUBRIC.forEach(p=>{ if(!p.key||pKeys.has(p.key)){ p.key='P'+(++pillarCounter); changed=true; } pKeys.add(p.key); });
+  const capIds=new Set();
+  RUBRIC.forEach(p=>p.caps.forEach(c=>{ if(!c.id||capIds.has(c.id)){ c.id='C'+(++capCounter); changed=true; } capIds.add(c.id); }));
+  const subIds=new Set();
+  RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{ if(!s.id||subIds.has(s.id)){ s.id='sx'+(++subCounter); changed=true; } subIds.add(s.id); })));
+  return changed;
+}
+
+// ===== admin-only hard delete (gated by ?admin=<ADMIN_DELETE_TOKEN>) =====
+// Everyone else only has Retire, which preserves data. Delete is irreversible
+// and strips the item (and its references) from scoring across every assessment.
+function deletePillar(key){ RUBRIC=RUBRIC.filter(p=>p.key!==key); reindex(); _markChanged(); }
+function deleteCap(id){
+  RUBRIC.forEach(p=>{ p.caps=p.caps.filter(c=>c.id!==id); });
+  delete S.moscow[id];
+  USE_CASE_LIBRARY.forEach(it=>{ if(it.caps) it.caps=it.caps.filter(cid=>cid!==id); });
+  (S.useCases||[]).forEach(u=>{ if(u.capIds) u.capIds=u.capIds.filter(cid=>cid!==id); });
+  reindex(); _markChanged();
+}
+function deleteSub(id){
+  RUBRIC.forEach(p=>p.caps.forEach(c=>{ c.subs=c.subs.filter(s=>s.id!==id); }));
+  delete S.needs[id];
+  reindex(); _markChanged();
+}
+function deleteVendor(id){
+  PLATFORMS=PLATFORMS.filter(p=>p.id!==id);
+  RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{ delete s.sup[id]; if(s.rat) delete s.rat[id]; })));
+  reindex(); _markChanged();
+}
+
 window.PET={
   exportData:()=>({platforms:PLATFORMS,rubric:RUBRIC,useCases:USE_CASE_LIBRARY,selections:{moscow:S.moscow,needs:S.needs,useCases:S.useCases}}),
   exportRubric:()=>({platforms:PLATFORMS,rubric:RUBRIC,useCases:USE_CASE_LIBRARY}),
-  importData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms; _setVendorCounter();
-    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex();
+  importData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms;
+    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric();
     if(Array.isArray(d.useCases)) USE_CASE_LIBRARY = d.useCases;
+    _syncCounters(); repairRubric(); reindex();
     const base=defaultState(); const sel=d.selections||{};
     S={moscow:{...base.moscow,...(sel.moscow||{})},needs:{...base.needs,...(sel.needs||{})},useCases:Array.isArray(sel.useCases)?sel.useCases:[]};
     _setUseCaseCounter(); collapsedPillars.clear(); renderAll(); },
-  loadRubricData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms; _setVendorCounter();
-    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex();
+  loadRubricData:(d)=>{ if(!d)return false; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms;
+    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric();
     if(Array.isArray(d.useCases)) USE_CASE_LIBRARY = d.useCases;
-    S=defaultState(); collapsedPillars.clear(); renderAll(); renderLibraryEditor(); }
+    _syncCounters(); const repaired=repairRubric(); reindex();
+    S=defaultState(); collapsedPillars.clear(); renderAll(); renderLibraryEditor();
+    return repaired; }
 };
 window.PET.applySelections=(sel)=>{
   const base=defaultState();
