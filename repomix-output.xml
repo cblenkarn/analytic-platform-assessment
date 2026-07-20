@@ -1248,6 +1248,236 @@ User-agent: *
 Disallow: /
 </file>
 
+<file path=".gitignore">
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# dependencies & logs
+node_modules/
+*.log
+npm-debug.log*
+
+# Vercel
+.vercel
+
+# secrets / env (only if you add a build step that uses them)
+.env
+.env.local
+.env*.local
+
+# NOTE: do NOT ignore config.js — a static deploy needs it at runtime,
+# and the Supabase publishable key is safe to commit. Never put a
+# secret key (sb_secret_... / service_role) in committed files.
+</file>
+
+<file path="admin.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<title>Rubric Admin · Merkle Analytic Platform Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<script src="config.js"></script>
+</head>
+<body data-page="admin">
+<header class="brandbar"><div class="brandbar-inner">
+  <a href="/dashboard" class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></a>
+  <span class="mk-sep"></span><span class="mk-title">Analytic Platform Assessment</span>
+</div></header>
+<div class="subnav">
+  <a class="backlink" href="/dashboard">← Dashboard</a>
+  <span class="sn-title">Rubric admin · master</span>
+  <span class="autosave" id="autosave"><span class="dot"></span><span id="autosaveText">—</span></span>
+</div>
+<div id="syncBanner" class="sync-banner">
+  <span>This rubric was updated by another editor. Reload to pull their changes (your unsaved edits would otherwise overwrite theirs).</span>
+  <button class="btn" id="btnSyncReload" style="margin-left:auto;">Reload</button>
+</div>
+<div class="wrap">
+  <div class="readme collapsible" id="rubricReadme">
+    <div class="rm-head" data-seccollapse>
+      <span class="rm-title">Master rubric — how this works</span>
+      <span class="seccaret">▼</span>
+    </div>
+    <div class="sec-body">
+      <p>One rubric powers <strong>every assessment, new and existing</strong>. Edits here apply everywhere; there is no separate save, import, or reset.</p>
+      <ul class="rm-list">
+        <li><strong>Set support</strong> — click any platform cell to toggle whether that vendor supports the sub-capability (✓ / –).</li>
+        <li><strong>Rename &amp; extend</strong> — click a pillar name, capability title, or sub-capability text to edit it; use <em>+ Pillar</em>, <em>+ Capability</em>, and <em>+ Add</em> to extend.</li>
+        <li><strong>Retire, don't delete</strong> — pillars, capabilities and sub-capabilities are never deleted. Use <em>Retire</em> to grey out an item so it stops counting in scoring; its data (including SME rationale) is preserved. The same button becomes <em>Unretire</em> to bring it back.</li>
+        <li><strong>SME rationale</strong> — click the <span class="pencil">✎</span> on a cell to capture a note, its tone (pro / caveat / note), and your confidence. The ✎ takes on the tone colour once a note is saved.</li>
+        <li><strong>Vendors</strong> — <em>+ Add vendor</em> to add a column, drag <span class="drag-handle">⠿</span> to reorder, <em>Retire</em> to archive one (its data is preserved and can be restored).</li>
+        <li><strong>Saving</strong> — every change autosaves to the database and syncs live to anyone else editing.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel-actions">
+    <button class="btn" id="btnExport">Export backup (.json)</button>
+    <span class="spacer"></span>
+    <button class="btn-add-pillar on" id="addVendorBtn">+ Add vendor</button>
+    <button class="btn-add-pillar on" id="addPillarBtn">+ Add pillar</button>
+  </div>
+  <div class="matrix-key">
+    <span class="k"><span class="ck point" style="width:16px;height:16px;font-size:9px">✓</span> Supported</span>
+    <span class="k"><span class="ck off" style="width:16px;height:16px;font-size:9px">–</span> Not supported</span>
+    <span class="k"><span class="pencil">✎</span> SME rationale — coloured by tone:</span>
+    <span class="k"><span class="rat-dot pro"></span> pro · <span class="rat-dot con"></span> caveat · <span class="rat-dot note"></span> note</span>
+    <span class="k"><span class="drag-handle">⠿</span> Drag to reorder vendors</span>
+  </div>
+  <div id="mtxTable" class="mtx-wrap"></div>
+  <div id="retiredBar" class="retired-bar"></div>
+</div>
+<footer class="site-foot">
+  <div class="foot-inner">
+    <div class="foot-brand"><span class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></span><div class="foot-tag">Analytic Platform Assessment</div></div>
+    <div class="foot-method">
+      <h3>About this assessment &amp; methodology</h3>
+      <p>This assessment reflects Merkle's analytics consulting practice &mdash; a structured, vendor-neutral way to match analytics needs to the platforms in market, refined across enterprise platform selections. It is not a feature checklist: every judgement in the underlying rubric encodes our consultants' hands-on experience of where each platform genuinely performs or falls short in production.</p>
+      <p>The method is deliberately simple and defensible. Capabilities are grouped into pillars. You assign a MoSCoW priority to each capability &mdash; <b>Must</b>, <b>Should</b>, <b>Could</b> or <b>Won't</b> &mdash; to express how important it is. Each platform's coverage of a capability is measured from a yes/no assessment of its sub-capabilities, maintained in our master rubric, and rolls up to a priority-weighted fit score (Must&nbsp;3, Should&nbsp;2, Could&nbsp;1). A Must a platform cannot meet at all is treated as a disqualifier rather than a deduction, so a strong all-rounder never outranks a platform that clears every non-negotiable. The output is a best-of-breed recommendation: a lead platform, plus any specialist platforms that close priority gaps.</p>
+      <p class="foot-fine">Assessments represent Merkle's point of view and are validated against current vendor releases at the time of engagement.</p>
+    </div>
+  </div>
+</footer>
+<script src="js/core.js"></script>
+<script type="module" src="js/db.js"></script>
+</body>
+</html>
+</file>
+
+<file path="assessment.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<meta name="googlebot" content="noindex, nofollow">
+<title>Assessment · Merkle Analytic Platform Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<script src="config.js"></script>
+</head>
+<body data-page="assessment">
+<header class="brandbar"><div class="brandbar-inner">
+  <a href="/dashboard" class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></a>
+  <span class="mk-sep"></span><span class="mk-title">Analytic Platform Assessment</span>
+</div></header>
+<div class="subnav">
+  <a class="backlink" href="/dashboard">← Dashboard</a>
+  <span class="sn-title" id="snTitle">Assessment</span>
+  <span class="autosave" id="autosave"><span class="dot"></span><span id="autosaveText">—</span></span>
+</div>
+<div class="wrap">
+  <nav class="tabs">
+    <button class="tab active" data-tab="usecases">1 · Use Cases</button>
+    <button class="tab" data-tab="discovery">2 · Prioritization</button>
+    <button class="tab" data-tab="results">3 · Results</button>
+  </nav>
+  <section class="panel active" data-panel="usecases">
+    <div class="readme">
+      <h4>Capturing analytical use cases</h4>
+      <p>Use cases are the <strong>business outcomes</strong> the client wants analytics to deliver — populated ahead of the workshop from what you already know, then refined live with the client. Pick from the common library, edit any use case to match the client's exact situation, and map each to the capabilities that would deliver it. <strong>Capabilities without any linked use case have no client demand behind them</strong>, and are candidates to downgrade in the next tab.</p>
+    </div>
+    <div class="uc-library-block">
+      <div class="uc-block-head"><span class="uc-block-title">Common use cases</span><span class="uc-block-hint">Click to add — you can edit anything after</span></div>
+      <div id="ucLibrary" class="uc-library"></div>
+      <div class="uc-custom-row"><button class="btn" id="btnAddCustomUC">+ Add custom use case</button></div>
+    </div>
+    <div class="uc-selected-block">
+      <div class="uc-block-head"><span class="uc-block-title">In scope for this client</span><span class="uc-block-hint" id="ucCount">0 use cases</span></div>
+      <div id="ucSelected" class="uc-selected"></div>
+      <div id="ucEmpty" class="uc-empty">No use cases captured yet. Add one from the library above, or draft a custom one for this client.</div>
+    </div>
+  </section>
+  <section class="panel" data-panel="discovery">
+    <div class="readme">
+      <h4>Setting your priorities</h4>
+      <p>Apply a <strong>MoSCoW priority</strong> to each capability — <em>Must</em>, <em>Should</em>, <em>Could</em>, or <em>Won't</em> (out of scope). The use cases you captured on the previous tab appear under each capability as a working prompt: <strong>a capability with no linked use case has nothing on the client's list riding on it</strong> and is a candidate for <em>Should</em>, <em>Could</em>, or <em>Won't</em>. Open a capability to fine-tune which sub-capabilities are in play.</p>
+    </div>
+    <div id="framework"></div>
+  </section>
+  <section class="panel" data-panel="results">
+    <div class="readme">
+      <h4>Reading your results</h4>
+      <p>Weighted fit is the MoSCoW-weighted average of capability coverage. A <strong>Must</strong> capability with zero coverage is a knockout — it flags the platform rather than merely costing points. The <strong>Coverage by use case</strong> section below re-cuts the same data around the outcomes captured on the Use Cases tab, and names the platform best positioned to deliver them. Profiles at the bottom are written against <em>your</em> priorities: strengths are the priorities a platform fully meets, and gaps call out partial or disqualifying coverage.</p>
+    </div>
+    <div class="results-actions"><button class="btn" id="btnPrint">Print / PDF</button></div>
+    <h3 class="sec-h">Weighted fit &amp; recommended stack</h3>
+    <div class="scoreboard">
+      <div id="rankList" class="rank-list"></div>
+      <div id="stackCard" class="stack-card"></div>
+    </div>
+    <h3 class="sec-h" id="ucSecHead" hidden>Coverage by use case</h3>
+    <div id="ucCoverage" class="uc-coverage-wrap" hidden></div>
+    <h3 class="sec-h">Coverage by pillar</h3>
+    <div class="pill-grid"><table class="agg" id="aggTable"></table></div>
+    <h3 class="sec-h">Platform profiles</h3>
+    <div id="profiles" class="profiles"></div>
+    <p class="footnote">Methodology: capability coverage = supported ÷ in-scope sub-capabilities per capability; weighted fit averages those by MoSCoW weight (Must 3 · Should 2 · Could 1). Use case coverage aggregates the same sub-capability support across the capabilities each use case is mapped to, respecting scope (Won't capabilities are excluded). Best-for-use-cases ranks by number of use cases fully delivered, then average coverage. Ratings reflect documented platform capability and Merkle SME judgement, not vendor marketing.</p>
+  </section>
+</div>
+<footer class="site-foot">
+  <div class="foot-inner">
+    <div class="foot-brand"><span class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></span><div class="foot-tag">Analytic Platform Assessment</div></div>
+    <div class="foot-method">
+      <h3>About this assessment &amp; methodology</h3>
+      <p>This assessment reflects Merkle's analytics consulting practice &mdash; a structured, vendor-neutral way to match analytics needs to the platforms in market, refined across enterprise platform selections. It is not a feature checklist: every judgement in the underlying rubric encodes our consultants' hands-on experience of where each platform genuinely performs or falls short in production.</p>
+      <p>The method is deliberately simple and defensible. Capabilities are grouped into pillars. You assign a MoSCoW priority to each capability &mdash; <b>Must</b>, <b>Should</b>, <b>Could</b> or <b>Won't</b> &mdash; to express how important it is. Each platform's coverage of a capability is measured from a yes/no assessment of its sub-capabilities, maintained in our master rubric, and rolls up to a priority-weighted fit score (Must&nbsp;3, Should&nbsp;2, Could&nbsp;1). A Must a platform cannot meet at all is treated as a disqualifier rather than a deduction, so a strong all-rounder never outranks a platform that clears every non-negotiable. The output is a best-of-breed recommendation: a lead platform, plus any specialist platforms that close priority gaps.</p>
+      <p class="foot-fine">Assessments represent Merkle's point of view and are validated against current vendor releases at the time of engagement.</p>
+    </div>
+  </div>
+</footer>
+<script src="js/core.js"></script>
+<script type="module" src="js/db.js"></script>
+</body>
+</html>
+</file>
+
+<file path="index.html">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="refresh" content="0; url=/dashboard">
+<title>Merkle Analytic Platform Assessment</title>
+<script>location.replace('/dashboard');</script>
+</head>
+<body><p style="font-family:sans-serif;padding:24px">Redirecting to <a href="/dashboard">the dashboard</a>…</p></body>
+</html>
+</file>
+
+<file path="vercel.json">
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/", "destination": "/dashboard", "permanent": false }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}
+</file>
+
 <file path="js/db.js">
 // ===================================================================
 // db.js — Supabase data layer (single master rubric + assessments)
@@ -1485,8 +1715,12 @@ async function initAdmin() {
   try {
     let r = await getRubric();
     if (!r) { r = window.PET.exportRubric(); await putRubric(r); }
-    else { window.PET.loadRubricData(r); }
+    // loadRubricData renders and returns true if it repaired duplicate/blank ids
+    // in already-saved data. When it does, persist the healed rubric once so the
+    // fix is permanent rather than re-applied every load.
+    const repaired = window.PET.loadRubricData(r);
     lastSaved = JSON.stringify(window.PET.exportRubric());
+    if (repaired) { await putRubric(window.PET.exportRubric()); lastSaved = JSON.stringify(window.PET.exportRubric()); }
     setAuto('saved', 'all changes saved');
   } catch (e) { setAuto('err', 'load failed'); console.error(e); }
 
@@ -1534,10 +1768,11 @@ async function initUsecasesAdmin() {
   try {
     let r = await getRubric();
     if (!r) { r = window.PET.exportRubric(); await putRubric(r); }
-    else { window.PET.loadRubricData(r); }
+    const repaired = window.PET.loadRubricData(r);
     // Render into #libEditor now that the rubric (capabilities) is loaded
     window.PET.renderLibraryEditor();
     lastSaved = JSON.stringify(window.PET.exportRubric());
+    if (repaired) { await putRubric(window.PET.exportRubric()); lastSaved = JSON.stringify(window.PET.exportRubric()); }
     setAuto('saved', 'all changes saved');
   } catch (e) { setAuto('err', 'load failed'); console.error(e); }
 
@@ -1579,236 +1814,6 @@ async function initUsecasesAdmin() {
     $('syncBanner')?.classList.remove('show');
     setAuto('saved', 'reloaded');
   });
-}
-</file>
-
-<file path=".gitignore">
-# OS / editor
-.DS_Store
-Thumbs.db
-.vscode/
-
-# dependencies & logs
-node_modules/
-*.log
-npm-debug.log*
-
-# Vercel
-.vercel
-
-# secrets / env (only if you add a build step that uses them)
-.env
-.env.local
-.env*.local
-
-# NOTE: do NOT ignore config.js — a static deploy needs it at runtime,
-# and the Supabase publishable key is safe to commit. Never put a
-# secret key (sb_secret_... / service_role) in committed files.
-</file>
-
-<file path="admin.html">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-<meta name="googlebot" content="noindex, nofollow">
-<title>Rubric Admin · Merkle Analytic Platform Assessment</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css">
-<script src="config.js"></script>
-</head>
-<body data-page="admin">
-<header class="brandbar"><div class="brandbar-inner">
-  <a href="/dashboard" class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></a>
-  <span class="mk-sep"></span><span class="mk-title">Analytic Platform Assessment</span>
-</div></header>
-<div class="subnav">
-  <a class="backlink" href="/dashboard">← Dashboard</a>
-  <span class="sn-title">Rubric admin · master</span>
-  <span class="autosave" id="autosave"><span class="dot"></span><span id="autosaveText">—</span></span>
-</div>
-<div id="syncBanner" class="sync-banner">
-  <span>This rubric was updated by another editor. Reload to pull their changes (your unsaved edits would otherwise overwrite theirs).</span>
-  <button class="btn" id="btnSyncReload" style="margin-left:auto;">Reload</button>
-</div>
-<div class="wrap">
-  <div class="readme collapsible" id="rubricReadme">
-    <div class="rm-head" data-seccollapse>
-      <span class="rm-title">Master rubric — how this works</span>
-      <span class="seccaret">▼</span>
-    </div>
-    <div class="sec-body">
-      <p>One rubric powers <strong>every assessment, new and existing</strong>. Edits here apply everywhere; there is no separate save, import, or reset.</p>
-      <ul class="rm-list">
-        <li><strong>Set support</strong> — click any platform cell to toggle whether that vendor supports the sub-capability (✓ / –).</li>
-        <li><strong>Rename &amp; extend</strong> — click a pillar name, capability title, or sub-capability text to edit it; use <em>+ Pillar</em>, <em>+ Capability</em>, and <em>+ Add</em> to extend.</li>
-        <li><strong>Retire, don't delete</strong> — pillars, capabilities and sub-capabilities are never deleted. Use <em>Retire</em> to grey out an item so it stops counting in scoring; its data (including SME rationale) is preserved. The same button becomes <em>Unretire</em> to bring it back.</li>
-        <li><strong>SME rationale</strong> — click the <span class="pencil">✎</span> on a cell to capture a note, its tone (pro / caveat / note), and your confidence. The ✎ takes on the tone colour once a note is saved.</li>
-        <li><strong>Vendors</strong> — <em>+ Add vendor</em> to add a column, drag <span class="drag-handle">⠿</span> to reorder, <em>Retire</em> to archive one (its data is preserved and can be restored).</li>
-        <li><strong>Saving</strong> — every change autosaves to the database and syncs live to anyone else editing.</li>
-      </ul>
-    </div>
-  </div>
-  <div class="panel-actions">
-    <button class="btn" id="btnExport">Export backup (.json)</button>
-    <span class="spacer"></span>
-    <button class="btn-add-pillar on" id="addVendorBtn">+ Add vendor</button>
-    <button class="btn-add-pillar on" id="addPillarBtn">+ Add pillar</button>
-  </div>
-  <div class="matrix-key">
-    <span class="k"><span class="ck point" style="width:16px;height:16px;font-size:9px">✓</span> Supported</span>
-    <span class="k"><span class="ck off" style="width:16px;height:16px;font-size:9px">–</span> Not supported</span>
-    <span class="k"><span class="pencil">✎</span> SME rationale — coloured by tone:</span>
-    <span class="k"><span class="rat-dot pro"></span> pro · <span class="rat-dot con"></span> caveat · <span class="rat-dot note"></span> note</span>
-    <span class="k"><span class="drag-handle">⠿</span> Drag to reorder vendors</span>
-  </div>
-  <div id="mtxTable" class="mtx-wrap"></div>
-  <div id="retiredBar" class="retired-bar"></div>
-</div>
-<footer class="site-foot">
-  <div class="foot-inner">
-    <div class="foot-brand"><span class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></span><div class="foot-tag">Analytic Platform Assessment</div></div>
-    <div class="foot-method">
-      <h3>About this assessment &amp; methodology</h3>
-      <p>This assessment reflects Merkle's analytics consulting practice &mdash; a structured, vendor-neutral way to match analytics needs to the platforms in market, refined across enterprise platform selections. It is not a feature checklist: every judgement in the underlying rubric encodes our consultants' hands-on experience of where each platform genuinely performs or falls short in production.</p>
-      <p>The method is deliberately simple and defensible. Capabilities are grouped into pillars. You assign a MoSCoW priority to each capability &mdash; <b>Must</b>, <b>Should</b>, <b>Could</b> or <b>Won't</b> &mdash; to express how important it is. Each platform's coverage of a capability is measured from a yes/no assessment of its sub-capabilities, maintained in our master rubric, and rolls up to a priority-weighted fit score (Must&nbsp;3, Should&nbsp;2, Could&nbsp;1). A Must a platform cannot meet at all is treated as a disqualifier rather than a deduction, so a strong all-rounder never outranks a platform that clears every non-negotiable. The output is a best-of-breed recommendation: a lead platform, plus any specialist platforms that close priority gaps.</p>
-      <p class="foot-fine">Assessments represent Merkle's point of view and are validated against current vendor releases at the time of engagement.</p>
-    </div>
-  </div>
-</footer>
-<script src="js/core.js"></script>
-<script type="module" src="js/db.js"></script>
-</body>
-</html>
-</file>
-
-<file path="assessment.html">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-<meta name="googlebot" content="noindex, nofollow">
-<title>Assessment · Merkle Analytic Platform Assessment</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css">
-<script src="config.js"></script>
-</head>
-<body data-page="assessment">
-<header class="brandbar"><div class="brandbar-inner">
-  <a href="/dashboard" class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></a>
-  <span class="mk-sep"></span><span class="mk-title">Analytic Platform Assessment</span>
-</div></header>
-<div class="subnav">
-  <a class="backlink" href="/dashboard">← Dashboard</a>
-  <span class="sn-title" id="snTitle">Assessment</span>
-  <span class="autosave" id="autosave"><span class="dot"></span><span id="autosaveText">—</span></span>
-</div>
-<div class="wrap">
-  <nav class="tabs">
-    <button class="tab active" data-tab="usecases">1 · Use Cases</button>
-    <button class="tab" data-tab="discovery">2 · Prioritization</button>
-    <button class="tab" data-tab="results">3 · Results</button>
-  </nav>
-  <section class="panel active" data-panel="usecases">
-    <div class="readme">
-      <h4>Capturing analytical use cases</h4>
-      <p>Use cases are the <strong>business outcomes</strong> the client wants analytics to deliver — populated ahead of the workshop from what you already know, then refined live with the client. Pick from the common library, edit any use case to match the client's exact situation, and map each to the capabilities that would deliver it. <strong>Capabilities without any linked use case have no client demand behind them</strong>, and are candidates to downgrade in the next tab.</p>
-    </div>
-    <div class="uc-library-block">
-      <div class="uc-block-head"><span class="uc-block-title">Common use cases</span><span class="uc-block-hint">Click to add — you can edit anything after</span></div>
-      <div id="ucLibrary" class="uc-library"></div>
-      <div class="uc-custom-row"><button class="btn" id="btnAddCustomUC">+ Add custom use case</button></div>
-    </div>
-    <div class="uc-selected-block">
-      <div class="uc-block-head"><span class="uc-block-title">In scope for this client</span><span class="uc-block-hint" id="ucCount">0 use cases</span></div>
-      <div id="ucSelected" class="uc-selected"></div>
-      <div id="ucEmpty" class="uc-empty">No use cases captured yet. Add one from the library above, or draft a custom one for this client.</div>
-    </div>
-  </section>
-  <section class="panel" data-panel="discovery">
-    <div class="readme">
-      <h4>Setting your priorities</h4>
-      <p>Apply a <strong>MoSCoW priority</strong> to each capability — <em>Must</em>, <em>Should</em>, <em>Could</em>, or <em>Won't</em> (out of scope). The use cases you captured on the previous tab appear under each capability as a working prompt: <strong>a capability with no linked use case has nothing on the client's list riding on it</strong> and is a candidate for <em>Should</em>, <em>Could</em>, or <em>Won't</em>. Open a capability to fine-tune which sub-capabilities are in play.</p>
-    </div>
-    <div id="framework"></div>
-  </section>
-  <section class="panel" data-panel="results">
-    <div class="readme">
-      <h4>Reading your results</h4>
-      <p>Weighted fit is the MoSCoW-weighted average of capability coverage. A <strong>Must</strong> capability with zero coverage is a knockout — it flags the platform rather than merely costing points. The <strong>Coverage by use case</strong> section below re-cuts the same data around the outcomes captured on the Use Cases tab, and names the platform best positioned to deliver them. Profiles at the bottom are written against <em>your</em> priorities: strengths are the priorities a platform fully meets, and gaps call out partial or disqualifying coverage.</p>
-    </div>
-    <div class="results-actions"><button class="btn" id="btnPrint">Print / PDF</button></div>
-    <h3 class="sec-h">Weighted fit &amp; recommended stack</h3>
-    <div class="scoreboard">
-      <div id="rankList" class="rank-list"></div>
-      <div id="stackCard" class="stack-card"></div>
-    </div>
-    <h3 class="sec-h" id="ucSecHead" hidden>Coverage by use case</h3>
-    <div id="ucCoverage" class="uc-coverage-wrap" hidden></div>
-    <h3 class="sec-h">Coverage by pillar</h3>
-    <div class="pill-grid"><table class="agg" id="aggTable"></table></div>
-    <h3 class="sec-h">Platform profiles</h3>
-    <div id="profiles" class="profiles"></div>
-    <p class="footnote">Methodology: capability coverage = supported ÷ in-scope sub-capabilities per capability; weighted fit averages those by MoSCoW weight (Must 3 · Should 2 · Could 1). Use case coverage aggregates the same sub-capability support across the capabilities each use case is mapped to, respecting scope (Won't capabilities are excluded). Best-for-use-cases ranks by number of use cases fully delivered, then average coverage. Ratings reflect documented platform capability and Merkle SME judgement, not vendor marketing.</p>
-  </section>
-</div>
-<footer class="site-foot">
-  <div class="foot-inner">
-    <div class="foot-brand"><span class="mk-logo"><span class="mk-logo-img" role="img" aria-label="Merkle"></span><span class="mk-print-word">Merkle</span></span><div class="foot-tag">Analytic Platform Assessment</div></div>
-    <div class="foot-method">
-      <h3>About this assessment &amp; methodology</h3>
-      <p>This assessment reflects Merkle's analytics consulting practice &mdash; a structured, vendor-neutral way to match analytics needs to the platforms in market, refined across enterprise platform selections. It is not a feature checklist: every judgement in the underlying rubric encodes our consultants' hands-on experience of where each platform genuinely performs or falls short in production.</p>
-      <p>The method is deliberately simple and defensible. Capabilities are grouped into pillars. You assign a MoSCoW priority to each capability &mdash; <b>Must</b>, <b>Should</b>, <b>Could</b> or <b>Won't</b> &mdash; to express how important it is. Each platform's coverage of a capability is measured from a yes/no assessment of its sub-capabilities, maintained in our master rubric, and rolls up to a priority-weighted fit score (Must&nbsp;3, Should&nbsp;2, Could&nbsp;1). A Must a platform cannot meet at all is treated as a disqualifier rather than a deduction, so a strong all-rounder never outranks a platform that clears every non-negotiable. The output is a best-of-breed recommendation: a lead platform, plus any specialist platforms that close priority gaps.</p>
-      <p class="foot-fine">Assessments represent Merkle's point of view and are validated against current vendor releases at the time of engagement.</p>
-    </div>
-  </div>
-</footer>
-<script src="js/core.js"></script>
-<script type="module" src="js/db.js"></script>
-</body>
-</html>
-</file>
-
-<file path="index.html">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="robots" content="noindex, nofollow">
-<meta http-equiv="refresh" content="0; url=/dashboard">
-<title>Merkle Analytic Platform Assessment</title>
-<script>location.replace('/dashboard');</script>
-</head>
-<body><p style="font-family:sans-serif;padding:24px">Redirecting to <a href="/dashboard">the dashboard</a>…</p></body>
-</html>
-</file>
-
-<file path="vercel.json">
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "redirects": [
-    { "source": "/", "destination": "/dashboard", "permanent": false }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
-      ]
-    }
-  ]
 }
 </file>
 
@@ -2340,6 +2345,31 @@ npm-debug.log*
 
   /* Pillar coverage table (results tab) — retired pillar rows are dimmed */
   table.agg tr.row-retired td{opacity:.55;}
+
+  /* ================================================================ */
+  /* ===== Fixes: loading state, pillar drag, admin delete =========== */
+  /* ================================================================ */
+
+  /* Brief placeholder shown while db.js fetches the master rubric, so the
+     stale seed rubric no longer flashes before the real one paints. */
+  .rubric-loading{padding:44px 16px;text-align:center;color:var(--ink-soft);font-family:var(--mono);font-size:13px;letter-spacing:.02em;}
+
+  /* Drag-to-reorder pillars (admin matrix). The handle sits on the dark pillar
+     band, so it needs a lighter colour than the vendor-column handle. */
+  .drag-handle.pillar-drag{color:#cfe3e6;vertical-align:middle;margin-right:2px;}
+  .drag-handle.pillar-drag:hover{color:#fff;}
+  .pillar-card.pillar-dragging{opacity:.5;}
+  .pillar-card.pillar-drop{box-shadow:inset 0 3px 0 var(--accent),var(--shadow);}
+
+  /* Sub-capability action cell now stacks Retire + (admin) Delete. */
+  td.act .act-btns{display:flex;flex-direction:column;gap:4px;align-items:stretch;}
+  table.mtx thead th.actcol,table.mtx td.act{width:104px;}
+  .row-retire.danger{border-color:#E2B6BC;color:var(--gap);}
+  .row-retire.danger:hover{border-color:var(--gap);color:#fff;background:var(--gap);}
+
+  /* Admin-only Delete on the vendor column header (sits beside "retire"). */
+  .plretire.pldelete{color:var(--gap);}
+  .plretire.pldelete:hover{color:#fff;background:var(--gap);}
 </file>
 
 <file path="js/core.js">
@@ -2512,6 +2542,16 @@ let RUBRIC, S, SUBIDX={}, subCounter=0, capCounter=15, pillarCounter=0, vendorCo
 let useCaseCounter=0;
 let editMode=true, viewNeededOnly=false, pendingFocus=null;
 const collapsedPillars=new Set();
+let pillarDragKey=null; // drag-to-reorder pillars (admin matrix only)
+
+// ── UI-level admin unlock ────────────────────────────────────────────────
+// NOT a security boundary — the token is visible in client code and RLS is
+// open. It only reveals irreversible Delete controls alongside Retire for
+// whoever holds the URL. Append ?admin=<ADMIN_DELETE_TOKEN> to the page URL.
+// Change this token to your own private value.
+const ADMIN_DELETE_TOKEN = 'merkle-delete-2026';
+let adminDelete = false;
+try { adminDelete = new URLSearchParams(location.search).get('admin') === ADMIN_DELETE_TOKEN; } catch(e){}
 
 const RAT = {
   C1a:{aa:{note:'Historically rigid eVar/prop model constrains free-form schema design.',tone:'con',conf:'med'}},
@@ -2937,7 +2977,9 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
       headRow+=`<th class="plhead" data-plid="${p.id}"><div class="plh">`+
         `<span class="drag-handle" draggable="true" data-drag="${p.id}" title="Drag to reorder">⠿</span>`+
         `<span contenteditable="true" data-plcode="${p.id}">${esc(p.code)}</span>`+
-        `<button class="plretire" data-plretire="${p.id}" title="Retire — keeps all data, removes from scoring">retire</button></div></th>`;
+        `<button class="plretire" data-plretire="${p.id}" title="Retire — keeps all data, removes from scoring">retire</button>`+
+        (adminDelete?`<button class="plretire pldelete" data-pldelete="${p.id}" title="Delete vendor permanently">delete</button>`:'')+
+        `</div></th>`;
     } else headRow+=`<th>${esc(p.code)}</th>`; });
   if(editMode)headRow+='<th class="actcol"></th>'; headRow+='</tr>';
 
@@ -2946,17 +2988,18 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
     const pillarHasRows=p.caps.some(c=>c.subs.some(s=>!effNeededOnly||S.needs[s.id]));
     if(!pillarHasRows&&!editMode)return;
     const pRetireLabel=p.retired?'Unretire pillar':'Retire pillar';
+    const pDragHandle=editMode?`<span class="drag-handle pillar-drag" draggable="true" data-pdrag="${p.key}" title="Drag to reorder this pillar">⠿</span> `:'';
     const pedit=editMode?`<span class="pname" contenteditable="true" data-pname="${p.key}">${esc(p.name)}</span>
-      <button class="ed-btn" data-addcap="${p.key}">+ Capability</button><button class="ed-btn" data-retirepillar="${p.key}">${pRetireLabel}</button>${p.retired?'<span class="retired-tag on-dark">retired</span>':''}`
+      <button class="ed-btn" data-addcap="${p.key}">+ Capability</button><button class="ed-btn" data-retirepillar="${p.key}">${pRetireLabel}</button>${adminDelete?`<button class="ed-btn danger" data-delpillar="${p.key}">Delete</button>`:''}${p.retired?'<span class="retired-tag on-dark">retired</span>':''}`
       :esc(p.name)+(p.retired?' <span class="retired-tag on-dark">retired</span>':'');
-    let body=`<tr class="pillar-band ${p.retired?'retired':''}"><td colspan="${nCols}">Pillar ${pLetter(p.key)} — ${pedit}</td></tr>`;
+    let body=`<tr class="pillar-band ${p.retired?'retired':''}"><td colspan="${nCols}">${pDragHandle}Pillar ${pLetter(p.key)} — ${pedit}</td></tr>`;
     p.caps.forEach(c=>{
       const subsShown=c.subs.filter(s=>!effNeededOnly||S.needs[s.id]);
       if(!subsShown.length&&!editMode)return;
       const pr=S.moscow[c.id]; const inScope=capInScope(c);
       const cRetireLabel=c.retired?'Unretire capability':'Retire capability';
       const cedit=`<span contenteditable="true" data-ctitle="${c.id}">${esc(c.title)}</span>
-        <button class="ed-btn" data-addrow="${c.id}">+ Add</button><button class="ed-btn" data-retirecap="${c.id}">${cRetireLabel}</button>${c.retired?'<span class="retired-tag">retired</span>':''}`;
+        <button class="ed-btn" data-addrow="${c.id}">+ Add</button><button class="ed-btn" data-retirecap="${c.id}">${cRetireLabel}</button>${adminDelete?`<button class="ed-btn danger" data-delcap="${c.id}">Delete</button>`:''}${c.retired?'<span class="retired-tag">retired</span>':''}`;
       body+=`<tr class="cap-band ${c.retired?'retired':''}"><td colspan="${nCols}"><span class="cc">${c.id}</span>${cedit}</td></tr>`;
       subsShown.forEach(s=>{
         const needed=inScope&&S.needs[s.id]&&!s.retired;
@@ -2971,11 +3014,11 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
             else mark=`<span class="ck off">–</span>`;
             body+=`<td class="mk ${note?'hasnote':''}" ${note?`data-rat="${s.id}" data-pl="${pl.id}"`:''}>${mark}</td>`;}});
         if(editMode){const sRetireLabel=s.retired?'Unretire':'Retire';
-          body+=`<td class="act"><button class="row-retire" data-retirerow="${s.id}" title="${sRetireLabel} sub-capability">${sRetireLabel}</button></td>`;}
+          body+=`<td class="act"><div class="act-btns"><button class="row-retire" data-retirerow="${s.id}" title="${sRetireLabel} sub-capability">${sRetireLabel}</button>${adminDelete?`<button class="row-retire danger" data-delrow="${s.id}" title="Delete sub-capability permanently">Delete</button>`:''}</div></td>`;}
         body+='</tr>';
       });
     });
-    html+=`<section class="pillar-card ${p.retired?'pillar-retired':''}"><table class="mtx"><thead>${headRow}</thead><tbody>${body}</tbody></table></section>`;
+    html+=`<section class="pillar-card ${p.retired?'pillar-retired':''}" data-pcard="${p.key}"><table class="mtx"><thead>${headRow}</thead><tbody>${body}</tbody></table></section>`;
   });
   if(!html)html=`<section class="pillar-card"><table class="mtx"><thead>${headRow}</thead><tbody><tr><td class="sub-lbl" colspan="${nCols}" style="padding:20px 16px;text-align:center;">No rows yet — add a pillar, capability or row.</td></tr></tbody></table></section>`;
   t.innerHTML=html;
@@ -3238,6 +3281,18 @@ document.addEventListener('click',e=>{
     if(active().length<=2){alert('Keep at least two active vendors to compare.');return;}
     if(p)p.retired=true; renderAll(); return;}
   const prs=e.target.closest('[data-plrestore]'); if(prs){const p=PLATFORMS.find(x=>x.id===prs.dataset.plrestore); if(p)p.retired=false; renderAll(); return;}
+  // ----- admin-only hard delete (only rendered when ?admin=<token> unlocks it) -----
+  if(adminDelete){
+    const dpil=e.target.closest('[data-delpillar]'); if(dpil){const p=findPillar(dpil.dataset.delpillar);
+      if(p&&confirm(`Permanently delete pillar “${p.name}” and all its capabilities and sub-capabilities?\n\nThis removes them from scoring in every assessment and cannot be undone. Use Retire instead to keep the data.`)){ deletePillar(dpil.dataset.delpillar); renderAll(); } return;}
+    const dcap=e.target.closest('[data-delcap]'); if(dcap){const cap=findCap(dcap.dataset.delcap);
+      if(cap&&confirm(`Permanently delete capability “${cap.title}” and its sub-capabilities?\n\nIt will also be unmapped from any use cases. This cannot be undone. Use Retire instead to keep the data.`)){ deleteCap(dcap.dataset.delcap); renderAll(); } return;}
+    const drow=e.target.closest('[data-delrow]'); if(drow){const info=SUBIDX[drow.dataset.delrow];
+      if(info&&confirm(`Permanently delete this sub-capability?\n\n“${info.sub.q}”\n\nThis cannot be undone. Use Retire instead to keep the data.`)){ deleteSub(drow.dataset.delrow); renderAll(); } return;}
+    const dven=e.target.closest('[data-pldelete]'); if(dven){const p=PLATFORMS.find(x=>x.id===dven.dataset.pldelete);
+      if(PLATFORMS.length<=2){alert('Keep at least two vendors to compare.');return;}
+      if(p&&confirm(`Permanently delete vendor “${p.name}” and all of its support ratings and SME notes?\n\nThis cannot be undone. Use Retire instead to keep the data.`)){ deleteVendor(dven.dataset.pldelete); renderAll(); } return;}
+  }
   if(e.target.id==='addVendorBtn'){const name=(prompt('New vendor name (e.g., Heap):')||'').trim(); if(!name)return;
     const id='v'+(++vendorCounter); const code=name.length<=12?name:name.slice(0,12);
     PLATFORMS.push({id,name,code,custom:true});
@@ -3295,6 +3350,20 @@ document.addEventListener('drop',e=>{ if(!dragId)return; const th=e.target.close
     const [m]=arr.splice(from,1); const to=arr.findIndex(p=>p.id===th.dataset.plid); arr.splice(to,0,m); PLATFORMS=arr;}
   dragId=null; renderAll();});
 document.addEventListener('dragend',()=>{dragId=null; document.querySelectorAll('.dragging,.drop-target').forEach(x=>x.classList.remove('dragging','drop-target'));});
+// ===== drag-to-reorder pillars (admin matrix only) =====
+// Reordering RUBRIC re-letters pillars by position (letters are positional), which
+// is intentional — it only affects display order and report labels, never ids.
+document.addEventListener('dragstart',e=>{const ph=e.target.closest('[data-pdrag]'); if(!ph||!editMode)return;
+  pillarDragKey=ph.dataset.pdrag; e.dataTransfer.effectAllowed='move'; const card=ph.closest('.pillar-card'); if(card)card.classList.add('pillar-dragging');});
+document.addEventListener('dragover',e=>{ if(!pillarDragKey)return; const card=e.target.closest('.pillar-card'); if(!card)return; e.preventDefault();
+  document.querySelectorAll('.pillar-card.pillar-drop').forEach(x=>{if(x!==card)x.classList.remove('pillar-drop');});
+  if(card.dataset.pcard!==pillarDragKey)card.classList.add('pillar-drop');});
+document.addEventListener('drop',e=>{ if(!pillarDragKey)return; const card=e.target.closest('.pillar-card'); e.preventDefault();
+  if(card&&card.dataset.pcard&&card.dataset.pcard!==pillarDragKey){
+    const from=RUBRIC.findIndex(p=>p.key===pillarDragKey);
+    if(from>=0){const [m]=RUBRIC.splice(from,1); const to=RUBRIC.findIndex(p=>p.key===card.dataset.pcard); RUBRIC.splice(to,0,m); reindex();}}
+  pillarDragKey=null; renderAll();});
+document.addEventListener('dragend',()=>{pillarDragKey=null; document.querySelectorAll('.pillar-dragging,.pillar-drop').forEach(x=>x.classList.remove('pillar-dragging','pillar-drop'));});
 document.getElementById('btnPrint')?.addEventListener('click',()=>window.print());
 document.getElementById('btnExport')?.addEventListener('click',()=>{const payload={platforms:PLATFORMS,rubric:RUBRIC};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -3307,24 +3376,88 @@ _rp.addEventListener('mouseenter',()=>clearTimeout(ratHideTimer));
 _rp.addEventListener('mouseleave',()=>{ if(ratPinned!=='edit')hideRat(); });
 window.addEventListener('scroll',()=>{ if(ratPinned!=='edit')hideRat(); },true);
 RUBRIC=buildRubric(); normalizeRubric(); reindex(); S=defaultState();
-renderAll();
+// Issue: on a Supabase-backed page the seed rubric used to paint first and then
+// get replaced by the real rubric a moment later (a visible flash of stale data).
+// When Supabase is configured we now show a brief placeholder and let db.js own
+// the first paint via loadRubricData / applySelections. Offline: paint the seed now.
+function showRubricLoading(){
+  ['framework','mtxTable','libEditor'].forEach(id=>{const e=document.getElementById(id); if(e)e.innerHTML='<div class="rubric-loading">Loading rubric…</div>';});
+}
+(function _initialPaint(){
+  const cfg=window.APP_CONFIG||{};
+  if(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY) showRubricLoading();
+  else renderAll();
+})();
 
 // ===== integration API for the persistence layer (js/db.js) =====
 function _setVendorCounter(){vendorCounter=PLATFORMS.reduce((m,p)=>{const n=/^v(\d+)$/.exec(p.id);return n?Math.max(m,+n[1]):m;},0);}
 function _setUseCaseCounter(){useCaseCounter=(S.useCases||[]).reduce((m,u)=>{const n=/^uc(\d+)$/.exec(u.id||'');return n?Math.max(m,+n[1]):m;},0);}
+// Re-derive the id counters from the loaded rubric so newly-added pillars,
+// capabilities and sub-capabilities never reuse an id that already exists in
+// the saved data. (Previously these reset to 0 / 15 every load, so each session
+// re-minted P1, C16, sx1… — colliding with whatever was already saved. That
+// single omission caused the duplicate pillar letters, the "+ Capability adds to
+// Pillar A" misrouting, and the sub-capability retire toggling the wrong row.)
+function _setPillarCounter(){ pillarCounter=RUBRIC.reduce((m,p)=>{const n=/^P(\d+)$/.exec(p.key||'');return n?Math.max(m,+n[1]):m;},0); }
+function _setCapCounter(){ let m=15; RUBRIC.forEach(p=>p.caps.forEach(c=>{const n=/^C(\d+)$/.exec(c.id||'');if(n)m=Math.max(m,+n[1]);})); capCounter=m; }
+function _setSubCounter(){ let m=0; RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{const n=/^sx(\d+)$/.exec(s.id||'');if(n)m=Math.max(m,+n[1]);}))); subCounter=m; }
+function _syncCounters(){ _setVendorCounter(); _setPillarCounter(); _setCapCounter(); _setSubCounter(); }
+
+// One-time repair for rubrics already saved with duplicate/blank ids. Runs on
+// every load; it only touches items whose id/key collides with one seen earlier,
+// so a healthy rubric is left untouched (returns false). Must run AFTER the
+// counters are synced so replacement ids sort above every existing one. The first
+// occurrence of a duplicate keeps its id (matching the bulk of existing
+// references); later occurrences are re-minted. Returns true if anything changed.
+function repairRubric(){
+  let changed=false;
+  const pKeys=new Set();
+  RUBRIC.forEach(p=>{ if(!p.key||pKeys.has(p.key)){ p.key='P'+(++pillarCounter); changed=true; } pKeys.add(p.key); });
+  const capIds=new Set();
+  RUBRIC.forEach(p=>p.caps.forEach(c=>{ if(!c.id||capIds.has(c.id)){ c.id='C'+(++capCounter); changed=true; } capIds.add(c.id); }));
+  const subIds=new Set();
+  RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{ if(!s.id||subIds.has(s.id)){ s.id='sx'+(++subCounter); changed=true; } subIds.add(s.id); })));
+  return changed;
+}
+
+// ===== admin-only hard delete (gated by ?admin=<ADMIN_DELETE_TOKEN>) =====
+// Everyone else only has Retire, which preserves data. Delete is irreversible
+// and strips the item (and its references) from scoring across every assessment.
+function deletePillar(key){ RUBRIC=RUBRIC.filter(p=>p.key!==key); reindex(); _markChanged(); }
+function deleteCap(id){
+  RUBRIC.forEach(p=>{ p.caps=p.caps.filter(c=>c.id!==id); });
+  delete S.moscow[id];
+  USE_CASE_LIBRARY.forEach(it=>{ if(it.caps) it.caps=it.caps.filter(cid=>cid!==id); });
+  (S.useCases||[]).forEach(u=>{ if(u.capIds) u.capIds=u.capIds.filter(cid=>cid!==id); });
+  reindex(); _markChanged();
+}
+function deleteSub(id){
+  RUBRIC.forEach(p=>p.caps.forEach(c=>{ c.subs=c.subs.filter(s=>s.id!==id); }));
+  delete S.needs[id];
+  reindex(); _markChanged();
+}
+function deleteVendor(id){
+  PLATFORMS=PLATFORMS.filter(p=>p.id!==id);
+  RUBRIC.forEach(p=>p.caps.forEach(c=>c.subs.forEach(s=>{ delete s.sup[id]; if(s.rat) delete s.rat[id]; })));
+  reindex(); _markChanged();
+}
+
 window.PET={
   exportData:()=>({platforms:PLATFORMS,rubric:RUBRIC,useCases:USE_CASE_LIBRARY,selections:{moscow:S.moscow,needs:S.needs,useCases:S.useCases}}),
   exportRubric:()=>({platforms:PLATFORMS,rubric:RUBRIC,useCases:USE_CASE_LIBRARY}),
-  importData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms; _setVendorCounter();
-    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex();
+  importData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms;
+    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric();
     if(Array.isArray(d.useCases)) USE_CASE_LIBRARY = d.useCases;
+    _syncCounters(); repairRubric(); reindex();
     const base=defaultState(); const sel=d.selections||{};
     S={moscow:{...base.moscow,...(sel.moscow||{})},needs:{...base.needs,...(sel.needs||{})},useCases:Array.isArray(sel.useCases)?sel.useCases:[]};
     _setUseCaseCounter(); collapsedPillars.clear(); renderAll(); },
-  loadRubricData:(d)=>{ if(!d)return; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms; _setVendorCounter();
-    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric(); reindex();
+  loadRubricData:(d)=>{ if(!d)return false; if(Array.isArray(d.platforms)&&d.platforms.length)PLATFORMS=d.platforms;
+    RUBRIC=d.rubric?d.rubric:buildRubric(); normalizeRubric();
     if(Array.isArray(d.useCases)) USE_CASE_LIBRARY = d.useCases;
-    S=defaultState(); collapsedPillars.clear(); renderAll(); renderLibraryEditor(); }
+    _syncCounters(); const repaired=repairRubric(); reindex();
+    S=defaultState(); collapsedPillars.clear(); renderAll(); renderLibraryEditor();
+    return repaired; }
 };
 window.PET.applySelections=(sel)=>{
   const base=defaultState();

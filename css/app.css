@@ -547,6 +547,16 @@
   .row-retire.danger{border-color:#E2B6BC;color:var(--gap);}
   .row-retire.danger:hover{border-color:var(--gap);color:#fff;background:var(--gap);}
 
+  /* ===== sub-capability drag-to-move (admin edit mode only) ===== */
+  /* Handle sits in the sub-lbl cell's left padding; drop line snaps to the
+     hovered row's top or bottom edge, Excel-row style. */
+  .sub-drag-handle{display:inline-block;cursor:grab;color:#AEB7B6;font-size:13px;line-height:1;user-select:none;margin-right:8px;vertical-align:middle;}
+  .sub-drag-handle:hover{color:var(--accent-deep);}
+  .sub-drag-handle:active{cursor:grabbing;}
+  tr.sub-dragging td{opacity:.4;}
+  tr.sub-drop-before td{box-shadow:inset 0 3px 0 var(--accent);}
+  tr.sub-drop-after td{box-shadow:inset 0 -3px 0 var(--accent);}
+
   /* Admin-only Delete on the vendor column header (sits beside "retire"). */
   .plretire.pldelete{color:var(--gap);}
   .plretire.pldelete:hover{color:#fff;background:var(--gap);}

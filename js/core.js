@@ -628,8 +628,11 @@ function renderMatrix(){const t=document.getElementById('mtxTable'); if(!t)retur
       body+=`<tr class="cap-band ${c.retired?'retired':''}"><td colspan="${nCols}"><span class="cc">${c.id}</span>${cedit}</td></tr>`;
       subsShown.forEach(s=>{
         const needed=inScope&&S.needs[s.id]&&!s.retired;
-        body+=`<tr class="${needed?'needed':''} ${!inScope?'flat':''} ${s.retired?'sub-retired':''}">`;
-        body+=`<td class="sub-lbl ${!inScope?'oos':''}"><span class="qtext" data-sublbl="${s.id}" ${editMode?'contenteditable="true"':''}>${esc(s.q)}</span>${s.retired?' <span class="retired-tag">retired</span>':''}</td>`;
+        body+=`<tr class="${needed?'needed':''} ${!inScope?'flat':''} ${s.retired?'sub-retired':''}" data-subrow-id="${s.id}" data-subrow-cap="${c.id}">`;
+        const subHandle = editMode
+          ? `<span class="sub-drag-handle" draggable="true" data-subdrag="${s.id}" title="Drag to move this sub-capability">⠿</span>`
+          : '';
+        body+=`<td class="sub-lbl ${!inScope?'oos':''}">` + subHandle + `<span class="qtext" data-sublbl="${s.id}" ${editMode?'contenteditable="true"':''}>${esc(s.q)}</span>${s.retired?' <span class="retired-tag">retired</span>':''}</td>`;
         active().forEach(pl=>{const yes=sup(s.id,pl.id);const note=hasNote(s,pl.id);
           const tone=note?((s.rat[pl.id].tone)||'note'):'';
           if(editMode){const mark=yes?`<span class="ck tog-on">✓</span>`:`<span class="ck tog-off">–</span>`;
@@ -975,6 +978,94 @@ document.addEventListener('drop',e=>{ if(!dragId)return; const th=e.target.close
     const [m]=arr.splice(from,1); const to=arr.findIndex(p=>p.id===th.dataset.plid); arr.splice(to,0,m); PLATFORMS=arr;}
   dragId=null; renderAll();});
 document.addEventListener('dragend',()=>{dragId=null; document.querySelectorAll('.dragging,.drop-target').forEach(x=>x.classList.remove('dragging','drop-target'));});
+// ===== drag-to-reorder / move sub-capabilities (Excel-row style, admin edit mode only) =====
+// Guards on subDragId — never clashes with the vendor-column drag above (dragId).
+// dragstart targets [data-subdrag]; vendor drag targets [data-drag] — no overlap.
+let subDragId = null, subDropRow = null, subDropAfter = false;
+
+function findSubOwner(subId) {
+  for (const p of RUBRIC) {
+    for (const c of p.caps) {
+      const idx = c.subs.findIndex(s => s.id === subId);
+      if (idx >= 0) return { pillar: p, cap: c, idx, sub: c.subs[idx] };
+    }
+  }
+  return null;
+}
+
+function clearSubDropMarkers() {
+  document.querySelectorAll('tr.sub-drop-before, tr.sub-drop-after')
+    .forEach(r => r.classList.remove('sub-drop-before', 'sub-drop-after'));
+}
+
+// Move subId to targetCapId, inserting before/after targetSubId.
+// The moved object keeps all its data (sup, rat, retired) and its S.needs entry
+// (keyed by unchanged id), so nothing is lost when crossing capabilities/pillars.
+function moveSub(subId, targetCapId, targetSubId, after) {
+  const src = findSubOwner(subId);
+  if (!src) return;
+  const targetCap = findCap(targetCapId);
+  if (!targetCap) return;
+
+  const [moved] = src.cap.subs.splice(src.idx, 1); // detach first
+
+  let insertAt;
+  if (targetSubId) {
+    let ti = targetCap.subs.findIndex(s => s.id === targetSubId);
+    if (ti < 0) ti = targetCap.subs.length - 1;
+    insertAt = after ? ti + 1 : ti;
+  } else {
+    insertAt = targetCap.subs.length; // dropped on empty cap -> append
+  }
+  targetCap.subs.splice(Math.max(0, Math.min(insertAt, targetCap.subs.length)), 0, moved);
+
+  reindex();
+  renderAll();
+  _markChanged();
+}
+
+document.addEventListener('dragstart', e => {
+  const h = e.target.closest('[data-subdrag]');
+  if (!h || !editMode) return;
+  subDragId = h.dataset.subdrag;
+  e.dataTransfer.effectAllowed = 'move';
+  try { e.dataTransfer.setData('text/plain', subDragId); } catch (_) {}
+  const tr = h.closest('tr');
+  if (tr) tr.classList.add('sub-dragging');
+});
+
+document.addEventListener('dragover', e => {
+  if (!subDragId) return;
+  const tr = e.target.closest('tr[data-subrow-id]');
+  if (!tr) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const rect = tr.getBoundingClientRect();
+  const after = (e.clientY - rect.top) > rect.height / 2;
+  if (subDropRow !== tr || subDropAfter !== after) {
+    clearSubDropMarkers();
+    subDropRow = tr;
+    subDropAfter = after;
+    tr.classList.add(after ? 'sub-drop-after' : 'sub-drop-before');
+  }
+});
+
+document.addEventListener('drop', e => {
+  if (!subDragId) return;
+  const tr = e.target.closest('tr[data-subrow-id]');
+  e.preventDefault();
+  if (tr && tr.dataset.subrowId !== subDragId) {
+    moveSub(subDragId, tr.dataset.subrowCap, tr.dataset.subrowId, subDropAfter);
+  }
+  subDragId = null; subDropRow = null; subDropAfter = false;
+  clearSubDropMarkers();
+});
+
+document.addEventListener('dragend', () => {
+  subDragId = null; subDropRow = null; subDropAfter = false;
+  clearSubDropMarkers();
+  document.querySelectorAll('tr.sub-dragging').forEach(r => r.classList.remove('sub-dragging'));
+});
 // ===== drag-to-reorder pillars (admin matrix only) =====
 // Reordering RUBRIC re-letters pillars by position (letters are positional), which
 // is intentional — it only affects display order and report labels, never ids.
