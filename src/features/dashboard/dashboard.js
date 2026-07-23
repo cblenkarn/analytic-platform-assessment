@@ -1,8 +1,9 @@
 // ── Dashboard feature ─────────────────────────────────────────────────────
-// Metrics + assessment grid + create/delete. Reads the three rubric tables
-// directly for headline counts (small tables, cheap to list).
+// Metrics + assessment grid + create/delete. Reads the flat tables directly
+// for headline counts — each is now its own small table (no more reaching
+// into a nested `.data.caps` blob to count things).
 import { byId, esc } from '../../ui/dom.js';
-import { isConfigured, listAssessments, listPillars, listVendors, listLibrary, createAssessment, delAssessment } from '../../persistence/supabase.js';
+import { isConfigured, listAssessments, listPillars, listCapabilities, listSubCapabilities, listVendors, listLibrary, createAssessment, delAssessment } from '../../persistence/supabase.js';
 
 export async function initDashboard() {
   if (!isConfigured()) {
@@ -26,18 +27,20 @@ async function renderDash() {
   if (!grid) return;
 
   // Fetch independently so one failure doesn't blank the others.
-  let list = [], pillarRows = [], vendorRows = [], libraryRows = [];
+  let list = [], pillarRows = [], capRows = [], subRows = [], vendorRows = [], libraryRows = [];
   let listErr = null, rubricErr = null;
   try { list = await listAssessments(); } catch (e) { listErr = e; console.error('[dashboard] listAssessments failed:', e); }
   try {
-    [pillarRows, vendorRows, libraryRows] = await Promise.all([listPillars(), listVendors(), listLibrary()]);
+    [pillarRows, capRows, subRows, vendorRows, libraryRows] = await Promise.all([
+      listPillars(), listCapabilities(), listSubCapabilities(), listVendors(), listLibrary(),
+    ]);
   } catch (e) { rubricErr = e; console.error('[dashboard] rubric tables failed:', e); }
 
-  let nCaps = 0, nSubs = 0;
-  pillarRows.forEach(r => (r.data?.caps || []).forEach(c => { nCaps++; nSubs += (c.subs || []).length; }));
   const nPillars = pillarRows.length;
+  const nCaps = capRows.length;
+  const nSubs = subRows.length;
   const nUseCases = libraryRows.length;
-  const nVendors = vendorRows.filter(r => !r.data?.retired).length;
+  const nVendors = vendorRows.filter(r => !r.retired).length;
 
   const set = (id, v) => { const e = byId(id); if (e) e.textContent = v; };
   set('mUseCases', nUseCases); set('mAssessments', list.length); set('mPillars', nPillars); set('mSubs', nSubs);

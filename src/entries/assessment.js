@@ -1,16 +1,14 @@
 // Entry: assessment page (Use Cases / Prioritization / Results tabs).
-import { byId, debounce } from '../ui/dom.js';
+import { byId } from '../ui/dom.js';
 import { setRenderer } from '../ui/render-bus.js';
-import { applySelections, getSelections } from '../model/rubric.js';
-import { loadTables, subscribeTables } from '../persistence/tables-sync.js';
-import { isConfigured, getAssessment, putSelections } from '../persistence/supabase.js';
+import { loadTables, subscribeTables, loadAssessmentSelections, subscribeAssessment } from '../persistence/tables-sync.js';
+import { isConfigured, getAssessmentMeta } from '../persistence/supabase.js';
 import { setAuto } from '../persistence/autosave.js';
+import { assessmentIdFromUrl } from '../persistence/context.js';
 import { renderAssessmentAll } from '../features/assessment/render.js';
 import { initFrameworkEvents } from '../features/assessment/tab-prioritization/framework.events.js';
 import { initUseCasesEvents } from '../features/assessment/tab-usecases/usecases.events.js';
 import { closeUCCapPickers } from '../features/assessment/tab-usecases/usecases.view.js';
-
-function assessmentId() { try { return new URLSearchParams(location.search).get('id'); } catch (e) { return null; } }
 
 // Matches the original: tabs/panels are all rendered up-front by renderAssessmentAll();
 // switching tabs only toggles which .panel has .active (CSS shows/hides), it doesn't re-render.
@@ -29,31 +27,26 @@ document.addEventListener('DOMContentLoaded', async () => {
   initUseCasesEvents();
   initTabs();
 
-  const id = assessmentId();
+  const id = assessmentIdFromUrl();
 
   if (!isConfigured()) { setAuto('err', 'offline - configure Supabase to load & save'); renderAssessmentAll(); return; }
   if (!id) { setAuto('err', 'no assessment id - open one from the dashboard'); renderAssessmentAll(); return; }
 
-  // ---- load the rubric (read-mostly here) + this assessment's own selections ----
+  // ---- load the shared rubric/vendor/library tables (read-mostly here) ----
   await loadTables();
+
+  // ---- load THIS assessment's own priorities / sub-needs / captured use
+  // cases — each lives in its own table now, so no whole-blob save/reload
+  // round-trip is needed for a single priority click or use-case edit. ----
   try {
-    const a = await getAssessment(id);
-    applySelections((a && a.data) || {});
-    const name = byId('snTitle'); if (name && a) name.textContent = a.name + (a.client ? ' \u00b7 ' + a.client : '');
+    const meta = await getAssessmentMeta(id);
+    await loadAssessmentSelections(id);
+    const name = byId('snTitle'); if (name && meta) name.textContent = meta.name + (meta.client ? ' \u00b7 ' + meta.client : '');
     setAuto('saved', 'all changes saved');
   } catch (e) { setAuto('err', 'load failed'); console.error(e); }
 
-  // ---- autosave THIS assessment's selections (unchanged: one row per
-  // assessment was never the collision risk — it's already scoped to one
-  // client engagement, not shared across every assessment like the rubric was) ----
-  const save = debounce(async () => {
-    setAuto('saving', 'saving...');
-    try { await putSelections(id, getSelections()); setAuto('saved', 'all changes saved \u00b7 ' + new Date().toLocaleTimeString()); }
-    catch (e) { setAuto('err', 'save failed'); console.error(e); }
-  }, 700);
-  document.addEventListener('pet-selections-changed', save);
-
-  // ---- realtime: rubric edited elsewhere → reload structure, keep this
-  // assessment's selections layered on top ----
-  subscribeTables({ preserveSelections: true });
+  // ---- realtime: rubric edited elsewhere reloads the shared structure;
+  // this assessment's own selections are synced independently. ----
+  subscribeTables();
+  subscribeAssessment(id, { onLoaded: renderAssessmentAll });
 });

@@ -1,7 +1,6 @@
 // ── Master use-case library admin page › events (verbatim branches) ───────
 import { store } from '../../model/state.js';
-import { markLibChanged, libAddItem, libDeleteItem, libToggleCap } from '../../model/library.js';
-import { scheduleLibrarySave } from '../../persistence/granular-save.js';
+import { markLibChanged, libAddItem, libDeleteItem, libToggleCap, libSaveField } from '../../model/library.js';
 import { renderLibraryEditor, toggleLibCapPicker, closeLibCapPickers } from './library.view.js';
 
 export function initLibraryEvents(){
@@ -19,8 +18,8 @@ export function initLibraryEvents(){
   });
   document.addEventListener('blur', e => {
     if(e.target.matches && e.target.matches('[data-libedittitle]')){const id=e.target.dataset.libedittitle,item=store.USE_CASE_LIBRARY.find(i=>i.id===id);
-      if(item){item.title=e.target.textContent.trim(); markLibChanged(); scheduleLibrarySave(id);} return;}
+      if(item){item.title=e.target.textContent.trim(); markLibChanged(); libSaveField(id, { title: item.title });} return;}
     if(e.target.matches && e.target.matches('[data-libeditdesc]')){const id=e.target.dataset.libeditdesc,item=store.USE_CASE_LIBRARY.find(i=>i.id===id);
-      if(item){item.desc=e.target.textContent.trim(); markLibChanged(); scheduleLibrarySave(id);} return;}
+      if(item){item.desc=e.target.textContent.trim(); markLibChanged(); libSaveField(id, { description: item.desc });} return;}
   }, true);
 }
