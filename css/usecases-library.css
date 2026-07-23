@@ -1,0 +1,13 @@
+/* usecases-library.css — master use-case library admin page
+   Verbatim slice of the original app.css (refactor only partitions it by page/section; rules unchanged). */
+  /* ================================================================ */
+  /* ===== USE CASE LIBRARY ADMIN PAGE =============================== */
+  /* ================================================================ */
+  .lib-editor{gap:14px;}
+  .lib-editor .uc-card{position:relative;}
+  .lib-seed-tag{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--accent-deep);background:var(--yes-bg);border:1px solid #D5DCFB;padding:2px 7px;border-radius:4px;line-height:1;flex:none;align-self:center;}
+  .uc-cap-chip.missing{background:var(--gap-bg);border-color:#E2B6BC;color:var(--gap);}
+  .uc-cap-chip.missing .uc-cap-code{background:var(--gap);}
+  .uc-cap-chip.missing .uc-cap-x{color:var(--gap);}
+  body[data-page="usecases"] .panel-actions{margin-top:6px;}
+
