@@ -3,13 +3,13 @@ import { store } from '../../model/state.js';
 import { reindex, markChanged, findCap, findPillar, exportRubric,
          deletePillar, deleteCap, deleteSub, deleteVendor } from '../../model/rubric.js';
 import { addPillar, addCap, addSub, addVendor,
-         renamePillar, renameCap, renameSub, renameVendorCode,
+         renamePillar, renameCap, renameCapDef, renameSub, renameVendorCode,
          toggleRetirePillar, toggleRetireCap, toggleRetireSub, retireVendor, restoreVendor,
          toggleSupport } from '../../model/rubric-edit.js';
 import { active } from '../../scoring/coverage.js';
 import { renderMatrix, updateSupportLabels } from './matrix.view.js';
 import { renderAdminAll } from './render.js';
-import { scheduleAllVendorsSave, scheduleAllPillarsSave, scheduleAllSubsInCap } from '../../persistence/granular-save.js';
+import { schedulePillarSave, scheduleVendorsSave, scheduleAllPillarsSave } from '../../persistence/granular-save.js';
 
 let dragId=null;                      // vendor column drag
 let subDragId=null, subDropRow=null, subDropAfter=false;  // sub-capability drag
@@ -54,6 +54,7 @@ export function initMatrixEvents(){
   document.addEventListener('blur', e => {
     if(e.target.matches && e.target.matches('[data-sublbl]')){ renameSub(e.target.dataset.sublbl, e.target.textContent.trim()); renderMatrix(); return; }
     if(e.target.matches && e.target.matches('[data-ctitle]')){ renameCap(e.target.dataset.ctitle, e.target.textContent.trim()); return; }
+    if(e.target.matches && e.target.matches('[data-cdef]')){ renameCapDef(e.target.dataset.cdef, e.target.textContent.trim()); return; }
     if(e.target.matches && e.target.matches('[data-pname]')){ renamePillar(e.target.dataset.pname, e.target.textContent.trim()); return; }
     if(e.target.matches && e.target.matches('[data-plcode]')){ renameVendorCode(e.target.dataset.plcode, e.target.textContent.trim()); renderAdminAll(); return; }
   }, true);
@@ -66,7 +67,7 @@ export function initMatrixEvents(){
     if(th.dataset.plid!==dragId)th.classList.add('drop-target');});
   document.addEventListener('drop',e=>{ if(!dragId)return; const th=e.target.closest('.plhead'); e.preventDefault();
     if(th&&th.dataset.plid&&th.dataset.plid!==dragId){const arr=[...store.PLATFORMS];const from=arr.findIndex(p=>p.id===dragId);
-      const [m]=arr.splice(from,1); const to=arr.findIndex(p=>p.id===th.dataset.plid); arr.splice(to,0,m); store.PLATFORMS=arr; markChanged(); scheduleAllVendorsSave();}
+      const [m]=arr.splice(from,1); const to=arr.findIndex(p=>p.id===th.dataset.plid); arr.splice(to,0,m); store.PLATFORMS=arr; markChanged(); scheduleVendorsSave();}
     dragId=null; renderAdminAll();});
   document.addEventListener('dragend',()=>{dragId=null; document.querySelectorAll('.dragging,.drop-target').forEach(x=>x.classList.remove('dragging','drop-target'));});
 
@@ -123,18 +124,16 @@ function findSubOwner(subId) {
 function moveSub(subId, targetCapId, targetSubId, after) {
   const src = findSubOwner(subId); if (!src) return;
   const targetCap = findCap(targetCapId); if (!targetCap) return;
-  const srcCapId = src.cap.id;
+  const srcPillarKey = src.pillar.key;
   const [moved] = src.cap.subs.splice(src.idx, 1);
   let insertAt;
   if (targetSubId) { let ti = targetCap.subs.findIndex(s => s.id === targetSubId); if (ti < 0) ti = targetCap.subs.length - 1; insertAt = after ? ti + 1 : ti; }
   else insertAt = targetCap.subs.length;
   targetCap.subs.splice(Math.max(0, Math.min(insertAt, targetCap.subs.length)), 0, moved);
   reindex(); renderAdminAll(); markChanged();
-  // Resave sort_order (and, for the moved row, its new capability_id) for
-  // every sub-capability in the source and destination capability only —
-  // never the whole pillar these capabilities happen to live in.
-  scheduleAllSubsInCap(srcCapId);
-  if (targetCapId !== srcCapId) scheduleAllSubsInCap(targetCapId);
+  const destPillarKey = store.SUBIDX[subId]?.pkey;
+  schedulePillarSave(srcPillarKey);
+  if (destPillarKey && destPillarKey !== srcPillarKey) schedulePillarSave(destPillarKey);
 }
 
 function doExport() {
