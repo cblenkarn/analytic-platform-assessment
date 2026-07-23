@@ -3,7 +3,7 @@ import { store } from '../../model/state.js';
 import { reindex, markChanged, findCap, findPillar, exportRubric,
          deletePillar, deleteCap, deleteSub, deleteVendor } from '../../model/rubric.js';
 import { addPillar, addCap, addSub, addVendor,
-         renamePillar, renameCap, renameCapDef, renameSub, renameVendorCode,
+         renamePillar, renameCap, renameSub, renameVendorCode,
          toggleRetirePillar, toggleRetireCap, toggleRetireSub, retireVendor, restoreVendor,
          toggleSupport } from '../../model/rubric-edit.js';
 import { active } from '../../scoring/coverage.js';
@@ -54,7 +54,6 @@ export function initMatrixEvents(){
   document.addEventListener('blur', e => {
     if(e.target.matches && e.target.matches('[data-sublbl]')){ renameSub(e.target.dataset.sublbl, e.target.textContent.trim()); renderMatrix(); return; }
     if(e.target.matches && e.target.matches('[data-ctitle]')){ renameCap(e.target.dataset.ctitle, e.target.textContent.trim()); return; }
-    if(e.target.matches && e.target.matches('[data-cdef]')){ renameCapDef(e.target.dataset.cdef, e.target.textContent.trim()); return; }
     if(e.target.matches && e.target.matches('[data-pname]')){ renamePillar(e.target.dataset.pname, e.target.textContent.trim()); return; }
     if(e.target.matches && e.target.matches('[data-plcode]')){ renameVendorCode(e.target.dataset.plcode, e.target.textContent.trim()); renderAdminAll(); return; }
   }, true);

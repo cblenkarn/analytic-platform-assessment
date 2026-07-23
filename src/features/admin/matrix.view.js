@@ -37,16 +37,11 @@ export function renderMatrix(){const t=document.getElementById('mtxTable'); if(!
       const pr=store.S.moscow[c.id]; const inScope=capInScope(c);
       const cRetireLabel=c.retired?'Unretire capability':'Retire capability';
       const cedit=`<span contenteditable="true" data-ctitle="${c.id}">${esc(c.title)}</span>
-        <button class="ed-btn" data-addrow="${c.id}">+ Add</button><button class="ed-btn" data-retirecap="${c.id}">${cRetireLabel}</button>${store.adminDelete?`<button class="ed-btn danger" data-delcap="${c.id}">Delete</button>`:''}${c.retired?'<span class="retired-tag">retired</span>':''}
-        <div class="cap-def-edit"><span class="cdef-lbl">Definition</span><span class="cdef-text" contenteditable="true" data-cdef="${c.id}" data-placeholder="Shown to consultants on the Prioritization tab — describe what this capability covers">${esc(c.def||'')}</span></div>`;
+        <button class="ed-btn" data-addrow="${c.id}">+ Add</button><button class="ed-btn" data-retirecap="${c.id}">${cRetireLabel}</button>${store.adminDelete?`<button class="ed-btn danger" data-delcap="${c.id}">Delete</button>`:''}${c.retired?'<span class="retired-tag">retired</span>':''}`;
       body+=`<tr class="cap-band ${c.retired?'retired':''}"><td colspan="${nCols}"><span class="cc">${c.id}</span>${cedit}</td></tr>`;
       subsShown.forEach(s=>{
         const needed=inScope&&store.S.needs[s.id]&&!s.retired;
-        // Only show the scope-highlight colour in the read-only view. In edit mode it makes
-        // newly-added rows (which always start needs=true) look distinctly coloured next to
-        // older rows a consultant has since unchecked — same colour for every row while editing.
-        const showNeeded=needed&&!store.editMode;
-        body+=`<tr class="${showNeeded?'needed':''} ${!inScope?'flat':''} ${s.retired?'sub-retired':''}" data-subrow-id="${s.id}" data-subrow-cap="${c.id}">`;
+        body+=`<tr class="${needed?'needed':''} ${!inScope?'flat':''} ${s.retired?'sub-retired':''}" data-subrow-id="${s.id}" data-subrow-cap="${c.id}">`;
         const subHandle = store.editMode
           ? `<span class="sub-drag-handle" draggable="true" data-subdrag="${s.id}" title="Drag to move this sub-capability">⠿</span>`
           : '';
