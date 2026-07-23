@@ -8,14 +8,15 @@ node_modules/
 *.log
 npm-debug.log*
 
-# Vercel
-.vercel
-
 # secrets / env (only if you add a build step that uses them)
 .env
 .env.local
 .env*.local
 
+# Vercel
+.vercel
+
 # NOTE: do NOT ignore config.js — a static deploy needs it at runtime,
 # and the Supabase publishable key is safe to commit. Never put a
 # secret key (sb_secret_... / service_role) in committed files.
+# Updated
