@@ -1,7 +1,16 @@
 // ── Rubric lifecycle + domain model ───────────────────────────────────────
 // Build/normalize/reindex the rubric, id helpers, counter sync, repair of
 // legacy duplicate ids, admin hard-deletes, and the persistence-facing API
-// (assembleFromRows / applySelections / getSelections / export).
+// (assembleFromNormalizedRows / export helpers).
+//
+// IMPORTANT: the in-memory shape (store.RUBRIC as nested pillars > caps >
+// subs, each sub carrying sup/rat maps keyed by vendor id) is UNCHANGED from
+// before. Only how it's assembled from the database changed — it now comes
+// from eight normalized tables instead of one jsonb blob per pillar. Keeping
+// the in-memory tree the same means every render/scoring module (matrix
+// view, framework view, coverage.js, fit.js, profiles, etc.) needed zero
+// changes; only the assembly/persistence boundary did.
+//
 // Pure DOM-free logic — rendering is triggered indirectly via the render bus.
 
 import { store } from './state.js';
@@ -10,6 +19,7 @@ import { RAT } from '../data/seed-rationale.js';
 import { USE_CASE_LIBRARY as SEED_USECASES } from '../data/seed-usecases.js';
 import { SEED_ORDER } from '../data/platforms.js';
 import { requestRender } from '../ui/render-bus.js';
+import { setAuto } from '../persistence/autosave.js';
 
 // ---- change notification -------------------------------------------------
 export function markChanged() { document.dispatchEvent(new Event('pet-selections-changed')); }
@@ -79,7 +89,6 @@ function setVendorCounter()  { store.counters.vendor = store.PLATFORMS.reduce((m
 function setPillarCounter()  { store.counters.pillar = store.RUBRIC.reduce((m, p) => { const n = /^P(\d+)$/.exec(p.key || ''); return n ? Math.max(m, +n[1]) : m; }, 0); }
 function setCapCounter()     { let m = 15; store.RUBRIC.forEach(p => p.caps.forEach(c => { const n = /^C(\d+)$/.exec(c.id || ''); if (n) m = Math.max(m, +n[1]); })); store.counters.cap = m; }
 function setSubCounter()     { let m = 0; store.RUBRIC.forEach(p => p.caps.forEach(c => c.subs.forEach(s => { const n = /^sx(\d+)$/.exec(s.id || ''); if (n) m = Math.max(m, +n[1]); }))); store.counters.sub = m; }
-export function setUseCaseCounter() { store.counters.useCase = (store.S.useCases || []).reduce((m, u) => { const n = /^uc(\d+)$/.exec(u.id || ''); return n ? Math.max(m, +n[1]) : m; }, 0); }
 export function syncCounters() { setVendorCounter(); setPillarCounter(); setCapCounter(); setSubCounter(); }
 
 // One-time repair for rubrics saved with duplicate/blank ids. Runs on every
@@ -97,72 +106,103 @@ export function repairRubric() {
 }
 
 // ---- admin-only hard deletes (gated by ?admin=<token>) -------------------
-// Each delete also removes/resaves exactly the DB row(s) it touches —
-// deletePillar/deleteCap/deleteSub only ever touch one pillar row;
-// deleteVendor is the one cross-cutting case (it strips that vendor's key
-// out of every sub's sup/rat map, i.e. every pillar row), so it resaves all
-// pillars once. This is a rare, admin-gated action — the occasional full
-// resave is fine.
+// Each delete removes exactly one row and lets ON DELETE CASCADE clean up
+// its children (capabilities under a pillar, sub-capabilities under a
+// capability, and — for vendors — every vendor_support/rationale cell for
+// that vendor). No more resaving unrelated sibling rows to "clean up" after
+// a delete, the way v2's deleteVendor had to resave every pillar blob.
+async function withAuto(action) {
+  setAuto('saving', 'saving...');
+  try { await action(); setAuto('saved', 'all changes saved \u00b7 ' + new Date().toLocaleTimeString()); }
+  catch (e) { setAuto('err', 'save failed - retry an edit'); console.error(e); }
+}
+
 export function deletePillar(key) {
   store.RUBRIC = store.RUBRIC.filter(p => p.key !== key); reindex(); markChanged();
-  deletePillarRowAndNotify(key);
+  withAuto(async () => { const { deletePillarRow } = await import('../persistence/supabase.js'); await deletePillarRow(key); });
 }
 export function deleteCap(id) {
-  const owner = capPillar(findCap(id) || {}); const pkey = owner && owner.key;
   store.RUBRIC.forEach(p => { p.caps = p.caps.filter(c => c.id !== id); });
   delete store.S.moscow[id];
   store.USE_CASE_LIBRARY.forEach(it => { if (it.caps) it.caps = it.caps.filter(cid => cid !== id); });
   (store.S.useCases || []).forEach(u => { if (u.capIds) u.capIds = u.capIds.filter(cid => cid !== id); });
   reindex(); markChanged();
-  if (pkey) resavePillarNow(pkey);
+  withAuto(async () => { const { deleteCapabilityRow } = await import('../persistence/supabase.js'); await deleteCapabilityRow(id); });
 }
 export function deleteSub(id) {
-  const info = store.SUBIDX[id]; const pkey = info && info.pkey;
   store.RUBRIC.forEach(p => p.caps.forEach(c => { c.subs = c.subs.filter(s => s.id !== id); }));
   delete store.S.needs[id];
   reindex(); markChanged();
-  if (pkey) resavePillarNow(pkey);
+  withAuto(async () => { const { deleteSubCapabilityRow } = await import('../persistence/supabase.js'); await deleteSubCapabilityRow(id); });
 }
 export function deleteVendor(id) {
   store.PLATFORMS = store.PLATFORMS.filter(p => p.id !== id);
   store.RUBRIC.forEach(p => p.caps.forEach(c => c.subs.forEach(s => { delete s.sup[id]; if (s.rat) delete s.rat[id]; })));
   reindex(); markChanged();
-  deleteVendorRowAndNotify(id);
-  store.RUBRIC.forEach((p, i) => resavePillarNow(p.key));
+  withAuto(async () => { const { deleteVendorRow } = await import('../persistence/supabase.js'); await deleteVendorRow(id); });
 }
 
-// Thin wrappers so this module doesn't import persistence eagerly at parse
-// time (avoids a load-order cycle with granular-save's own model imports).
-async function resavePillarNow(key) {
-  const { schedulePillarSave } = await import('../persistence/granular-save.js');
-  schedulePillarSave(key);
-}
-async function deletePillarRowAndNotify(key) {
-  const { deletePillarRow } = await import('../persistence/supabase.js');
-  try { await deletePillarRow(key); } catch (e) { console.error(e); }
-}
-async function deleteVendorRowAndNotify(id) {
-  const { deleteVendorRow } = await import('../persistence/supabase.js');
-  try { await deleteVendorRow(id); } catch (e) { console.error(e); }
-}
+// ---- persistence-facing API ----------------------------------------------
+// Rebuild store.PLATFORMS / store.RUBRIC / store.USE_CASE_LIBRARY from flat
+// rows fetched from the eight normalized tables (see persistence/tables-sync.js
+// fetchAll()). Groups rows by parent id, sorts by sort_order, and produces
+// the exact same nested shape buildRubric() always produced — the one every
+// render/scoring module already expects. Does not touch store.S.
+export function assembleFromNormalizedRows({ pillars, capabilities, subCapabilities, vendors, vendorSupport, rationale, libraryItems, libraryCapLinks }) {
+  if (Array.isArray(vendors) && vendors.length) {
+    store.PLATFORMS = vendors.map(v => ({ id: v.id, name: v.name, code: v.code, retired: !!v.retired, custom: !!v.is_custom }));
+  }
 
-// ---- persistence-facing API (row-based; used by page entries) -----------
-// Each pillar/vendor/library item round-trips to exactly one DB row. These
-// helpers convert between that row shape ({key|id, data, sort_order}) and
-// the in-memory object shape (unchanged from the original single-blob model,
-// so every scoring/render function below is untouched).
-export function exportPillarRow(pillar, index) { const { key, ...rest } = pillar; return { key, data: rest, sort_order: index }; }
-export function exportVendorRow(vendor, index) { const { id, ...rest } = vendor; return { id, data: rest, sort_order: index }; }
-export function exportLibraryItemRow(item, index) { const { id, ...rest } = item; return { id, data: rest, sort_order: index }; }
+  const subsByCap = new Map();
+  (subCapabilities || []).forEach(s => {
+    if (!subsByCap.has(s.capability_id)) subsByCap.set(s.capability_id, []);
+    subsByCap.get(s.capability_id).push(s);
+  });
+  subsByCap.forEach(arr => arr.sort((a, b) => a.sort_order - b.sort_order));
 
-// Rebuild store.PLATFORMS / store.RUBRIC / store.USE_CASE_LIBRARY from rows
-// fetched from the three tables. Does not touch store.S — callers decide
-// (initial load sets a default state; the assessment page re-applies the
-// user's saved selections on top; see applySelections below).
-export function assembleFromRows(pillarRows, vendorRows, libraryRows) {
-  if (Array.isArray(vendorRows) && vendorRows.length) store.PLATFORMS = vendorRows.map(r => ({ id: r.id, ...r.data }));
-  store.RUBRIC = Array.isArray(pillarRows) && pillarRows.length ? pillarRows.map(r => ({ key: r.key, ...r.data })) : buildRubric();
-  if (Array.isArray(libraryRows)) store.USE_CASE_LIBRARY = libraryRows.map(r => ({ id: r.id, ...r.data }));
+  const supportBySub = new Map();
+  (vendorSupport || []).forEach(r => {
+    if (!supportBySub.has(r.sub_capability_id)) supportBySub.set(r.sub_capability_id, {});
+    supportBySub.get(r.sub_capability_id)[r.vendor_id] = !!r.supported;
+  });
+
+  const ratBySub = new Map();
+  (rationale || []).forEach(r => {
+    if (!ratBySub.has(r.sub_capability_id)) ratBySub.set(r.sub_capability_id, {});
+    ratBySub.get(r.sub_capability_id)[r.vendor_id] = { note: r.note || '', tone: r.tone || 'note', conf: r.confidence || '' };
+  });
+
+  const capsByPillar = new Map();
+  (capabilities || []).forEach(c => {
+    if (!capsByPillar.has(c.pillar_id)) capsByPillar.set(c.pillar_id, []);
+    capsByPillar.get(c.pillar_id).push(c);
+  });
+  capsByPillar.forEach(arr => arr.sort((a, b) => a.sort_order - b.sort_order));
+
+  const sortedPillars = Array.isArray(pillars) ? [...pillars].sort((a, b) => a.sort_order - b.sort_order) : [];
+  const rubric = sortedPillars.map(p => ({
+    key: p.id, name: p.name, retired: !!p.retired,
+    caps: (capsByPillar.get(p.id) || []).map(c => ({
+      id: c.id, title: c.title, def: c.definition, retired: !!c.retired,
+      subs: (subsByCap.get(c.id) || []).map(s => ({
+        id: s.id, q: s.question, retired: !!s.retired,
+        sup: supportBySub.get(s.id) || {},
+        rat: ratBySub.get(s.id) || {},
+      })),
+    })),
+  }));
+  store.RUBRIC = rubric.length ? rubric : buildRubric();
+
+  if (Array.isArray(libraryItems)) {
+    const capsByUC = new Map();
+    (libraryCapLinks || []).forEach(l => {
+      if (!capsByUC.has(l.use_case_id)) capsByUC.set(l.use_case_id, []);
+      capsByUC.get(l.use_case_id).push(l.capability_id);
+    });
+    store.USE_CASE_LIBRARY = [...libraryItems].sort((a, b) => a.sort_order - b.sort_order)
+      .map(u => ({ id: u.id, title: u.title, desc: u.description, caps: capsByUC.get(u.id) || [] }));
+  }
+
   normalizeRubric();
   syncCounters();
   const repaired = repairRubric();
@@ -172,26 +212,13 @@ export function assembleFromRows(pillarRows, vendorRows, libraryRows) {
 }
 
 // Human-readable full export for the admin "Export backup (.json)" button —
-// same shape as the original single-blob format. Pure serialization of
-// current in-memory state; doesn't touch the DB.
+// pure serialization of current in-memory state; doesn't touch the DB.
 export function exportData() {
   return { platforms: store.PLATFORMS, rubric: store.RUBRIC, useCases: store.USE_CASE_LIBRARY,
     selections: { moscow: store.S.moscow, needs: store.S.needs, useCases: store.S.useCases } };
 }
 export function exportRubric() { return { platforms: store.PLATFORMS, rubric: store.RUBRIC, useCases: store.USE_CASE_LIBRARY }; }
 
-// Overlay an assessment's saved selections on top of the loaded rubric.
-export function applySelections(sel) {
-  const base = defaultState();
-  store.S = {
-    moscow: { ...base.moscow, ...((sel && sel.moscow) || {}) },
-    needs:  { ...base.needs,  ...((sel && sel.needs)  || {}) },
-    useCases: Array.isArray(sel && sel.useCases) ? sel.useCases : [],
-  };
-  setUseCaseCounter(); store.collapsedPillars.clear(); requestRender();
-}
-
-export function getSelections() { return { moscow: store.S.moscow, needs: store.S.needs, useCases: store.S.useCases }; }
 export function setEditMode(b) { store.editMode = !!b; requestRender(); }
 
 // ---- initial (offline / pre-load) model ---------------------------------
@@ -205,5 +232,6 @@ export function initModel() {
 }
 
 // Build the seed model on import so `store` is never in a half-initialised
-// state; page entries replace it via assembleFromRows() once Supabase responds.
+// state; page entries replace it via assembleFromNormalizedRows() once
+// Supabase responds (or via loadAssessmentSelections() for store.S).
 initModel();

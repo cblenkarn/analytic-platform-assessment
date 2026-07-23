@@ -2,7 +2,7 @@
 import { el, esc } from '../../ui/dom.js';
 import { store } from '../../model/state.js';
 import { markChanged } from '../../model/rubric.js';
-import { schedulePillarSave } from '../../persistence/granular-save.js';
+import { scheduleRationaleSave } from '../../persistence/granular-save.js';
 import { requestRender } from '../../ui/render-bus.js';
 
 let ratPinned=null, currentRatCell=null, ratHideTimer=null;
@@ -33,8 +33,13 @@ function showRatEdit(btn){const sid=btn.dataset.note,pl=btn.dataset.pl,info=stor
     <button class="rp-close" id="rpClose">Done</button>`;
   const p=ratPop(); const ta=p.querySelector('#rpNote'),tn=p.querySelector('#rpTone'),cf=p.querySelector('#rpConf');
   tn.value=r.tone||'note'; cf.value=r.conf||'';
-  ta.oninput=()=>{r.note=ta.value; markChanged(); schedulePillarSave(info.pkey);}; tn.onchange=()=>{r.tone=tn.value; markChanged(); schedulePillarSave(info.pkey);}; cf.onchange=()=>{r.conf=cf.value; markChanged(); schedulePillarSave(info.pkey);};
-  p.querySelector('#rpClose').onclick=()=>{ if(!r.note||!r.note.trim()){ if(info.sub.rat[pl])delete info.sub.rat[pl]; markChanged(); schedulePillarSave(info.pkey); } hideRat(); requestRender(); };
+  // One row (sub-capability × vendor) in `rationale` — a note edit here never
+  // touches the support flag for this cell, or any other cell in the pillar.
+  const persist = () => scheduleRationaleSave(sid, pl, { note: r.note || '', tone: r.tone || 'note', confidence: r.conf || '' });
+  ta.oninput=()=>{r.note=ta.value; markChanged(); persist();};
+  tn.onchange=()=>{r.tone=tn.value; markChanged(); persist();};
+  cf.onchange=()=>{r.conf=cf.value; markChanged(); persist();};
+  p.querySelector('#rpClose').onclick=()=>{ if(!r.note||!r.note.trim()){ if(info.sub.rat[pl])delete info.sub.rat[pl]; markChanged(); persist(); /* empty note -> row deleted */ } hideRat(); requestRender(); };
   ratPinned='edit'; positionPop(btn.closest('td')); ta.focus(); }
 
 export function initRationalePopover(){
