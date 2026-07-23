@@ -1,13 +1,10 @@
-# OS / editor
-.DS_Store
-Thumbs.db
-.vscode/
-
-# dependencies & logs
+config.js
 node_modules/
+.DS_Store
 *.log
-npm-debug.log*
+repomix-output.xml
 
+<<<<<<< HEAD
 # secrets / env (only if you add a build step that uses them)
 .env
 .env.local
@@ -20,3 +17,5 @@ npm-debug.log*
 # and the Supabase publishable key is safe to commit. Never put a
 # secret key (sb_secret_... / service_role) in committed files.
 # Updated
+=======
+>>>>>>> 1be89b0a81a765c34a53029ad080dc4b70e7d3aa

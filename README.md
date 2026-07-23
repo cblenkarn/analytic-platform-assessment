@@ -4,65 +4,89 @@ A consultant tool that matches a client's analytics needs (MoSCoW priorities) to
 platforms — GA4, Adobe Analytics, CJA, Amplitude, Contentsquare, Piano — and
 produces a weighted-fit ranking plus a best-of-breed stack recommendation.
 
-Static multi-page site on **Vercel** with a **Supabase** (Postgres) backend.
+Static multi-page site on **Vercel** (no build step, native ES modules) with a
+**Supabase** (Postgres) backend.
 
 ## Pages
 
 | Path           | File             | Purpose |
 |----------------|------------------|---------|
-| `/dashboard`   | `dashboard.html` | Lists every assessment; create / open / delete from here. Landing page (`/` redirects here). |
-| `/assessment?id=…` | `assessment.html` | The workspace: **Needs discovery** (MoSCoW + sub-capabilities) and **Results** (ranking, stack, pillar coverage, profiles). Selections autosave. Links back to the dashboard. |
-| `/admin`       | `admin.html`     | The **single master rubric** editor. Every edit autosaves to the database and applies to all assessments, including new ones. |
+| `/dashboard`   | `dashboard.html` | Lists every assessment; create / open / delete from here. `/` redirects here. |
+| `/assessment?id=…` | `assessment.html` | The workspace: Use Cases, Prioritization (MoSCoW), Results. Selections autosave. |
+| `/admin`       | `admin.html`     | The **master rubric** editor. Every edit autosaves and applies to all assessments. |
+| `/usecases`    | `usecases.html`  | The **master use-case library** editor (the picker chips consultants drop into assessments). |
 
-Shared assets: `css/app.css`, `js/core.js` (rubric model, scoring, rendering),
-`js/db.js` (Supabase + page routing + autosave + realtime).
+## Code layout
 
-## Single rubric
+```
+src/data/            seed rubric / vendors / rationale / library — FIRST-RUN
+                      fallback only; the canonical data lives in Supabase.
+src/model/            in-memory rubric model: build/normalize/reindex, structural
+                      edits (rubric-edit.js), library edits (library.js).
+src/scoring/          pure functions: coverage, weighted fit, stack recommendation,
+                      use-case coverage. No DOM, no persistence.
+src/ui/               dom helpers, render bus, shared chrome behaviours.
+src/persistence/      supabase.js (table CRUD), granular-save.js (row-scoped
+                      debounced autosave), tables-sync.js (load + realtime).
+src/features/<page>/  per-page views + event wiring.
+src/entries/          one entry module per HTML page.
+css/                  base + chrome + components load broadly; per-page files
+                      layer on top (split from the original app.css by section).
+```
 
-There is **one** rubric, stored in the `rubrics` table as the row `id='master'`.
-Assessments store **only** the client's selections (`{moscow, needs}`), not a
-copy of the rubric. Opening an assessment loads the current master rubric and
-overlays that assessment's selections — so a rubric change in `/admin` reaches
-every assessment immediately. Import and "reset to defaults" have been removed:
-the master rubric in the database is the single source of truth.
+## Data model — normalized, row-scoped tables
 
-## Autosave
+The rubric is **not** one JSON blob anymore. It's three tables:
 
-- **Rubric** (`/admin`): any edit autosaves ~0.8s after you stop. No save button.
-- **Selections** (`/assessment`): MoSCoW and sub-capability changes autosave ~0.7s after you stop.
+- `rubric_pillars` — one row per pillar (`data` holds that pillar's nested
+  capabilities + sub-capabilities, same shape as before).
+- `vendors` — one row per platform.
+- `use_case_library` — one row per master use-case (its own table now,
+  separate from the rubric).
+- `assessments` — unchanged; one row per client assessment, storing only
+  that assessment's own selections.
 
-The dot next to the page title shows status (saving / saved / error).
+**Why:** the original schema kept everything — every pillar, every vendor,
+the entire use-case library — in a single ~90KB row. Every edit re-saved the
+whole document, so two editors working in different pillars at the same time
+could silently overwrite each other's work. Now every edit writes only the
+one row it touched (see `src/persistence/granular-save.js`). Two editors
+touching different pillars/vendors/use-cases can never collide. Editors
+touching the exact same row still resolve last-write-wins on *that row only*
+— normal Postgres behaviour, not "wipe out eleven unrelated pillars."
 
-## Multiple editors
+If you're migrating from the old single-blob schema, see **Migration** below.
 
-Saves are **last-write-wins**, and the rubric is **live-synced** over Supabase
-Realtime:
+## Migration from the old single-blob schema
 
-- When another editor saves, your `/admin` page is notified in real time.
-- If you have **no unsaved edits**, the change is applied silently.
-- If you are **mid-edit**, a banner appears ("updated by another editor — Reload")
-  rather than clobbering your work. Reloading pulls their version; ignoring it and
-  continuing means your next save overwrites theirs.
-- Two people editing the **same field** at the same instant resolve last-write-wins
-  (no field-level merge).
+1. Run `supabase/schema.sql` in the Supabase SQL editor — it only creates the
+   new tables; your existing `rubrics` table is untouched.
+2. Run the one-off script locally (never in the deployed app):
+   ```
+   npm install
+   SUPABASE_URL=https://xxxx.supabase.co \
+   SUPABASE_SERVICE_ROLE_KEY=eyJ... \
+   node scripts/migrate-to-tables.mjs
+   ```
+   (Service-role key from Supabase → Project Settings → API. Never commit it,
+   never put it in `config.js`.) It's idempotent — safe to re-run.
+3. Verify `/admin` and `/usecases` show your real data.
+4. Once confident, drop the old table yourself: `drop table if exists public.rubrics;`
 
-This is appropriate for a small consulting team coordinating edits. For stricter
-control, enable Supabase Auth and tighten the RLS policies (see `supabase/schema.sql`).
+## Autosave & live sync
 
-## Deploy
-
-1. **Supabase** → create a project → SQL Editor → paste & run `supabase/schema.sql`.
-   Then Settings → API Keys → copy the **Project URL** and the **publishable key**
-   (`sb_publishable_…`).
-2. **config.js** → paste the URL and publishable key. `config.js` **must be committed**
-   — the publishable key is public-safe. Never put a secret/service-role key in client code.
-3. **GitHub** → commit and push the repo.
-4. **Vercel** → Import the repo → Framework preset **Other** → no build command → Deploy.
-
-The site is `noindex` (meta tag + `X-Robots-Tag` header + `robots.txt`).
+Every structural edit (rename, retire, toggle support, add/delete, drag
+reorder, SME rationale note) debounces a save of just the affected row(s).
+Realtime subscriptions on all three tables patch other editors' changes in
+automatically — unless you have an unsaved edit on that *same* row, in which
+case a banner appears so you can review before reloading.
 
 ## Local dev
 
-```bash
-npm run dev   # npx serve .
-```
+`npm run dev` (serves the folder). `npm run check` runs `node --check` on
+every module. `npm run migrate` runs the one-off migration script (see above).
+
+## Config
+
+Copy `config.example.js` to `config.js` and set your Supabase URL + publishable
+(anon) key. `config.js` is git-ignored.

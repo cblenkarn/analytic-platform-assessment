@@ -1,0 +1,101 @@
+/* admin.css — rubric admin matrix chrome, retire/unretire, drag, fixes
+   Verbatim slice of the original app.css (refactor only partitions it by page/section; rules unchanged). */
+  /* ===== admin legend utilities ===== */
+  .pencil{color:var(--leader);font-style:normal;font-weight:600;}
+  .rat-dot{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;margin-right:2px;}
+  .rat-dot.pro{background:var(--accent);} .rat-dot.con{background:var(--gap);} .rat-dot.note{background:var(--ink-soft);}
+
+  /* ===== admin: tone-coloured rationale glyph (override .has gold) ===== */
+  .noteglyph.tone-pro{color:var(--accent);} .noteglyph.tone-pro:hover{color:var(--accent-deep);}
+  .noteglyph.tone-con{color:var(--gap);}
+  .noteglyph.tone-note{color:var(--ink-soft);}
+
+  /* ===== admin: collapsible, structured readme + spacing ===== */
+  .readme.collapsible{padding:0;}
+  .readme .rm-head{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:13px 16px;}
+  .readme .rm-head .seccaret{margin-left:auto;}
+  .readme.collapsible .sec-body{padding:0 16px 15px;}
+  .readme.collapsible.collapsed .rm-head{padding-bottom:13px;}
+  .readme .rm-list{margin:10px 0 0;padding-left:18px;}
+  .readme .rm-list li{margin:5px 0;}
+  .readme .rm-list em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--accent-deep);}
+  .readme .pencil,.readme .drag-handle{margin:0 1px;}
+  /* breathing room down the admin column */
+  body[data-page="admin"] .wrap{padding-top:6px;}
+  body[data-page="admin"] .readme{margin-bottom:20px;}
+  body[data-page="admin"] .matrix-key{margin:2px 0 14px;padding-top:2px;}
+
+  /* ===== admin: each pillar is its own card; vendor header pins on scroll ===== */
+  .mtx-wrap{display:block;}
+  .pillar-card{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow);margin-bottom:22px;overflow:visible;}
+  .pillar-card:last-child{margin-bottom:0;}
+  .pillar-card table.mtx{table-layout:fixed;width:100%;}
+  .pillar-card table.mtx thead th{z-index:6;box-shadow:0 1px 0 var(--line);}
+
+
+  /* ===== Retire / unretire (pillars, capabilities, sub-capabilities) =====
+     Retired items are preserved in place but greyed and excluded from scoring.
+     Same button toggles state; label switches between "Retire" and "Unretire". */
+  .retired-tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--wont);background:var(--wont-bg);padding:1px 6px;border-radius:4px;margin-left:8px;vertical-align:middle;}
+  .retired-tag.on-dark{background:#2a3744;color:#c2cdd1;}
+
+  /* Admin matrix — dim retired rows/sections (single opacity layer per element; a sub row inside
+     a retired pillar or capability is already covered by the ancestor rule, so it isn't re-dimmed). */
+  tr.pillar-band.retired td{opacity:.6;}
+  tr.cap-band.retired td{opacity:.6;}
+  .pillar-card.pillar-retired tr.cap-band td,
+  .pillar-card.pillar-retired td.sub-lbl,
+  .pillar-card.pillar-retired td.mk,
+  .pillar-card.pillar-retired td.act{opacity:.55;}
+  tr.sub-retired td.sub-lbl,
+  tr.sub-retired td.mk,
+  tr.sub-retired td.act{opacity:.55;}
+  tr.sub-retired td.sub-lbl .qtext{font-style:italic;}
+
+  /* Row-level retire / unretire button (wider than the old × delete button to fit the label) */
+  table.mtx thead th.actcol,table.mtx td.act{width:98px;}
+  .row-retire{border:1px solid var(--line);background:#fff;color:var(--ink-soft);font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;font-weight:600;padding:3px 9px;border-radius:5px;cursor:pointer;line-height:1.4;}
+  .row-retire:hover{border-color:var(--accent);color:var(--accent-deep);background:var(--yes-bg);}
+
+  /* Workshop (framework / prioritization) view — grey retired items so consultants see they're out of scope */
+  .pillar.pillar-retired > .pillar-head{opacity:.7;}
+  .pillar.pillar-retired > .pillar-body{opacity:.55;}
+  .cap.cap-retired{opacity:.55;}
+  .sub-row.sub-retired .sub-q{font-style:italic;color:var(--ink-soft);}
+
+  /* Pillar coverage table (results tab) — retired pillar rows are dimmed */
+  table.agg tr.row-retired td{opacity:.55;}
+
+  /* ================================================================ */
+  /* ===== Fixes: loading state, pillar drag, admin delete =========== */
+  /* ================================================================ */
+
+  /* Brief placeholder shown while db.js fetches the master rubric, so the
+     stale seed rubric no longer flashes before the real one paints. */
+  .rubric-loading{padding:44px 16px;text-align:center;color:var(--ink-soft);font-family:var(--mono);font-size:13px;letter-spacing:.02em;}
+
+  /* Drag-to-reorder pillars (admin matrix). The handle sits on the dark pillar
+     band, so it needs a lighter colour than the vendor-column handle. */
+  .drag-handle.pillar-drag{color:#cfe3e6;vertical-align:middle;margin-right:2px;}
+  .drag-handle.pillar-drag:hover{color:#fff;}
+  .pillar-card.pillar-dragging{opacity:.5;}
+  .pillar-card.pillar-drop{box-shadow:inset 0 3px 0 var(--accent),var(--shadow);}
+
+  /* Sub-capability action cell now stacks Retire + (admin) Delete. */
+  td.act .act-btns{display:flex;flex-direction:column;gap:4px;align-items:stretch;}
+  table.mtx thead th.actcol,table.mtx td.act{width:104px;}
+  .row-retire.danger{border-color:#E2B6BC;color:var(--gap);}
+  .row-retire.danger:hover{border-color:var(--gap);color:#fff;background:var(--gap);}
+
+  /* ===== sub-capability drag-to-move (admin edit mode only) ===== */
+  /* Handle sits in the sub-lbl cell's left padding; drop line snaps to the
+     hovered row's top or bottom edge, Excel-row style. */
+  .sub-drag-handle{display:inline-block;cursor:grab;color:#AEB7B6;font-size:13px;line-height:1;user-select:none;margin-right:8px;vertical-align:middle;}
+  .sub-drag-handle:hover{color:var(--accent-deep);}
+  .sub-drag-handle:active{cursor:grabbing;}
+  tr.sub-dragging td{opacity:.4;}
+  tr.sub-drop-before td{box-shadow:inset 0 3px 0 var(--accent);}
+  tr.sub-drop-after td{box-shadow:inset 0 -3px 0 var(--accent);}
+
+  /* Admin-only Delete on the vendor column header (sits beside "retire"). */
+  .plretire.pldelete{color:var(--gap);}
