@@ -1,0 +1,22 @@
+# GitHub auto-routes review requests and signals territory per feature area.
+# Replace @handles with real owners. Order matters: last match wins.
+
+# Shared foundations — change with care, ping the maintainers.
+/src/model/            @data-model-owners
+/src/scoring/          @data-model-owners
+/src/persistence/      @platform-owners
+/src/ui/               @platform-owners
+
+# Seed / reference content — safe for consultants to edit.
+/src/data/             @content-owners
+
+# Feature areas — one owner per tab/section keeps merges local.
+/src/features/dashboard/            @dashboard-owners
+/src/features/admin/                @rubric-admin-owners
+/src/features/usecases-library/     @usecases-owners
+/src/features/assessment/tab-usecases/        @assessment-owners
+/src/features/assessment/tab-prioritization/  @assessment-owners
+/src/features/assessment/tab-results/         @assessment-owners
+
+# Styling
+/css/                  @design-owners

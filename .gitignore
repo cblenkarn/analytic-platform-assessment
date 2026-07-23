@@ -1,21 +1,6 @@
-# OS / editor
-.DS_Store
-Thumbs.db
-.vscode/
-
-# dependencies & logs
+config.js
 node_modules/
+.DS_Store
 *.log
-npm-debug.log*
+repomix-output.xml
 
-# Vercel
-.vercel
-
-# secrets / env (only if you add a build step that uses them)
-.env
-.env.local
-.env*.local
-
-# NOTE: do NOT ignore config.js — a static deploy needs it at runtime,
-# and the Supabase publishable key is safe to commit. Never put a
-# secret key (sb_secret_... / service_role) in committed files.

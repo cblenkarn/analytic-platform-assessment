@@ -1,0 +1,74 @@
+/* usecases.css — assessment Use Cases tab + capability footnote
+   Verbatim slice of the original app.css (refactor only partitions it by page/section; rules unchanged). */
+  /* ================================================================ */
+  /* ===== USE CASES TAB ============================================= */
+  /* ================================================================ */
+
+  .uc-library-block, .uc-selected-block{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:20px;}
+  .uc-block-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line-soft);}
+  .uc-block-title{font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:-.005em;}
+  .uc-block-hint{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-left:auto;font-weight:600;}
+
+  /* library chips (available templates) */
+  .uc-library{display:flex;flex-wrap:wrap;gap:8px;}
+  .uc-lib-chip{position:relative;border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 13px 7px 13px;font-size:12.5px;font-weight:500;color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.12s;font-family:var(--body);}
+  .uc-lib-chip:hover{border-color:var(--accent);background:var(--yes-bg);color:var(--accent-deep);}
+  .uc-lib-chip::before{content:"+";font-family:var(--mono);color:var(--accent);font-weight:700;font-size:14px;line-height:1;}
+  .uc-lib-chip.used{opacity:.42;cursor:default;pointer-events:none;background:var(--line-soft);}
+  .uc-lib-chip.used::before{content:"✓";color:var(--could);}
+  .uc-custom-row{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line-soft);}
+
+  /* selected use case cards */
+  .uc-selected{display:flex;flex-direction:column;gap:12px;}
+  .uc-empty{color:var(--ink-soft);font-size:13px;padding:18px 4px;font-style:italic;text-align:center;}
+  .uc-card{border:1px solid var(--line);border-radius:9px;padding:14px 16px;background:#fff;position:relative;transition:border-color .12s;}
+  .uc-card:hover{border-color:#CBD3E0;}
+  .uc-card .uc-head{display:flex;align-items:flex-start;gap:10px;}
+  .uc-card .uc-title{flex:1;font-family:var(--display);font-weight:700;font-size:14.5px;letter-spacing:-.005em;color:var(--ink);min-height:20px;line-height:1.35;}
+  .uc-card .uc-title[contenteditable="true"]:empty::before{content:"Untitled use case";color:var(--ink-soft);font-style:italic;}
+  .uc-card .uc-del{border:none;background:none;color:var(--no);font-size:15px;cursor:pointer;padding:2px 7px;line-height:1;border-radius:5px;flex:none;}
+  .uc-card .uc-del:hover{color:var(--gap);background:var(--gap-bg);}
+  .uc-card .uc-desc{margin-top:6px;color:var(--ink-soft);font-size:12.8px;line-height:1.5;min-height:18px;}
+  .uc-card .uc-desc[contenteditable="true"]:empty::before{content:"Describe the client's specific situation — what outcome, what data, what audience…";color:#B7C0C2;font-style:italic;}
+  [contenteditable="true"].uc-title:focus, [contenteditable="true"].uc-desc:focus{box-shadow:inset 0 0 0 2px var(--accent);background:#F7FBFB;}
+
+  .uc-caps-wrap{margin-top:12px;padding-top:11px;border-top:1px solid var(--line-soft);}
+  .uc-caps-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:7px;display:flex;align-items:center;gap:8px;}
+  .uc-caps-label .uc-caps-count{color:var(--accent-deep);}
+  .uc-caps{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .uc-cap-chip{display:inline-flex;align-items:center;gap:6px;background:var(--yes-bg);color:var(--accent-deep);border:1px solid #D5DCFB;border-radius:14px;padding:3px 4px 3px 9px;font-size:11.5px;font-weight:500;line-height:1;}
+  .uc-cap-chip .uc-cap-code{font-family:var(--mono);font-weight:600;font-size:10.5px;background:var(--accent-deep);color:#fff;padding:2px 5px;border-radius:3px;letter-spacing:.02em;}
+  .uc-cap-chip .uc-cap-title{font-size:11.5px;padding-right:2px;}
+  .uc-cap-chip .uc-cap-x{border:none;background:none;color:var(--accent-deep);font-size:13px;padding:2px 5px;border-radius:8px;cursor:pointer;line-height:1;}
+  .uc-cap-chip .uc-cap-x:hover{background:#D5DCFB;color:var(--gap);}
+  .uc-cap-none{color:var(--ink-soft);font-style:italic;font-size:12px;}
+
+  /* + add capability picker */
+  .uc-add-cap{position:relative;display:inline-block;}
+  .uc-add-cap-btn{border:1px dashed var(--accent);background:#fff;color:var(--accent-deep);padding:4px 10px;font-size:11.5px;font-weight:600;border-radius:14px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;font-family:var(--body);}
+  .uc-add-cap-btn:hover{background:var(--yes-bg);}
+  .uc-cap-pop{position:absolute;top:calc(100% + 6px);left:0;z-index:40;background:#fff;border:1px solid var(--line);border-radius:9px;box-shadow:0 10px 34px rgba(11,11,12,.18);padding:8px;min-width:340px;max-width:400px;max-height:360px;overflow-y:auto;display:none;}
+  .uc-cap-pop.show{display:block;}
+  .uc-cap-pop .ucp-pillar{margin-top:8px;}
+  .uc-cap-pop .ucp-pillar:first-child{margin-top:0;}
+  .uc-cap-pop .ucp-plname{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;padding:3px 6px;background:var(--line-soft);border-radius:4px;margin-bottom:4px;}
+  .uc-cap-pop .ucp-opt{display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12.5px;line-height:1.35;}
+  .uc-cap-pop .ucp-opt:hover{background:var(--yes-bg);}
+  .uc-cap-pop .ucp-opt input{margin-top:2px;accent-color:var(--accent);flex:none;}
+  .uc-cap-pop .ucp-opt .ucp-code{font-family:var(--mono);font-size:10.5px;color:var(--accent);font-weight:600;flex:none;padding-top:1px;}
+  .uc-cap-pop .ucp-opt.checked{background:var(--yes-bg);}
+  .uc-cap-pop .ucp-close{margin-top:8px;padding-top:8px;border-top:1px solid var(--line-soft);display:flex;justify-content:flex-end;}
+  .uc-cap-pop .ucp-close button{border:none;background:none;color:var(--accent);font-size:11.5px;font-weight:600;cursor:pointer;padding:4px 8px;font-family:var(--mono);}
+
+  /* ================================================================ */
+  /* ===== USE-CASE FOOTNOTE UNDER EACH CAPABILITY ON PRIORITIZATION == */
+  /* ================================================================ */
+  .cap-usecases{margin-top:10px;padding:8px 10px;background:#F9FAFC;border:1px solid var(--line-soft);border-left:2px solid var(--accent);border-radius:6px;font-size:12px;color:var(--ink-soft);line-height:1.5;display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+  .cap-usecases .cu-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--accent-deep);flex:none;padding-top:2px;}
+  .cap-usecases .cu-list{flex:1;min-width:200px;display:flex;flex-wrap:wrap;gap:5px 4px;}
+  .cap-usecases .cu-uc{display:inline-flex;align-items:center;background:#fff;border:1px solid #D5DCFB;color:var(--accent-deep);padding:2px 8px;border-radius:11px;font-size:11.5px;font-weight:500;}
+  .cap-nouse{margin-top:10px;padding:8px 10px;background:var(--wont-bg);border:1px solid #DDE0E4;border-left:2px solid var(--wont);border-radius:6px;font-size:12px;color:var(--ink-soft);line-height:1.5;display:flex;align-items:flex-start;gap:8px;}
+  .cap-nouse .cu-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;color:var(--wont);flex:none;padding-top:2px;}
+  .cap-nouse .cu-hint{flex:1;font-style:italic;}
+  .cap.oos-cap .cap-usecases, .cap.oos-cap .cap-nouse{display:none;}
+

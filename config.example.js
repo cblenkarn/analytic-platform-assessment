@@ -1,9 +1,6 @@
-// ── Supabase configuration ───────────────────────────────────────────────
-// Fill these with your project's values: Supabase dashboard → Project Settings → API.
-// The anon key is a PUBLIC (publishable) key — it is safe to ship in client code.
-// Access is enforced by Row Level Security policies (see supabase/schema.sql).
-// Leave blank to run fully offline (Export/Import JSON still works).
+// Copy to config.js and fill in. config.js is git-ignored.
+// Loaded as a CLASSIC script (sets a global) BEFORE the ES-module entry.
 window.APP_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: ""
+  SUPABASE_URL: 'https://YOUR-PROJECT.supabase.co',
+  SUPABASE_ANON_KEY: 'YOUR-PUBLISHABLE-ANON-KEY',
 };
