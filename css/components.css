@@ -136,6 +136,10 @@
   tr.cap-band td .chip{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;padding:1px 6px;border-radius:4px;margin-left:8px;}
   .chip.must{color:var(--must);background:var(--must-bg);} .chip.should{color:var(--should);background:var(--should-bg);}
   .chip.could{color:var(--could);background:var(--could-bg);} .chip.wont{color:var(--wont);background:var(--wont-bg);}
+  .cap-def-edit{display:block;margin-top:5px;font-weight:400;font-size:11.5px;color:var(--ink-soft);}
+  .cap-def-edit .cdef-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--ink-soft);margin-right:8px;}
+  .cap-def-edit .cdef-text{display:inline-block;min-width:200px;}
+  .cap-def-edit .cdef-text:empty::before{content:attr(data-placeholder);color:#9aa4a3;font-style:italic;}
   .ed-btn{margin-left:10px;border:1px dashed var(--accent);background:#fff;color:var(--accent-deep);font-family:var(--mono);font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:5px;}
   .ed-btn:hover{background:var(--yes-bg);}
   .ed-btn.danger{border-color:#E2B6BC;color:var(--gap);} .ed-btn.danger:hover{background:var(--gap-bg);}

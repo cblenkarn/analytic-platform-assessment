@@ -13,7 +13,7 @@
 // conflict with your edit.
 import { byId } from '../ui/dom.js';
 import { store } from '../model/state.js';
-import { assembleFromRows, applySelections, getSelections, exportPillarRow, exportVendorRow, exportLibraryItemRow, buildRubric } from '../model/rubric.js';
+import { assembleFromRows, applySelections, getSelections, exportPillarRow, exportVendorRow, exportLibraryItemRow, buildRubric, reindex } from '../model/rubric.js';
 import { dirty, scheduleAllPillarsSave } from './granular-save.js';
 import { listPillars, listVendors, listLibrary, upsertPillar, upsertVendor, upsertLibraryItem, sb } from './supabase.js';
 import { setAuto } from './autosave.js';
@@ -66,10 +66,28 @@ export function subscribeTables({ onLoaded, preserveSelections } = {}) {
   let pendingReload = false;
   const showBanner = () => { pendingReload = true; byId('syncBanner')?.classList.add('show'); };
 
+  // A realtime event for ONE row (e.g. someone else's edit to pillar B) used to trigger a
+  // full reapply() that reassembled ALL THREE arrays from whatever was in the DB at that
+  // moment. That silently discarded any OTHER row you had mid-edit locally but hadn't
+  // saved yet — including a brand-new pillar/capability/library item that doesn't exist
+  // in the DB at all until its own debounced save fires. Snapshot those in-flight rows
+  // first and splice them back in after reassembling, so a change to one row can never
+  // clobber an unsaved edit to another.
   const reapply = async () => {
     const sel = preserveSelections ? getSelections() : null;
+    const dirtyPillarSnapshots = store.RUBRIC.filter(p => dirty.pillars.has(p.key));
+    const dirtyLibrarySnapshots = store.USE_CASE_LIBRARY.filter(it => dirty.library.has(it.id));
     const { pillarRows, vendorRows, libraryRows } = await fetchAll();
     assembleFromRows(pillarRows, vendorRows, libraryRows);
+    dirtyPillarSnapshots.forEach(p => {
+      const idx = store.RUBRIC.findIndex(x => x.key === p.key);
+      if (idx >= 0) store.RUBRIC[idx] = p; else store.RUBRIC.push(p);
+    });
+    dirtyLibrarySnapshots.forEach(it => {
+      const idx = store.USE_CASE_LIBRARY.findIndex(x => x.id === it.id);
+      if (idx >= 0) store.USE_CASE_LIBRARY[idx] = it; else store.USE_CASE_LIBRARY.push(it);
+    });
+    if (dirtyPillarSnapshots.length) reindex();
     if (sel) applySelections(sel);
     if (onLoaded) onLoaded();
     requestRender();

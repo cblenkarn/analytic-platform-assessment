@@ -47,6 +47,7 @@ export function addVendor(name) {
 // ---- rename ----
 export function renamePillar(key, name) { const p = findPillar(key); if (p) { p.name = name || p.name; markChanged(); schedulePillarSave(key); } }
 export function renameCap(id, title) { const c = findCap(id); if (c) { c.title = title || c.title; markChanged(); const pk = capPillar(c)?.key; if (pk) schedulePillarSave(pk); } }
+export function renameCapDef(id, def) { const c = findCap(id); if (c) { c.def = def || ''; markChanged(); const pk = capPillar(c)?.key; if (pk) schedulePillarSave(pk); } }
 export function renameSub(id, q) { const info = store.SUBIDX[id]; if (info) { info.sub.q = q || info.sub.q; markChanged(); schedulePillarSave(info.pkey); } }
 export function renameVendorCode(id, code) { const v = store.PLATFORMS.find(p => p.id === id); if (v) { v.code = code || v.code; markChanged(); scheduleVendorsSave(); } }
 
