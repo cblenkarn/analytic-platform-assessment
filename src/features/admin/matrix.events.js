@@ -9,7 +9,7 @@ import { addPillar, addCap, addSub, addVendor,
 import { active } from '../../scoring/coverage.js';
 import { renderMatrix, updateSupportLabels } from './matrix.view.js';
 import { renderAdminAll } from './render.js';
-import { schedulePillarSave, scheduleAllVendorsSave, scheduleAllPillarsSave } from '../../persistence/granular-save.js';
+import { scheduleAllVendorsSave, scheduleAllPillarsSave, scheduleAllSubsInCap } from '../../persistence/granular-save.js';
 
 let dragId=null;                      // vendor column drag
 let subDragId=null, subDropRow=null, subDropAfter=false;  // sub-capability drag
@@ -124,16 +124,20 @@ function findSubOwner(subId) {
 function moveSub(subId, targetCapId, targetSubId, after) {
   const src = findSubOwner(subId); if (!src) return;
   const targetCap = findCap(targetCapId); if (!targetCap) return;
-  const srcPillarKey = src.pillar.key;
+  const srcCapId = src.cap.id;
   const [moved] = src.cap.subs.splice(src.idx, 1);
   let insertAt;
   if (targetSubId) { let ti = targetCap.subs.findIndex(s => s.id === targetSubId); if (ti < 0) ti = targetCap.subs.length - 1; insertAt = after ? ti + 1 : ti; }
   else insertAt = targetCap.subs.length;
   targetCap.subs.splice(Math.max(0, Math.min(insertAt, targetCap.subs.length)), 0, moved);
   reindex(); renderAdminAll(); markChanged();
-  const destPillarKey = store.SUBIDX[subId]?.pkey;
-  schedulePillarSave(srcPillarKey);
-  if (destPillarKey && destPillarKey !== srcPillarKey) schedulePillarSave(destPillarKey);
+  // Persist the row(s) that actually changed: sort_order for every sub left
+  // behind in the source capability, plus sort_order + new capability_id for
+  // every sub now in the target capability (including the moved one). A
+  // pillar-row save doesn't touch sub_capabilities at all, so without this
+  // the move never reaches the DB and reverts on the next realtime refresh.
+  scheduleAllSubsInCap(targetCapId);
+  if (srcCapId !== targetCapId) scheduleAllSubsInCap(srcCapId);
 }
 
 function doExport() {
